@@ -171,19 +171,27 @@ final class InjectToolbarAssets
             return null;
         }
 
-        $enabled = $this->config->isDefaultOptIn();
+        // Enable if EITHER the extension-wide default opt-in is on OR the
+        // user has explicitly ticked the backend toggle. We can't treat a
+        // stored `false` as "user opted out" because v14's TCA-based user
+        // settings pre-populate every declared check field with its default
+        // (false) the moment it's registered — so `has()` would always be
+        // true, and a false value would silently override defaultOptIn.
+        $userOptedIn = false;
         if (method_exists($beUser, 'getUserSettings')) {
             $settings = $beUser->getUserSettings();
-            if ($settings->has('agentation_backend_enabled')) {
-                $enabled = (bool)$settings->get('agentation_backend_enabled');
+            if ($settings->has('agentation_backend_enabled')
+                && (bool)$settings->get('agentation_backend_enabled')
+            ) {
+                $userOptedIn = true;
             }
         } else {
             $uc = is_array($beUser->uc ?? null) ? $beUser->uc : [];
-            if (array_key_exists('agentation_backend_enabled', $uc)) {
-                $enabled = (bool)$uc['agentation_backend_enabled'];
+            if (!empty($uc['agentation_backend_enabled'])) {
+                $userOptedIn = true;
             }
         }
-        if (!$enabled) {
+        if (!$userOptedIn && !$this->config->isDefaultOptIn()) {
             return null;
         }
 
