@@ -115,6 +115,16 @@ final class InjectToolbarAssets
             return 'frontend';
         }
         if ($type->isBackend() && $this->config->isBackendEnabled()) {
+            // TYPO3 BE renders the page in two frames: the shell at
+            // /typo3/main (with the module menu + docheader) and the
+            // module content inside an iframe at /typo3/module/...
+            // Injecting into both produces two overlapping toolbars.
+            // Only inject into the module content — that's where the
+            // user's editable UI actually lives.
+            $path = $request->getUri()->getPath();
+            if (!str_starts_with($path, '/typo3/module/')) {
+                return null;
+            }
             return 'backend';
         }
         return null;
