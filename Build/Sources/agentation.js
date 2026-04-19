@@ -7,22 +7,24 @@
  * so it never touches the host's DOM tree or framework (Vue, Angular,
  * vanilla, anything).
  *
- * Config is read from <script type="application/json" id="typo3-agentation-config">
- * — a JSON data island that the strict v14 backend CSP does not touch
- * (browsers never execute it). The server writes this node via
- * AssetCollector::addInlineJavaScript with type="application/json".
+ * Config is read from the external bundle's own <script> tag via a
+ * data-agentation-config attribute carrying a base64-encoded JSON blob.
+ * Using a data-* attribute on the already-nonced external script keeps
+ * TYPO3 v14's strict backend CSP (script-src 'self' 'nonce-…') happy
+ * without any inline <script> at all.
  */
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Agentation } from 'agentation';
 
 function readConfig() {
-  const node = document.getElementById('typo3-agentation-config');
+  const node = document.querySelector('script[data-agentation-config]');
   if (!node) {
     return null;
   }
   try {
-    return JSON.parse(node.textContent || '{}');
+    const raw = atob(node.dataset.agentationConfig || '');
+    return JSON.parse(raw || '{}');
   } catch (err) {
     /* eslint-disable-next-line no-console */
     console.warn('[agentation] config parse failed', err);
