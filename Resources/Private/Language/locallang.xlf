@@ -3,55 +3,55 @@
     <file source-language="en" datatype="plaintext" original="messages" date="2026-04-19T00:00:00Z" product-name="agentation">
         <header/>
         <body>
-            <trans-unit id="setup.tab" resname="setup.tab">
+            <trans-unit id="setup.tab">
                 <source>Agentation</source>
             </trans-unit>
-            <trans-unit id="setup.backend.enabled" resname="setup.backend.enabled">
+            <trans-unit id="setup.backend.enabled">
                 <source>Enable Agentation toolbar in TYPO3 backend</source>
             </trans-unit>
-            <trans-unit id="setup.frontend.enabled" resname="setup.frontend.enabled">
+            <trans-unit id="setup.frontend.enabled">
                 <source>Enable Agentation toolbar in TYPO3 frontend (requires Admin Panel opt-in per request)</source>
             </trans-unit>
-            <trans-unit id="adminpanel.label" resname="adminpanel.label">
+            <trans-unit id="adminpanel.label">
                 <source>Agentation</source>
             </trans-unit>
-            <trans-unit id="adminpanel.shortinfo.on" resname="adminpanel.shortinfo.on">
+            <trans-unit id="adminpanel.shortinfo.on">
                 <source>Toolbar on</source>
             </trans-unit>
-            <trans-unit id="adminpanel.shortinfo.off" resname="adminpanel.shortinfo.off">
+            <trans-unit id="adminpanel.shortinfo.off">
                 <source>Toolbar off</source>
             </trans-unit>
-            <trans-unit id="adminpanel.enabled" resname="adminpanel.enabled">
+            <trans-unit id="adminpanel.enabled">
                 <source>Show Agentation toolbar on this page</source>
             </trans-unit>
-            <trans-unit id="adminpanel.status" resname="adminpanel.status">
+            <trans-unit id="adminpanel.status">
                 <source>Status</source>
             </trans-unit>
-            <trans-unit id="adminpanel.position" resname="adminpanel.position">
+            <trans-unit id="adminpanel.position">
                 <source>Toolbar position</source>
             </trans-unit>
-            <trans-unit id="adminpanel.scope" resname="adminpanel.scope">
+            <trans-unit id="adminpanel.scope">
                 <source>Annotation scope</source>
             </trans-unit>
-            <trans-unit id="adminpanel.scope.frontend" resname="adminpanel.scope.frontend">
+            <trans-unit id="adminpanel.scope.frontend">
                 <source>Frontend page only</source>
             </trans-unit>
-            <trans-unit id="adminpanel.scope.frontend+adminpanel" resname="adminpanel.scope.frontend+adminpanel">
+            <trans-unit id="adminpanel.scope.frontend+adminpanel">
                 <source>Frontend page + admin panel chrome</source>
             </trans-unit>
-            <trans-unit id="adminpanel.apiKey" resname="adminpanel.apiKey">
+            <trans-unit id="adminpanel.apiKey">
                 <source>API key</source>
             </trans-unit>
-            <trans-unit id="adminpanel.workspace" resname="adminpanel.workspace">
+            <trans-unit id="adminpanel.workspace">
                 <source>Workspace</source>
             </trans-unit>
-            <trans-unit id="adminpanel.context" resname="adminpanel.context">
+            <trans-unit id="adminpanel.context">
                 <source>Application context</source>
             </trans-unit>
-            <trans-unit id="adminpanel.noApiKey" resname="adminpanel.noApiKey">
+            <trans-unit id="adminpanel.noApiKey">
                 <source>No API key set — running in local copy-paste mode. Set one in Extension Configuration to enable MCP and webhooks.</source>
             </trans-unit>
-            <trans-unit id="adminpanel.openBackendModule" resname="adminpanel.openBackendModule">
+            <trans-unit id="adminpanel.openBackendModule">
                 <source>Open Agentation backend module (MCP config &amp; status)</source>
             </trans-unit>
         </body>

@@ -3,171 +3,171 @@
     <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-04-19T00:00:00Z" product-name="agentation">
         <header/>
         <body>
-            <trans-unit id="mlang_tabs_tab" resname="mlang_tabs_tab">
+            <trans-unit id="mlang_tabs_tab">
                 <source>Agentation</source>
                 <target>Agentation</target>
             </trans-unit>
-            <trans-unit id="mlang_labels_tablabel" resname="mlang_labels_tablabel">
+            <trans-unit id="mlang_labels_tablabel">
                 <source>Agentation</source>
                 <target>Agentation</target>
             </trans-unit>
-            <trans-unit id="mlang_labels_tabdescr" resname="mlang_labels_tabdescr">
+            <trans-unit id="mlang_labels_tabdescr">
                 <source>Manage the agentation MCP config, inspect status, and review which users have the toolbar enabled.</source>
                 <target>MCP-Konfiguration verwalten, Status prüfen und sehen, welche Benutzer die Toolbar aktiviert haben.</target>
             </trans-unit>
-            <trans-unit id="mod.tabs.label" resname="mod.tabs.label">
+            <trans-unit id="mod.tabs.label">
                 <source>Agentation</source>
                 <target>Agentation</target>
             </trans-unit>
-            <trans-unit id="module.heading" resname="module.heading">
+            <trans-unit id="module.heading">
                 <source>Configure your AI agent for Agentation</source>
                 <target>KI-Agent für Agentation konfigurieren</target>
             </trans-unit>
 
-            <trans-unit id="module.intro.title" resname="module.intro.title">
+            <trans-unit id="module.intro.title">
                 <source>Connect your coding agent to Agentation</source>
                 <target>Coding-Agent mit Agentation verbinden</target>
             </trans-unit>
-            <trans-unit id="module.intro.text" resname="module.intro.text">
-                <source>{0, plural, one {Complete # step below} other {Complete # steps below}} to stream visual UI annotations from this site into your AI coding agent. Copy the MCP config into your IDE, flip the toolbar toggles, annotate, ship.</source>
-                <target>{0, plural, one {Folgenden # Schritt ausführen} other {Folgende # Schritte ausführen}}, um visuelle UI-Anmerkungen dieser Seite direkt in deinen KI-Coding-Agent zu streamen. MCP-Konfiguration in die IDE einfügen, Toolbar einschalten, annotieren, fertig.</target>
+            <trans-unit id="module.intro.text">
+                <source>{count, plural, one {Complete # step below} other {Complete # steps below}} to stream visual UI annotations from this site into your AI coding agent. Copy the MCP config into your IDE, flip the toolbar toggles, annotate, ship.</source>
+                <target>{count, plural, one {Folgenden # Schritt ausführen} other {Folgende # Schritte ausführen}}, um visuelle UI-Anmerkungen dieser Seite direkt in deinen KI-Coding-Agent zu streamen. MCP-Konfiguration in die IDE einfügen, Toolbar einschalten, annotieren, fertig.</target>
             </trans-unit>
 
-            <trans-unit id="module.mcp.heading" resname="module.mcp.heading">
+            <trans-unit id="module.mcp.heading">
                 <source>MCP configuration</source>
                 <target>MCP-Konfiguration</target>
             </trans-unit>
-            <trans-unit id="module.mcp.intro" resname="module.mcp.intro">
+            <trans-unit id="module.mcp.intro">
                 <source>Paste the block below into your coding agent's MCP config (Claude Code ~/.claude/mcp.json, Cursor settings, Windsurf, Zed, Continue). Annotations flow directly to your agent — no copy/paste.</source>
                 <target>Den Block unten in die MCP-Konfiguration deines Coding-Agents einfügen (Claude Code ~/.claude/mcp.json, Cursor-Einstellungen, Windsurf, Zed, Continue). Anmerkungen werden direkt an den Agent übertragen — ohne Copy &amp; Paste.</target>
             </trans-unit>
-            <trans-unit id="module.mcp.label" resname="module.mcp.label">
+            <trans-unit id="module.mcp.label">
                 <source>MCP server JSON</source>
                 <target>MCP-Server JSON</target>
             </trans-unit>
-            <trans-unit id="module.mcp.hint" resname="module.mcp.hint">
+            <trans-unit id="module.mcp.hint">
                 <source>Pre-filled with the API key + workspace from Extension Configuration.</source>
                 <target>Vorausgefüllt mit API-Key und Workspace aus der Extension-Konfiguration.</target>
             </trans-unit>
-            <trans-unit id="module.mcp.copy" resname="module.mcp.copy">
+            <trans-unit id="module.mcp.copy">
                 <source>Copy to clipboard</source>
                 <target>In die Zwischenablage kopieren</target>
             </trans-unit>
-            <trans-unit id="module.mcp.docs" resname="module.mcp.docs">
+            <trans-unit id="module.mcp.docs">
                 <source>MCP docs</source>
                 <target>MCP-Dokumentation</target>
             </trans-unit>
-            <trans-unit id="module.mcp.addToCursor" resname="module.mcp.addToCursor">
+            <trans-unit id="module.mcp.addToCursor">
                 <source>Add to Cursor</source>
                 <target>In Cursor öffnen</target>
             </trans-unit>
-            <trans-unit id="module.mcp.claudeCliLabel" resname="module.mcp.claudeCliLabel">
+            <trans-unit id="module.mcp.claudeCliLabel">
                 <source>Claude Code — one-line CLI install</source>
                 <target>Claude Code — Installation per CLI-Einzeiler</target>
             </trans-unit>
-            <trans-unit id="module.mcp.claudeCliHint" resname="module.mcp.claudeCliHint">
+            <trans-unit id="module.mcp.claudeCliHint">
                 <source>Paste into a terminal where the `claude` CLI is installed to register the MCP server.</source>
                 <target>In einem Terminal mit installierter `claude`-CLI einfügen, um den MCP-Server zu registrieren.</target>
             </trans-unit>
-            <trans-unit id="module.mcp.noApiKey" resname="module.mcp.noApiKey">
+            <trans-unit id="module.mcp.noApiKey">
                 <source>No API key configured. MCP only works in authenticated mode — set Agentation.apiKey in Extension Configuration.</source>
                 <target>Kein API-Key konfiguriert. MCP funktioniert nur im authentifizierten Modus — Agentation.apiKey in der Extension-Konfiguration setzen.</target>
             </trans-unit>
 
-            <trans-unit id="module.howto.heading" resname="module.howto.heading">
+            <trans-unit id="module.howto.heading">
                 <source>How to use</source>
                 <target>Verwendung</target>
             </trans-unit>
-            <trans-unit id="module.howto.summary" resname="module.howto.summary">
-                <source>{0, plural, one {# step} other {# steps}} from install to first annotation.</source>
-                <target>{0, plural, one {# Schritt} other {# Schritte}} von der Installation bis zur ersten Anmerkung.</target>
+            <trans-unit id="module.howto.summary">
+                <source>{count, plural, one {# step} other {# steps}} from install to first annotation.</source>
+                <target>{count, plural, one {# Schritt} other {# Schritte}} von der Installation bis zur ersten Anmerkung.</target>
             </trans-unit>
-            <trans-unit id="module.howto.toggleShow" resname="module.howto.toggleShow">
+            <trans-unit id="module.howto.toggleShow">
                 <source>Show step-by-step instructions</source>
                 <target>Schritt-für-Schritt-Anleitung anzeigen</target>
             </trans-unit>
-            <trans-unit id="module.howto.step1" resname="module.howto.step1">
+            <trans-unit id="module.howto.step1">
                 <source>Paste the MCP JSON above into your coding agent's config and restart the agent.</source>
                 <target>Das obige MCP-JSON in die Konfiguration deines Coding-Agents einfügen und den Agent neu starten.</target>
             </trans-unit>
-            <trans-unit id="module.howto.step2" resname="module.howto.step2">
+            <trans-unit id="module.howto.step2">
                 <source>Enable the toolbar: frontend via the TYPO3 Admin Panel, backend via User Settings → Agentation tab.</source>
                 <target>Toolbar aktivieren: im Frontend über das TYPO3 Admin Panel, im Backend über Benutzereinstellungen → Reiter Agentation.</target>
             </trans-unit>
-            <trans-unit id="module.howto.step3" resname="module.howto.step3">
+            <trans-unit id="module.howto.step3">
                 <source>Click the floating bubble, pick an element, write a note — Agentation captures selectors, file paths and computed styles.</source>
                 <target>Auf die schwebende Sprechblase klicken, ein Element auswählen, Notiz schreiben — Agentation erfasst Selektoren, Dateipfade und berechnete Styles.</target>
             </trans-unit>
-            <trans-unit id="module.howto.step4" resname="module.howto.step4">
+            <trans-unit id="module.howto.step4">
                 <source>Your agent receives the annotation through MCP and resolves it against the codebase directly.</source>
                 <target>Der Agent empfängt die Anmerkung via MCP und setzt sie direkt im Quellcode um.</target>
             </trans-unit>
-            <trans-unit id="module.howto.readDocs" resname="module.howto.readDocs">
+            <trans-unit id="module.howto.readDocs">
                 <source>Read the full MCP docs</source>
                 <target>Komplette MCP-Dokumentation lesen</target>
             </trans-unit>
 
-            <trans-unit id="module.status.heading" resname="module.status.heading">
+            <trans-unit id="module.status.heading">
                 <source>Status</source>
                 <target>Status</target>
             </trans-unit>
-            <trans-unit id="module.status.apiKey" resname="module.status.apiKey">
+            <trans-unit id="module.status.apiKey">
                 <source>API key</source>
                 <target>API-Key</target>
             </trans-unit>
-            <trans-unit id="module.status.bundle" resname="module.status.bundle">
+            <trans-unit id="module.status.bundle">
                 <source>JS bundle</source>
                 <target>JS-Bundle</target>
             </trans-unit>
-            <trans-unit id="module.status.context" resname="module.status.context">
+            <trans-unit id="module.status.context">
                 <source>Application context</source>
                 <target>Anwendungskontext</target>
             </trans-unit>
-            <trans-unit id="module.status.frontend" resname="module.status.frontend">
+            <trans-unit id="module.status.frontend">
                 <source>Frontend toggle</source>
                 <target>Frontend-Schalter</target>
             </trans-unit>
-            <trans-unit id="module.status.backend" resname="module.status.backend">
+            <trans-unit id="module.status.backend">
                 <source>Backend toggle</source>
                 <target>Backend-Schalter</target>
             </trans-unit>
-            <trans-unit id="module.status.workspace" resname="module.status.workspace">
+            <trans-unit id="module.status.workspace">
                 <source>Workspace</source>
                 <target>Workspace</target>
             </trans-unit>
-            <trans-unit id="module.status.set" resname="module.status.set">
+            <trans-unit id="module.status.set">
                 <source>Set</source>
                 <target>Gesetzt</target>
             </trans-unit>
-            <trans-unit id="module.status.missing" resname="module.status.missing">
+            <trans-unit id="module.status.missing">
                 <source>Missing</source>
                 <target>Fehlt</target>
             </trans-unit>
-            <trans-unit id="module.status.built" resname="module.status.built">
+            <trans-unit id="module.status.built">
                 <source>Built</source>
                 <target>Gebaut</target>
             </trans-unit>
-            <trans-unit id="module.status.notBuilt" resname="module.status.notBuilt">
+            <trans-unit id="module.status.notBuilt">
                 <source>Run npm run build</source>
                 <target>npm run build ausführen</target>
             </trans-unit>
-            <trans-unit id="module.status.allowed" resname="module.status.allowed">
+            <trans-unit id="module.status.allowed">
                 <source>Allowed</source>
                 <target>Erlaubt</target>
             </trans-unit>
-            <trans-unit id="module.status.blocked" resname="module.status.blocked">
+            <trans-unit id="module.status.blocked">
                 <source>Blocked</source>
                 <target>Gesperrt</target>
             </trans-unit>
-            <trans-unit id="module.status.on" resname="module.status.on">
+            <trans-unit id="module.status.on">
                 <source>On</source>
                 <target>An</target>
             </trans-unit>
-            <trans-unit id="module.status.off" resname="module.status.off">
+            <trans-unit id="module.status.off">
                 <source>Off</source>
                 <target>Aus</target>
             </trans-unit>
-            <trans-unit id="module.links.site" resname="module.links.site">
+            <trans-unit id="module.links.site">
                 <source>Open agentation.com</source>
                 <target>agentation.com öffnen</target>
             </trans-unit>
