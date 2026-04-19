@@ -81,22 +81,21 @@ final class InjectToolbarAssets
      */
     private function addAssets(AssetCollector $collector, array $payload, string $entry): void
     {
-        // Zero inline scripts. The config rides piggyback on the external
-        // bundle's own <script> tag as `data-agentation-config="BASE64"`.
-        // The bundle (which already has a valid nonce from the AssetRenderer
-        // because of 'csp' => true) reads the attribute via
-        // document.querySelector on boot. Strict v14 backend CSP is happy.
-        $configB64 = base64_encode(
-            (string)json_encode($payload, JSON_UNESCAPED_SLASHES)
+        // Ship the config as a JSON data island rather than executable inline
+        // JS. <script type="application/json"> is inert to the browser, so
+        // the strict v14 backend CSP (script-src 'self' 'nonce-…') ignores
+        // it entirely — no hash or nonce dance needed. The bundle reads it
+        // from #typo3-agentation-config on boot.
+        $collector->addInlineJavaScript(
+            'agentation-config',
+            (string)json_encode($payload, JSON_UNESCAPED_SLASHES),
+            ['type' => 'application/json', 'id' => 'typo3-agentation-config'],
+            ['priority' => true]
         );
         $collector->addJavaScript(
             'agentation-toolbar',
             $entry,
-            [
-                'type' => 'module',
-                'defer' => 'defer',
-                'data-agentation-config' => $configB64,
-            ],
+            ['type' => 'module', 'defer' => 'defer'],
             ['priority' => false, 'csp' => true]
         );
         foreach ($this->vite->getEntryCssUrls() as $cssUrl) {
