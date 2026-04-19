@@ -166,11 +166,18 @@ final class InjectToolbarAssets
             return null;
         }
 
-        $uc = is_array($beUser->uc ?? null) ? $beUser->uc : [];
-        $hasStoredPreference = array_key_exists('agentation_backend_enabled', $uc);
-        $enabled = $hasStoredPreference
-            ? (bool)$uc['agentation_backend_enabled']
-            : $this->config->isDefaultOptIn();
+        $enabled = $this->config->isDefaultOptIn();
+        if (method_exists($beUser, 'getUserSettings')) {
+            $settings = $beUser->getUserSettings();
+            if ($settings->has('agentation_backend_enabled')) {
+                $enabled = (bool)$settings->get('agentation_backend_enabled');
+            }
+        } else {
+            $uc = is_array($beUser->uc ?? null) ? $beUser->uc : [];
+            if (array_key_exists('agentation_backend_enabled', $uc)) {
+                $enabled = (bool)$uc['agentation_backend_enabled'];
+            }
+        }
         if (!$enabled) {
             return null;
         }
