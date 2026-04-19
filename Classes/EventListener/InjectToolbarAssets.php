@@ -81,14 +81,16 @@ final class InjectToolbarAssets
      */
     private function addAssets(AssetCollector $collector, array $payload, string $entry): void
     {
-        // 'csp' => true tells the AssetRenderer to hash the inline content
-        // (or attach the backend nonce for external assets), so TYPO3 v14's
-        // strict backend CSP doesn't block our injection.
+        // Ship the config as a JSON data island rather than executable inline
+        // JS. <script type="application/json"> is inert to the browser, so
+        // the strict v14 backend CSP (script-src 'self' 'nonce-…') ignores
+        // it entirely — no hash or nonce dance needed. The bundle reads it
+        // from #typo3-agentation-config on boot.
         $collector->addInlineJavaScript(
             'agentation-config',
-            'window.TYPO3Agentation=' . json_encode($payload, JSON_UNESCAPED_SLASHES) . ';',
-            [],
-            ['priority' => true, 'csp' => true]
+            (string)json_encode($payload, JSON_UNESCAPED_SLASHES),
+            ['type' => 'application/json', 'id' => 'typo3-agentation-config'],
+            ['priority' => true]
         );
         $collector->addJavaScript(
             'agentation-toolbar',

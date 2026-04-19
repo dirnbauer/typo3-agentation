@@ -7,15 +7,32 @@
  * so it never touches the host's DOM tree or framework (Vue, Angular,
  * vanilla, anything).
  *
- * Config is read from `window.TYPO3Agentation`, written by the server
- * via an inline <script> immediately before this bundle loads.
+ * Config is read from <script type="application/json" id="typo3-agentation-config">
+ * — a JSON data island that the strict v14 backend CSP does not touch
+ * (browsers never execute it). The server writes this node via
+ * AssetCollector::addInlineJavaScript with type="application/json".
  */
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Agentation } from 'agentation';
 
+function readConfig() {
+  const node = document.getElementById('typo3-agentation-config');
+  if (!node) {
+    return null;
+  }
+  try {
+    return JSON.parse(node.textContent || '{}');
+  } catch (err) {
+    /* eslint-disable-next-line no-console */
+    console.warn('[agentation] config parse failed', err);
+    return null;
+  }
+}
+
 (function bootAgentation() {
-  const cfg = window.TYPO3Agentation || {};
+  const cfg = readConfig() || {};
+  window.TYPO3Agentation = cfg;
   if (cfg.enabled === false) {
     return;
   }
@@ -85,7 +102,7 @@ import { Agentation } from 'agentation';
     try {
       const root = createRoot(container);
       root.render(createElement(Agentation, props));
-      window.TYPO3Agentation.__root = root;
+      cfg.__root = root;
     } catch (err) {
       /* eslint-disable-next-line no-console */
       console.warn('[agentation] mount failed', err);
