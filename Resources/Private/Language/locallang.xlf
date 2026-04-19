@@ -51,6 +51,9 @@
             <trans-unit id="adminpanel.noApiKey">
                 <source>No API key set — running in local copy-paste mode. Set one in Extension Configuration to enable MCP and webhooks.</source>
             </trans-unit>
+            <trans-unit id="adminpanel.openBackendModule">
+                <source>Open Agentation backend module (MCP config &amp; status)</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>

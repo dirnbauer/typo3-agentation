@@ -26,3 +26,29 @@
   background: rgba(234, 179, 8, 0.2);
   color: #b45309;
 }
+
+.typo3-adminPanel-module-link {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.typo3-adminPanel-module-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.typo3-adminPanel-module-link a:hover,
+.typo3-adminPanel-module-link a:focus {
+  background: rgba(148, 163, 184, 0.15);
+  text-decoration: underline;
+}
