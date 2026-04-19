@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true">
-  <path d="M3 2h10a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-3 3v-3H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" fill="currentColor"/>
-  <circle cx="6" cy="7" r="1" fill="#fff"/>
-  <circle cx="8" cy="7" r="1" fill="#fff"/>
-  <circle cx="10" cy="7" r="1" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M14 10 h36 a6 6 0 0 1 6 6 v24 a6 6 0 0 1 -6 6 h-10 l-8 8 v-8 h-18 a6 6 0 0 1 -6 -6 v-24 a6 6 0 0 1 6 -6 z"
+        fill="currentColor"/>
+  <circle cx="24" cy="28" r="3.5" fill="var(--icon-color-accent, #ff8700)"/>
+  <circle cx="32" cy="28" r="3.5" fill="var(--icon-color-accent, #ff8700)" opacity=".7"/>
+  <circle cx="40" cy="28" r="3.5" fill="var(--icon-color-accent, #ff8700)" opacity=".4"/>
 </svg>
