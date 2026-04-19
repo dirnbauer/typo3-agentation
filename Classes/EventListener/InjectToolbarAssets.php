@@ -81,24 +81,27 @@ final class InjectToolbarAssets
      */
     private function addAssets(AssetCollector $collector, array $payload, string $entry): void
     {
+        // 'csp' => true tells the AssetRenderer to hash the inline content
+        // (or attach the backend nonce for external assets), so TYPO3 v14's
+        // strict backend CSP doesn't block our injection.
         $collector->addInlineJavaScript(
             'agentation-config',
             'window.TYPO3Agentation=' . json_encode($payload, JSON_UNESCAPED_SLASHES) . ';',
             [],
-            ['priority' => true]
+            ['priority' => true, 'csp' => true]
         );
         $collector->addJavaScript(
             'agentation-toolbar',
             $entry,
             ['type' => 'module', 'defer' => 'defer'],
-            ['priority' => false]
+            ['priority' => false, 'csp' => true]
         );
         foreach ($this->vite->getEntryCssUrls() as $cssUrl) {
             $collector->addStyleSheet(
                 'agentation-css-' . md5($cssUrl),
                 $cssUrl,
                 [],
-                ['priority' => false]
+                ['priority' => false, 'csp' => true]
             );
         }
     }
