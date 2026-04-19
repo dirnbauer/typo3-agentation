@@ -32,7 +32,8 @@ final class ModuleController
             $this->translate('module.heading')
         );
 
-        $mcpConfig = $this->buildMcpConfig();
+        $serverConfig = $this->buildServerConfig();
+        $mcpConfig = ['mcpServers' => ['agentation' => $serverConfig]];
 
         $view->assignMultiple([
             'apiKeyConfigured' => $this->configuration->getApiKey() !== '',
@@ -48,6 +49,8 @@ final class ModuleController
                 $mcpConfig,
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             ),
+            'cursorDeepLink' => $this->buildCursorDeepLink($serverConfig),
+            'claudeCodeCli' => $this->buildClaudeCodeCli($serverConfig),
             'mcpDocsUrl' => 'https://www.agentation.com/mcp',
             'stepCount' => 4,
         ]);
@@ -58,7 +61,7 @@ final class ModuleController
     /**
      * @return array<string, mixed>
      */
-    private function buildMcpConfig(): array
+    private function buildServerConfig(): array
     {
         $server = [
             'command' => 'npx',
@@ -74,11 +77,36 @@ final class ModuleController
         if ($env !== []) {
             $server['env'] = $env;
         }
-        return [
-            'mcpServers' => [
-                'agentation' => $server,
-            ],
-        ];
+        return $server;
+    }
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     */
+    private function buildCursorDeepLink(array $serverConfig): string
+    {
+        $encoded = base64_encode(
+            (string)json_encode($serverConfig, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        );
+        return 'cursor://anysphere.cursor-deeplink/mcp/install?name=agentation&config='
+            . rawurlencode($encoded);
+    }
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     */
+    private function buildClaudeCodeCli(array $serverConfig): string
+    {
+        $parts = ['claude mcp add agentation'];
+        foreach (($serverConfig['env'] ?? []) as $key => $value) {
+            $parts[] = '--env ' . escapeshellarg($key . '=' . $value);
+        }
+        $parts[] = '--';
+        $parts[] = escapeshellarg((string)$serverConfig['command']);
+        foreach (($serverConfig['args'] ?? []) as $arg) {
+            $parts[] = escapeshellarg((string)$arg);
+        }
+        return implode(' ', $parts);
     }
 
     private function translate(string $key): string

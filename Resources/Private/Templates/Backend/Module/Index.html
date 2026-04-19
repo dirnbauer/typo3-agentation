@@ -59,19 +59,50 @@
                         </small>
                     </div>
 
-                    <button type="button"
-                            class="btn btn-primary"
-                            data-agentation-copy="#agentation-mcp-json">
-                        <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.copy" />
-                    </button>
-                    <a class="btn btn-default ms-2"
-                       href="{mcpDocsUrl}"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        <typo3-backend-icon identifier="actions-external-link" size="small"></typo3-backend-icon>
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.docs" />
-                    </a>
+                    <div class="agentation-actions">
+                        <a class="btn btn-primary"
+                           href="{cursorDeepLink}"
+                           target="_top">
+                            <typo3-backend-icon identifier="actions-plus" size="small"></typo3-backend-icon>
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.addToCursor" />
+                        </a>
+                        <button type="button"
+                                class="btn btn-default"
+                                data-agentation-copy="#agentation-mcp-json">
+                            <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.copy" />
+                        </button>
+                        <a class="btn btn-default"
+                           href="{mcpDocsUrl}"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <typo3-backend-icon identifier="actions-external-link" size="small"></typo3-backend-icon>
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.docs" />
+                        </a>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label" for="agentation-claude-cli">
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.claudeCliLabel" />
+                        </label>
+                        <div class="input-group">
+                            <input id="agentation-claude-cli"
+                                   type="text"
+                                   class="form-control font-monospace"
+                                   readonly
+                                   value="{claudeCodeCli}"
+                                   aria-describedby="agentation-claude-cli-hint">
+                            <button type="button"
+                                    class="btn btn-default"
+                                    data-agentation-copy="#agentation-claude-cli"
+                                    title="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.copy')}">
+                                <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
+                            </button>
+                        </div>
+                        <small id="agentation-claude-cli-hint" class="form-text text-body-secondary">
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.claudeCliHint" />
+                        </small>
+                    </div>
                 </div>
             </div>
 

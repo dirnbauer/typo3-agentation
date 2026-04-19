@@ -24,3 +24,10 @@
 .agentation-details ol {
     padding-left: 1.25rem;
 }
+
+.agentation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}

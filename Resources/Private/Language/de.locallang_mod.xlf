@@ -57,6 +57,18 @@
                 <source>MCP docs</source>
                 <target>MCP-Dokumentation</target>
             </trans-unit>
+            <trans-unit id="module.mcp.addToCursor" resname="module.mcp.addToCursor">
+                <source>Add to Cursor</source>
+                <target>In Cursor öffnen</target>
+            </trans-unit>
+            <trans-unit id="module.mcp.claudeCliLabel" resname="module.mcp.claudeCliLabel">
+                <source>Claude Code — one-line CLI install</source>
+                <target>Claude Code — Installation per CLI-Einzeiler</target>
+            </trans-unit>
+            <trans-unit id="module.mcp.claudeCliHint" resname="module.mcp.claudeCliHint">
+                <source>Paste into a terminal where the `claude` CLI is installed to register the MCP server.</source>
+                <target>In einem Terminal mit installierter `claude`-CLI einfügen, um den MCP-Server zu registrieren.</target>
+            </trans-unit>
             <trans-unit id="module.mcp.noApiKey" resname="module.mcp.noApiKey">
                 <source>No API key configured. MCP only works in authenticated mode — set Agentation.apiKey in Extension Configuration.</source>
                 <target>Kein API-Key konfiguriert. MCP funktioniert nur im authentifizierten Modus — Agentation.apiKey in der Extension-Konfiguration setzen.</target>
