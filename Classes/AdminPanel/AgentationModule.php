@@ -54,13 +54,8 @@ final class AgentationModule extends AbstractModule implements
 
     public function getShortInfo(): string
     {
-        $moduleData = $this->getConfigurationService()->getMainConfiguration();
-        $enabled = (bool)(
-            $moduleData->get($this->getIdentifier() . '.enabled')
-            ?? (GeneralUtility::makeInstance(ConfigurationService::class)->isDefaultOptIn() ? '1' : '')
-        );
         return $this->getLanguageService()->sL(
-            $enabled
+            $this->isEnabled()
                 ? 'LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.shortinfo.on'
                 : 'LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.shortinfo.off'
         );
