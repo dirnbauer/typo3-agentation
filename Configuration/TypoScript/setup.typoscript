@@ -1,0 +1,7 @@
+plugin.tx_agentation {
+    settings {
+        apiKey = {$plugin.tx_agentation.settings.apiKey}
+        workspaceId = {$plugin.tx_agentation.settings.workspaceId}
+        toolbarPosition = {$plugin.tx_agentation.settings.toolbarPosition}
+    }
+}

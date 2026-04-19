@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="messages" date="2026-04-19T00:00:00Z" product-name="agentation">
+        <header/>
+        <body>
+            <trans-unit id="setup.tab">
+                <source>Agentation</source>
+            </trans-unit>
+            <trans-unit id="setup.backend.enabled">
+                <source>Enable Agentation toolbar in TYPO3 backend</source>
+            </trans-unit>
+            <trans-unit id="setup.frontend.enabled">
+                <source>Enable Agentation toolbar in TYPO3 frontend (requires Admin Panel opt-in per request)</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.label">
+                <source>Agentation</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.shortinfo.on">
+                <source>Toolbar on</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.shortinfo.off">
+                <source>Toolbar off</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.enabled">
+                <source>Show Agentation toolbar on this page</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.status">
+                <source>Status</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.position">
+                <source>Toolbar position</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.scope">
+                <source>Annotation scope</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.scope.frontend">
+                <source>Frontend page only</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.scope.frontend+adminpanel">
+                <source>Frontend page + admin panel chrome</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.apiKey">
+                <source>API key</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.workspace">
+                <source>Workspace</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.context">
+                <source>Application context</source>
+            </trans-unit>
+            <trans-unit id="adminpanel.noApiKey">
+                <source>No API key set — running in local copy-paste mode. Set one in Extension Configuration to enable MCP and webhooks.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

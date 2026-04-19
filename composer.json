@@ -1,0 +1,75 @@
+{
+    "name": "webconsulting/agentation",
+    "description": "TYPO3 v14 integration for Agentation — visual UI annotations for AI coding agents, in frontend (via Admin Panel) and backend.",
+    "type": "typo3-cms-extension",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "typo3",
+        "typo3-cms-extension",
+        "agentation",
+        "ai",
+        "annotations",
+        "mcp",
+        "claude-code",
+        "cursor"
+    ],
+    "homepage": "https://github.com/webconsulting/typo3-agentation",
+    "authors": [
+        {
+            "name": "webconsulting",
+            "email": "office@webconsulting.at",
+            "homepage": "https://webconsulting.at",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/webconsulting/typo3-agentation/issues",
+        "source": "https://github.com/webconsulting/typo3-agentation"
+    },
+    "require": {
+        "php": "^8.2",
+        "typo3/cms-adminpanel": "^14.0",
+        "typo3/cms-backend": "^14.0",
+        "typo3/cms-core": "^14.0",
+        "typo3/cms-extbase": "^14.0",
+        "typo3/cms-fluid": "^14.0",
+        "typo3/cms-frontend": "^14.0",
+        "praetorius/vite-asset-collector": "^2.0"
+    },
+    "require-dev": {
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^11.5",
+        "saschaegerer/phpstan-typo3": "^3.0",
+        "typo3/testing-framework": "^9.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "WebConsulting\\Agentation\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WebConsulting\\Agentation\\Tests\\": "Tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true,
+            "typo3/class-alias-loader": true,
+            "typo3/cms-composer-installers": true
+        }
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse --memory-limit=1G",
+        "test:unit": "phpunit -c Build/phpunit/UnitTests.xml"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "agentation"
+        }
+    }
+}

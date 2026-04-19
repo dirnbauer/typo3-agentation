@@ -1,0 +1,26 @@
+# cat=basic/enable; type=string; label=Agentation API key (required for MCP + webhooks — leave empty for free local-only mode)
+apiKey =
+
+# cat=basic/enable; type=string; label=Workspace / project ID (optional, shown in MCP config)
+workspaceId =
+
+# cat=basic/enable; type=boolean; label=Enable in Frontend (gated per BE-user via Admin Panel opt-in)
+frontendEnabled = 1
+
+# cat=basic/enable; type=boolean; label=Enable in Backend (gated per BE-user via User Settings)
+backendEnabled = 1
+
+# cat=basic/enable; type=options[Development,Development and Testing,All contexts]; label=Application context gate
+contextGate = Development
+
+# cat=basic/enable; type=boolean; label=Default opt-in for new BE users (can still toggle off per user)
+defaultOptIn = 0
+
+# cat=advanced/toolbar; type=string; label=Toolbar position (bottom-right, bottom-left, top-right, top-left)
+toolbarPosition = bottom-right
+
+# cat=advanced/toolbar; type=string; label=Webhook URL (optional — annotations POSTed here)
+webhookUrl =
+
+# cat=advanced/toolbar; type=string; label=Additional toolbar options as JSON (merged into init call)
+additionalOptions =

@@ -1,0 +1,134 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:be.pageRenderer includeJavaScriptModules="{
+    0: '@webconsulting/agentation/module.js'
+}" />
+
+<div class="agentation-module">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.heading" />
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-body-secondary">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.intro" />
+                    </p>
+
+                    <f:if condition="{apiKeyConfigured}">
+                        <f:else>
+                            <div class="callout callout-warning">
+                                <div class="callout-body">
+                                    <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.noApiKey" />
+                                </div>
+                            </div>
+                        </f:else>
+                    </f:if>
+
+                    <div class="mb-3 position-relative">
+                        <label class="form-label" for="agentation-mcp-json">
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.label" />
+                        </label>
+                        <textarea id="agentation-mcp-json"
+                                  class="form-control font-monospace"
+                                  rows="12"
+                                  readonly
+                                  spellcheck="false"
+                                  aria-describedby="agentation-mcp-hint">{mcpJson}</textarea>
+                        <small id="agentation-mcp-hint" class="form-text text-body-secondary">
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.hint" />
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-agentation-copy="#agentation-mcp-json">
+                        <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.copy" />
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.heading" />
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step1" /></li>
+                        <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step2" /></li>
+                        <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step3" /></li>
+                        <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step4" /></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.heading" />
+                    </h2>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.apiKey" /></span>
+                        <f:if condition="{apiKeyConfigured}">
+                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.set" /></span></f:then>
+                            <f:else><span class="badge bg-warning"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.missing" /></span></f:else>
+                        </f:if>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.bundle" /></span>
+                        <f:if condition="{bundleBuilt}">
+                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.built" /></span></f:then>
+                            <f:else><span class="badge bg-danger"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.notBuilt" /></span></f:else>
+                        </f:if>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.context" /></span>
+                        <f:if condition="{contextAllowed}">
+                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.allowed" /></span></f:then>
+                            <f:else><span class="badge bg-secondary"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.blocked" /></span></f:else>
+                        </f:if>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.frontend" /></span>
+                        <f:if condition="{frontendEnabled}">
+                            <f:then><span class="badge bg-success">On</span></f:then>
+                            <f:else><span class="badge bg-secondary">Off</span></f:else>
+                        </f:if>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.backend" /></span>
+                        <f:if condition="{backendEnabled}">
+                            <f:then><span class="badge bg-success">On</span></f:then>
+                            <f:else><span class="badge bg-secondary">Off</span></f:else>
+                        </f:if>
+                    </li>
+                    <li class="list-group-item">
+                        <small class="text-body-secondary d-block">
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.workspace" />
+                        </small>
+                        <code>{workspaceId -> f:or(alternative: '—')}</code>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mt-3">
+                <a class="btn btn-default w-100" href="https://www.agentation.com/" target="_blank" rel="noopener">
+                    <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.links.site" />
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

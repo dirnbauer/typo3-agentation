@@ -1,0 +1,10 @@
+/node_modules/
+/vendor/
+/Resources/Public/Vite/
+/var/
+/.phpunit.cache/
+/.phpstan.cache/
+/composer.lock
+/package-lock.json
+.DS_Store
+.idea/

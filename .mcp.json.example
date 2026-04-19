@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "agentation": {
+      "command": "npx",
+      "args": ["-y", "agentation", "mcp"],
+      "env": {
+        "AGENTATION_API_KEY": "your-api-key",
+        "AGENTATION_WORKSPACE": "your-workspace-id"
+      }
+    }
+  }
+}

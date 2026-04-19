@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  WebConsulting\Agentation\:
+    resource: '../Classes/*'
+
+  WebConsulting\Agentation\Controller\Backend\ModuleController:
+    public: true
+
+  WebConsulting\Agentation\AdminPanel\AgentationModule:
+    public: true

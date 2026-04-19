@@ -1,0 +1,50 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<div class="typo3-adminPanel-table-outer">
+    <table class="typo3-adminPanel-table">
+        <tbody>
+            <tr>
+                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status" /></th>
+                <td>
+                    <f:if condition="{enabled}">
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success">On</span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge">Off</span></f:else>
+                    </f:if>
+                </td>
+            </tr>
+            <tr>
+                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.position" /></th>
+                <td><code>{position}</code></td>
+            </tr>
+            <tr>
+                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.scope" /></th>
+                <td><code>{scope}</code></td>
+            </tr>
+            <tr>
+                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.apiKey" /></th>
+                <td>
+                    <f:if condition="{apiKey}">
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success">Set</span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning">Local-only</span></f:else>
+                    </f:if>
+                </td>
+            </tr>
+            <tr>
+                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.workspace" /></th>
+                <td><code>{workspaceId -> f:or(alternative: '—')}</code></td>
+            </tr>
+            <tr>
+                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.context" /></th>
+                <td>
+                    <f:if condition="{contextAllowed}">
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success">Allowed</span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning">Blocked by contextGate</span></f:else>
+                    </f:if>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</html>

@@ -1,0 +1,12 @@
+# Agentation works without TypoScript. Included for compatibility with
+# extension listings and so admins can extend the constants tree.
+
+plugin.tx_agentation {
+    settings {
+        # Overrides extension configuration at TypoScript level, per site.
+        # Leave empty to fall back to ext_conf_template values.
+        apiKey =
+        workspaceId =
+        toolbarPosition = bottom-right
+    }
+}
