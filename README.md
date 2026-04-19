@@ -40,19 +40,32 @@ you only need to rebuild when upgrading `agentation` on npm.
 
 ## Configuration
 
-Open **Admin Tools → Settings → Extension Configuration → agentation**:
+Open **Admin Tools → Settings → Extension Configuration → agentation**.
 
-| Key | Purpose |
-| --- | --- |
-| `apiKey` | Agentation API key. Leave empty for free local-only mode (copy-paste markdown). |
-| `workspaceId` | Workspace / project ID shown in the MCP snippet and sent to the toolbar. |
-| `frontendEnabled` | Global on/off for the FE toolbar. |
-| `backendEnabled` | Global on/off for the BE toolbar. |
-| `contextGate` | `Development` (default), `Development and Testing`, or `All contexts`. Prevents production leaks. |
-| `defaultOptIn` | Whether new BE users see the toolbar on by default. |
-| `toolbarPosition` | `bottom-right` / `bottom-left` / `top-right` / `top-left`. |
-| `webhookUrl` | Forwarded to the toolbar; annotations POST here. |
-| `additionalOptions` | Raw JSON merged into the toolbar's `init()` call. Escape hatch for upstream features. |
+![Extension Configuration — basic tab](Documentation/Images/extension-configuration-basic.png)
+
+### Basic tab
+
+| Key | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `apiKey` | string | _empty_ | Agentation API key. Leave empty for free local-only mode (copy-paste markdown). Required for MCP + webhooks. |
+| `workspaceId` | string | _empty_ | Workspace / project ID shown in the MCP snippet and sent to the toolbar. |
+| `frontendEnabled` | boolean | ✓ | Global on/off for the FE toolbar. Still gated per BE-user via Admin Panel opt-in. |
+| `backendEnabled` | boolean | ✓ | Global on/off for the BE toolbar. Still gated per BE-user via User Settings → Agentation tab. |
+| `contextGate` | options | `Development` | `Development`, `Development and Testing`, or `All contexts`. Prevents production leaks. |
+| `defaultOptIn` | boolean | ✗ | Whether new BE users see the toolbar on by default (they can still toggle off). Tick this to skip the per-user opt-in step during initial setup. |
+
+### Advanced tab
+
+| Key | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `toolbarPosition` | string | `bottom-right` | `bottom-right` / `bottom-left` / `top-right` / `top-left`. |
+| `webhookUrl` | string | _empty_ | Forwarded to the toolbar; annotations POST here with an `Authorization: Bearer <apiKey>` header if set. |
+| `additionalOptions` | JSON string | _empty_ | Raw JSON merged into the toolbar's props. Escape hatch for upstream features (e.g. `{"enableDemoMode": true}`). |
+
+### Where the screenshot lives
+
+Save it as `Documentation/Images/extension-configuration-basic.png` inside the extension directory. The README links to it relatively so it also renders on GitHub.
 
 ## Frontend: Admin Panel section
 
