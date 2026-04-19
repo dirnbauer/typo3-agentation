@@ -1,6 +1,5 @@
 /node_modules/
 /vendor/
-/Resources/Public/Vite/
 /var/
 /.phpunit.cache/
 /.phpstan.cache/
@@ -8,3 +7,7 @@
 /package-lock.json
 .DS_Store
 .idea/
+
+# Resources/Public/Vite/ is intentionally committed so composer/VCS
+# installations get the built assets without a node toolchain.
+# Regenerate locally with `npm install && npm run build` before pushing.
