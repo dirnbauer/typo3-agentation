@@ -15,8 +15,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',
             ],
-        ],
-        'after:startModule'
+        ]
     );
 
     ExtensionManagementUtility::addUserSetting(
@@ -27,7 +26,28 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',
             ],
-        ],
-        'after:agentation_backend_enabled'
+        ]
     );
+
+    // Prepend a tab divider so both fields land on their own "Agentation"
+    // tab in the User Settings module instead of appending to whatever
+    // tab happens to be last.
+    $current = (string)($GLOBALS['TCA']['be_users']['columns']['user_settings']['showitem'] ?? '');
+    $divider = '--div--;LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:setup.tab';
+    if (!str_contains($current, $divider)) {
+        $current = preg_replace(
+            '/,?\s*agentation_backend_enabled/',
+            '',
+            $current
+        ) ?? $current;
+        $current = preg_replace(
+            '/,?\s*agentation_frontend_enabled/',
+            '',
+            $current
+        ) ?? $current;
+        $GLOBALS['TCA']['be_users']['columns']['user_settings']['showitem'] =
+            rtrim($current, ', ')
+            . ',' . $divider
+            . ',agentation_backend_enabled,agentation_frontend_enabled';
+    }
 })();
