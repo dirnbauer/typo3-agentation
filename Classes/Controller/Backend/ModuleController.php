@@ -48,6 +48,8 @@ final class ModuleController
                 $mcpConfig,
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             ),
+            'mcpDocsUrl' => 'https://www.agentation.com/mcp',
+            'stepCount' => 4,
         ]);
 
         return $view->renderResponse('Backend/Module/Index');
