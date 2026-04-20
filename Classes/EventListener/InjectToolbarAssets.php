@@ -144,6 +144,14 @@ final class InjectToolbarAssets
             if (!str_starts_with($path, '/typo3/module/')) {
                 return null;
             }
+            // Never mount the widget on Agentation's own admin module —
+            // it's a management UI for existing annotations. When the
+            // widget is live there, its localStorage + EventSource
+            // sync fights our per-row delete (re-pushing annotations
+            // immediately after we remove them from the server).
+            if (str_starts_with($path, '/typo3/module/system/agentation')) {
+                return null;
+            }
             return 'backend';
         }
         return null;
