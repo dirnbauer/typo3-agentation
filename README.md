@@ -23,7 +23,7 @@ feedback) with Claude Code, Cursor, or any MCP-capable agent.
 - PHP ^8.2
 - `typo3/cms-adminpanel` (bundled with v14)
 - Node 20+ for the build step (only needed at install time / when updating)
-- `praetorius/vite-asset-collector` — dev-only; not required at runtime. The built-in `ViteAssetResolver` reads `Resources/Public/Vite/manifest.json` directly.
+- No TYPO3-side Vite integration extension needed — the built-in `ViteAssetResolver` reads `Resources/Public/Vite/manifest.json` directly.
 
 ## Install
 

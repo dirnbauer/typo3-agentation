@@ -12,8 +12,8 @@ use TYPO3\CMS\Core\Utility\PathUtility;
 /**
  * Resolves the built agentation entrypoint from the Vite manifest.
  *
- * We do not hard-depend on praetorius/vite-asset-collector at runtime —
- * if the manifest is missing (e.g. extension installed without build),
+ * Self-contained: no third-party TYPO3-Vite integration is required.
+ * If the manifest is missing (e.g. extension installed without build),
  * callers get null and can surface that to admins.
  */
 final class ViteAssetResolver implements SingletonInterface

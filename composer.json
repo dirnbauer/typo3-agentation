@@ -41,7 +41,6 @@
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^11.5",
-        "praetorius/vite-asset-collector": "^1.0",
         "saschaegerer/phpstan-typo3": "^3.0",
         "typo3/testing-framework": "^9.2"
     },
