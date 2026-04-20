@@ -121,7 +121,7 @@ Example (also at `.mcp.json.example`):
   "mcpServers": {
     "agentation": {
       "command": "npx",
-      "args": ["-y", "agentation", "mcp"],
+      "args": ["-y", "agentation-mcp", "server"],
       "env": {
         "AGENTATION_API_KEY": "your-api-key",
         "AGENTATION_WORKSPACE": "your-workspace-id"

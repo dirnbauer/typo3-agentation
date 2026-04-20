@@ -63,9 +63,12 @@ final class ModuleController
      */
     private function buildServerConfig(): array
     {
+        // The MCP server is published as a separate npm package named
+        // `agentation-mcp` (NOT a subcommand of `agentation`). The CLI
+        // binary is invoked as `agentation-mcp server`.
         $server = [
             'command' => 'npx',
-            'args' => ['-y', 'agentation', 'mcp'],
+            'args' => ['-y', 'agentation-mcp', 'server'],
         ];
         $env = [];
         if ($this->configuration->getApiKey() !== '') {
