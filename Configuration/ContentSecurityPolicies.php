@@ -8,27 +8,28 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationCollection;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationMode;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Scope;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\SourceKeyword;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
 use TYPO3\CMS\Core\Type\Map;
 
 /*
  * Agentation ships a React component that injects its own <style> tags
- * at runtime via `document.head.appendChild(styleEl)`. Strict CSP blocks
+ * at runtime via document.head.appendChild(styleEl). Strict CSP blocks
  * those, so we extend style-src with 'unsafe-inline' while the toolbar
- * is active. Scripts stay strict — the AssetCollector hashes our inline
- * script and the bundle is self-hosted, so we don't need to relax
- * script-src.
+ * is active.
+ *
+ * The widget talks to the local agentation-mcp HTTP API (or the cloud
+ * variant). TYPO3 v14's default BE CSP has `connect-src 'self'`, which
+ * would block every sync call — including the ones our same-origin
+ * proxy redirects through. Whitelist the known MCP sync endpoints so
+ * both the fetch-shim (primary) and direct connections (fallback,
+ * e.g. EventSource for SSE) can reach them.
  */
-use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
-
 $mutations = new MutationCollection(
     new Mutation(
         MutationMode::Extend,
         Directive::StyleSrc,
         SourceKeyword::unsafeInline,
     ),
-    // Allow the widget (and our same-origin proxy fallback) to reach
-    // the agentation-mcp server. Both localhost variants plus the
-    // Docker / Podman bridges used by DDEV + the cloud fallback.
     new Mutation(
         MutationMode::Extend,
         Directive::ConnectSrc,
