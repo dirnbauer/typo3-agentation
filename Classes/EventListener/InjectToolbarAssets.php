@@ -115,14 +115,19 @@ final class InjectToolbarAssets
             return 'frontend';
         }
         if ($type->isBackend() && $this->config->isBackendEnabled()) {
-            // TYPO3 BE renders the page in two frames: the shell at
-            // /typo3/main (with the module menu + docheader) and the
-            // module content inside an iframe at /typo3/module/...
-            // Injecting into both produces two overlapping toolbars.
-            // Only inject into the module content — that's where the
-            // user's editable UI actually lives.
+            // Inject into every BE page render. TYPO3 v14's BE uses two
+            // separate frames per navigation — the shell at /typo3/main
+            // (module menu + docheader) and the module content inside
+            // an iframe at /typo3/module/*. React can't reach across
+            // frame boundaries via portals, so each frame gets its own
+            // toolbar instance. Users annotate shell chrome from the
+            // outer toolbar and module content from the inner one.
+            // Skip only the login and similar stateless shells.
             $path = $request->getUri()->getPath();
-            if (!str_starts_with($path, '/typo3/module/')) {
+            if (str_starts_with($path, '/typo3/login')
+                || str_starts_with($path, '/typo3/install')
+                || str_starts_with($path, '/typo3/ajax')
+            ) {
                 return null;
             }
             return 'backend';
