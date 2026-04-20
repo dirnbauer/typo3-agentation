@@ -30,11 +30,58 @@ function readConfig() {
   }
 }
 
+/**
+ * Agentation keys its annotation storage by window.location.pathname,
+ * but TYPO3 BE modules share one pathname across many records (e.g.
+ * /typo3/module/web/layout for every page). Without scoping, markers
+ * from page A show up on page B.
+ *
+ * Shim localStorage so every agentation-owned key gets silently
+ * namespaced with the module name + the record id from the query
+ * string. Agentation stays unaware; our shim transparently rewrites
+ * the key on every get/set/remove.
+ */
+function scopeAgentationStorage() {
+  if (typeof localStorage === 'undefined') return;
+  const AGENTATION_PREFIXES = [
+    'feedback-annotations-',
+    'agentation-design-',
+    'agentation-rearrange-',
+    'agentation-wireframe-',
+    'agentation-session-',
+  ];
+  const params = new URLSearchParams(window.location.search);
+  const pageId = params.get('id') || params.get('uid') || '';
+  const modulePath = window.location.pathname; // already unique per BE module
+  const scope = ':' + modulePath + ':id=' + pageId;
+
+  const rewrite = (key) => {
+    if (typeof key !== 'string') return key;
+    for (const p of AGENTATION_PREFIXES) {
+      if (key.startsWith(p)) {
+        return p + scope + '/' + key.slice(p.length);
+      }
+    }
+    return key;
+  };
+
+  const origGetItem = localStorage.getItem.bind(localStorage);
+  const origSetItem = localStorage.setItem.bind(localStorage);
+  const origRemoveItem = localStorage.removeItem.bind(localStorage);
+
+  localStorage.getItem = (k) => origGetItem(rewrite(k));
+  localStorage.setItem = (k, v) => origSetItem(rewrite(k), v);
+  localStorage.removeItem = (k) => origRemoveItem(rewrite(k));
+}
+
 (function bootAgentation() {
   const cfg = readConfig() || {};
   window.TYPO3Agentation = cfg;
   if (cfg.enabled === false) {
     return;
+  }
+  if (cfg.scope === 'backend') {
+    scopeAgentationStorage();
   }
 
   const start = () => {
