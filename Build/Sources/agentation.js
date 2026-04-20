@@ -84,6 +84,21 @@ function scopeAgentationStorage() {
     scopeAgentationStorage();
   }
 
+  // Detect mixed-content trap: HTTPS origin + HTTP sync endpoint.
+  // Browsers block the XHR silently — the widget looks fine but
+  // nothing reaches the MCP server. Warn the user in DevTools.
+  if (cfg.endpoint
+    && window.location.protocol === 'https:'
+    && cfg.endpoint.startsWith('http://')
+  ) {
+    /* eslint-disable-next-line no-console */
+    console.warn(
+      '[agentation] Sync endpoint is HTTP but page is HTTPS — browser will block all sync requests (mixed content). '
+      + 'Set Agentation.apiKey in Extension Configuration to use the HTTPS cloud endpoint, '
+      + 'or access the BE over HTTP.'
+    );
+  }
+
   const start = () => {
     if (document.getElementById('typo3-agentation-root')) {
       return;

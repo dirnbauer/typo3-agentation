@@ -18,7 +18,7 @@ final class ConfigurationService implements SingletonInterface
     private const DEFAULTS = [
         'apiKey' => '',
         'workspaceId' => '',
-        'syncEndpoint' => 'http://localhost:4747',
+        'syncEndpoint' => '',
         'frontendEnabled' => true,
         'backendEnabled' => true,
         'contextGate' => 'Development',
@@ -27,6 +27,9 @@ final class ConfigurationService implements SingletonInterface
         'webhookUrl' => '',
         'additionalOptions' => '',
     ];
+
+    private const CLOUD_ENDPOINT = 'https://agentation-mcp-cloud.vercel.app/api';
+    private const LOCAL_ENDPOINT = 'http://localhost:4747';
 
     /** @var array<string, mixed> */
     private array $config;
@@ -57,7 +60,15 @@ final class ConfigurationService implements SingletonInterface
 
     public function getSyncEndpoint(): string
     {
-        return (string)$this->config['syncEndpoint'];
+        $configured = (string)$this->config['syncEndpoint'];
+        if ($configured !== '') {
+            return $configured;
+        }
+        // Auto-select: cloud when an API key is present (HTTPS → HTTPS
+        // origins work from any BE install), else local agentation-mcp
+        // server on http://localhost:4747 (works for HTTP-only BE
+        // origins — mixed-content will block it from HTTPS origins).
+        return $this->getApiKey() !== '' ? self::CLOUD_ENDPOINT : self::LOCAL_ENDPOINT;
     }
 
     public function isFrontendEnabled(): bool
