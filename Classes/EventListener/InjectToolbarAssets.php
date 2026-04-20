@@ -112,6 +112,21 @@ final class InjectToolbarAssets
     {
         $type = ApplicationType::fromRequest($request);
         if ($type->isFrontend() && $this->config->isFrontendEnabled()) {
+            // Skip if this FE render is served inside a BE preview iframe
+            // (visual-editor's canvas, Web → Layout / Web → Edit preview
+            // panes, etc.). Browsers send the BE URL as Referer for same-
+            // origin iframes, so same-host + /typo3/ prefix is a reliable
+            // signal without adding JS overhead.
+            $referer = $request->getHeaderLine('Referer');
+            $host = $request->getUri()->getHost();
+            if ($referer !== '' && $host !== ''
+                && (
+                    str_contains($referer, '://' . $host . '/typo3/')
+                    || str_contains($referer, '://' . $host . ':' . $request->getUri()->getPort() . '/typo3/')
+                )
+            ) {
+                return null;
+            }
             return 'frontend';
         }
         if ($type->isBackend() && $this->config->isBackendEnabled()) {
