@@ -83,8 +83,52 @@
                 <target>Jede Anmerkung wird im localStorage des Browsers gespeichert, pro Backend-Modul und Datensatz getrennt. Mit einem Klick kannst du alle Anmerkungen aus allen Bereichen löschen.</target>
             </trans-unit>
             <trans-unit id="module.annotations.loading">
-                <source>Counting…</source>
-                <target>Zähle …</target>
+                <source>Loading…</source>
+                <target>Lade …</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.empty">
+                <source>No annotations</source>
+                <target>Keine Anmerkungen</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.emptyLong">
+                <source>Nothing stored yet. Annotations created via the toolbar appear here.</source>
+                <target>Noch nichts gespeichert. Über die Toolbar erstellte Anmerkungen erscheinen hier.</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.onlyLocal">
+                <source>No server-side annotations. Local annotations are stored only in this browser.</source>
+                <target>Keine serverseitigen Anmerkungen. Lokale Anmerkungen liegen nur in diesem Browser.</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.errorPrefix">
+                <source>Sync endpoint unreachable</source>
+                <target>Sync-Endpunkt nicht erreichbar</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.errorShort">
+                <source>Sync endpoint unreachable</source>
+                <target>Sync-Endpunkt nicht erreichbar</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.onServer">
+                <source>on server</source>
+                <target>am Server</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.local">
+                <source>local</source>
+                <target>lokal</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.singular">
+                <source>annotation</source>
+                <target>Anmerkung</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.plural">
+                <source>annotations</source>
+                <target>Anmerkungen</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.emptyComment">
+                <source>(no comment)</source>
+                <target>(kein Kommentar)</target>
+            </trans-unit>
+            <trans-unit id="module.annotations.deleteOne">
+                <source>Delete annotation</source>
+                <target>Anmerkung löschen</target>
             </trans-unit>
             <trans-unit id="module.annotations.deleteAll">
                 <source>Delete all stored annotations</source>

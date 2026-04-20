@@ -64,7 +64,40 @@
                 <source>Every annotation you make is stored in your browser's localStorage, scoped per BE module + record. You can delete every stored annotation across every scope in one click.</source>
             </trans-unit>
             <trans-unit id="module.annotations.loading">
-                <source>Counting…</source>
+                <source>Loading…</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.empty">
+                <source>No annotations</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.emptyLong">
+                <source>Nothing stored yet. Annotations created via the toolbar appear here.</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.onlyLocal">
+                <source>No server-side annotations. Local annotations are stored only in this browser.</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.errorPrefix">
+                <source>Sync endpoint unreachable</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.errorShort">
+                <source>Sync endpoint unreachable</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.onServer">
+                <source>on server</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.local">
+                <source>local</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.singular">
+                <source>annotation</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.plural">
+                <source>annotations</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.emptyComment">
+                <source>(no comment)</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.deleteOne">
+                <source>Delete annotation</source>
             </trans-unit>
             <trans-unit id="module.annotations.deleteAll">
                 <source>Delete all stored annotations</source>
