@@ -10,5 +10,8 @@ services:
   WebConsulting\Agentation\Controller\Backend\ModuleController:
     public: true
 
+  WebConsulting\Agentation\Controller\Backend\ApiProxyController:
+    public: true
+
   WebConsulting\Agentation\AdminPanel\AgentationModule:
     public: true

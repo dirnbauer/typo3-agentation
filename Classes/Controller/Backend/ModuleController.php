@@ -53,8 +53,6 @@ final class ModuleController
             'claudeCodeCli' => $this->buildClaudeCodeCli($serverConfig),
             'mcpDocsUrl' => 'https://www.agentation.com/mcp',
             'stepCount' => 4,
-            'syncEndpoint' => $this->configuration->getSyncEndpoint(),
-            'apiKey' => $this->configuration->getApiKey(),
         ]);
 
         return $view->renderResponse('Backend/Module/Index');

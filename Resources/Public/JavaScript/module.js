@@ -1,16 +1,27 @@
 /**
  * Agentation backend module glue.
  *
- * Handles:
- *   - "copy MCP JSON to clipboard" button
- *   - "delete all stored annotations" button — sweeps both the local
- *     browser storage (legacy annotations) and the server-side storage
- *     exposed by agentation-mcp at the configured syncEndpoint.
- *   - live annotation counter (server + local combined)
+ * Talks to a same-origin TYPO3 AJAX proxy (Configuration/Backend/
+ * AjaxRoutes.php → ApiProxyController) so the browser never has to
+ * call http://localhost:4747 directly — that would be blocked as
+ * mixed content from the HTTPS backend.
+ *
+ * Responsibilities:
+ *   - Copy MCP JSON / Claude CLI snippet to clipboard.
+ *   - List stored annotations (server side + browser localStorage).
+ *   - Delete a single annotation (server side, per row).
+ *   - Delete every stored annotation across both stores.
  */
 import Notification from '@typo3/backend/notification.js';
+import AjaxRequest from '@typo3/core/ajax/ajax-request.js';
 
 const AGENTATION_KEY_RE = /^(feedback-annotations-|agentation-(design|rearrange|wireframe|session)-)/;
+
+const ROUTE_LIST = TYPO3.settings.ajaxUrls.agentation_api_list;
+const ROUTE_DELETE = TYPO3.settings.ajaxUrls.agentation_api_delete;
+const ROUTE_DELETE_ALL = TYPO3.settings.ajaxUrls.agentation_api_delete_all;
+
+const MAX_COMMENT_PREVIEW = 140;
 
 const copyToClipboard = async (text) => {
   if (navigator.clipboard?.writeText) {
@@ -28,86 +39,42 @@ const copyToClipboard = async (text) => {
   document.body.removeChild(textarea);
 };
 
-function getAnnotationsCard() {
+function getCard() {
   return document.querySelector('[data-agentation-annotations]');
 }
 
-function getEndpoint() {
-  return getAnnotationsCard()?.getAttribute('data-sync-endpoint') || '';
+function getCounter() {
+  return document.querySelector('[data-agentation-counter]');
 }
 
-function getApiKey() {
-  return getAnnotationsCard()?.getAttribute('data-api-key') || '';
+function getList() {
+  return document.querySelector('[data-agentation-list]');
 }
 
-function apiHeaders() {
-  const headers = { 'Content-Type': 'application/json' };
-  const key = getApiKey();
-  if (key) headers['x-api-key'] = key;
-  return headers;
+function getDeleteAllButton() {
+  return document.querySelector('[data-agentation-delete-all]');
+}
+
+function readLabel(name, fallback) {
+  return getCard()?.dataset?.[name] || fallback;
 }
 
 function countLocal() {
   let total = 0;
   for (const key of Object.keys(localStorage)) {
-    if (!key.startsWith('feedback-annotations-')) continue;
+    if (!key.startsWith('feedback-annotations-')) {
+      continue;
+    }
     try {
       const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      if (Array.isArray(arr)) total += arr.length;
-    } catch { /* ignore */ }
+      if (Array.isArray(arr)) {
+        total += arr.length;
+      }
+    } catch {
+      // ignore bad JSON
+    }
   }
   return total;
-}
-
-async function countServer() {
-  const endpoint = getEndpoint();
-  if (!endpoint) return 0;
-  try {
-    const res = await fetch(`${endpoint.replace(/\/$/, '')}/pending`, {
-      headers: apiHeaders(),
-      credentials: 'omit',
-    });
-    if (!res.ok) return 0;
-    const data = await res.json();
-    if (Array.isArray(data)) return data.length;
-    if (Array.isArray(data?.annotations)) return data.annotations.length;
-    return 0;
-  } catch {
-    return 0;
-  }
-}
-
-async function listServerAnnotations() {
-  const endpoint = getEndpoint();
-  if (!endpoint) return [];
-  try {
-    const res = await fetch(`${endpoint.replace(/\/$/, '')}/pending`, {
-      headers: apiHeaders(),
-      credentials: 'omit',
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.annotations)) return data.annotations;
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-async function deleteServerAnnotation(id) {
-  const endpoint = getEndpoint();
-  if (!endpoint || !id) return false;
-  try {
-    const res = await fetch(`${endpoint.replace(/\/$/, '')}/annotations/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: apiHeaders(),
-      credentials: 'omit',
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
 }
 
 function clearLocal() {
@@ -116,23 +83,237 @@ function clearLocal() {
   return keys.length;
 }
 
-async function refreshCounter() {
-  const target = document.querySelector('[data-agentation-counter]');
-  if (!target) return;
-  const local = countLocal();
-  target.textContent = '…';
-  const server = await countServer();
-  const total = local + server;
-  if (total === 0) {
-    target.textContent = 'No annotations';
-  } else {
-    const parts = [];
-    if (server > 0) parts.push(`${server} on server`);
-    if (local > 0) parts.push(`${local} local`);
-    target.textContent = `${total} annotation${total === 1 ? '' : 's'} (${parts.join(' + ')})`;
+async function fetchServerAnnotations() {
+  if (!ROUTE_LIST) {
+    return { ok: false, annotations: [], error: 'Route not registered' };
   }
-  const btn = document.querySelector('[data-agentation-delete-all]');
-  if (btn) btn.disabled = total === 0;
+  try {
+    const response = await new AjaxRequest(ROUTE_LIST).get();
+    const data = await response.resolve();
+    if (Array.isArray(data)) {
+      return { ok: true, annotations: data };
+    }
+    if (Array.isArray(data?.annotations)) {
+      return { ok: true, annotations: data.annotations };
+    }
+    if (data?.error) {
+      return { ok: false, annotations: [], error: data.error };
+    }
+    return { ok: true, annotations: [] };
+  } catch (err) {
+    return { ok: false, annotations: [], error: err?.message || 'Request failed' };
+  }
+}
+
+async function deleteServerAnnotation(id) {
+  if (!ROUTE_DELETE || !id) {
+    return false;
+  }
+  try {
+    const response = await new AjaxRequest(ROUTE_DELETE).post({ id });
+    const data = await response.resolve();
+    return data?.ok !== false;
+  } catch {
+    return false;
+  }
+}
+
+async function deleteAllServerAnnotations() {
+  if (!ROUTE_DELETE_ALL) {
+    return { deleted: 0, failed: 0, total: 0 };
+  }
+  try {
+    const response = await new AjaxRequest(ROUTE_DELETE_ALL).post({});
+    const data = await response.resolve();
+    return {
+      deleted: Number(data?.deleted ?? 0),
+      failed: Number(data?.failed ?? 0),
+      total: Number(data?.total ?? 0),
+    };
+  } catch {
+    return { deleted: 0, failed: 0, total: 0 };
+  }
+}
+
+function renderEmpty(container, message) {
+  container.innerHTML = '';
+  const li = document.createElement('li');
+  li.className = 'list-group-item text-body-secondary';
+  li.textContent = message;
+  container.appendChild(li);
+}
+
+function renderError(container, message) {
+  container.innerHTML = '';
+  const li = document.createElement('li');
+  li.className = 'list-group-item';
+  const wrap = document.createElement('div');
+  wrap.className = 'callout callout-danger mb-0';
+  const body = document.createElement('div');
+  body.className = 'callout-body';
+  body.textContent = message;
+  wrap.appendChild(body);
+  li.appendChild(wrap);
+  container.appendChild(li);
+}
+
+function truncate(value, max) {
+  const text = String(value ?? '').trim();
+  if (text.length <= max) {
+    return text;
+  }
+  return `${text.slice(0, max - 1)}…`;
+}
+
+function shortUrl(rawUrl) {
+  if (!rawUrl) {
+    return '';
+  }
+  try {
+    const u = new URL(rawUrl);
+    return `${u.pathname}${u.search ? '?…' : ''}` || u.hostname;
+  } catch {
+    return String(rawUrl);
+  }
+}
+
+function renderRow(annotation) {
+  const li = document.createElement('li');
+  li.className = 'list-group-item agentation-annotation';
+  li.dataset.id = annotation.id || '';
+
+  const main = document.createElement('div');
+  main.className = 'agentation-annotation__main';
+
+  const comment = document.createElement('p');
+  comment.className = 'agentation-annotation__comment mb-1';
+  comment.textContent = truncate(annotation.comment || readLabel('emptyComment', '(no comment)'), MAX_COMMENT_PREVIEW);
+  main.appendChild(comment);
+
+  const meta = document.createElement('div');
+  meta.className = 'agentation-annotation__meta text-body-secondary';
+
+  if (annotation.element) {
+    const el = document.createElement('code');
+    el.className = 'agentation-annotation__element';
+    el.textContent = truncate(annotation.element, 60);
+    meta.appendChild(el);
+  }
+
+  if (annotation.url) {
+    if (meta.children.length > 0) {
+      meta.appendChild(document.createTextNode(' · '));
+    }
+    const link = document.createElement('a');
+    link.href = annotation.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = shortUrl(annotation.url);
+    link.className = 'agentation-annotation__url';
+    meta.appendChild(link);
+  }
+
+  if (annotation.status) {
+    if (meta.children.length > 0) {
+      meta.appendChild(document.createTextNode(' · '));
+    }
+    const badge = document.createElement('span');
+    const variant = annotation.status === 'pending' ? 'bg-warning' : 'bg-secondary';
+    badge.className = `badge ${variant}`;
+    badge.textContent = annotation.status;
+    meta.appendChild(badge);
+  }
+
+  if (meta.children.length > 0) {
+    main.appendChild(meta);
+  }
+
+  li.appendChild(main);
+
+  const actions = document.createElement('div');
+  actions.className = 'agentation-annotation__actions';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn btn-sm btn-outline-danger';
+  button.dataset.agentationDeleteOne = annotation.id || '';
+  button.title = readLabel('deleteOne', 'Delete annotation');
+  button.innerHTML = '<typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>';
+  actions.appendChild(button);
+  li.appendChild(actions);
+
+  return li;
+}
+
+function renderList(container, annotations) {
+  container.innerHTML = '';
+  for (const annotation of annotations) {
+    container.appendChild(renderRow(annotation));
+  }
+}
+
+function updateCounter(serverCount, localCount, opts = {}) {
+  const target = getCounter();
+  if (!target) {
+    return;
+  }
+  const total = serverCount + localCount;
+  if (opts.error && serverCount === 0 && localCount === 0) {
+    target.textContent = readLabel('errorShort', 'Sync endpoint unreachable');
+    target.classList.add('text-danger');
+    return;
+  }
+  target.classList.remove('text-danger');
+  if (total === 0) {
+    target.textContent = readLabel('empty', 'No annotations');
+    return;
+  }
+  const parts = [];
+  if (serverCount > 0) {
+    parts.push(`${serverCount} ${readLabel('onServer', 'on server')}`);
+  }
+  if (localCount > 0) {
+    parts.push(`${localCount} ${readLabel('local', 'local')}`);
+  }
+  const noun = total === 1
+    ? readLabel('annotationSingular', 'annotation')
+    : readLabel('annotationPlural', 'annotations');
+  target.textContent = `${total} ${noun} (${parts.join(' + ')})`;
+}
+
+async function refresh() {
+  const list = getList();
+  const deleteAllBtn = getDeleteAllButton();
+  if (list) {
+    renderEmpty(list, readLabel('loading', 'Loading…'));
+  }
+
+  const local = countLocal();
+  const result = await fetchServerAnnotations();
+
+  updateCounter(result.annotations.length, local, { error: !result.ok });
+
+  if (list) {
+    if (!result.ok) {
+      renderError(
+        list,
+        `${readLabel('errorPrefix', 'Sync endpoint unreachable')}: ${result.error || ''}`.trim(),
+      );
+    } else if (result.annotations.length === 0) {
+      renderEmpty(
+        list,
+        local > 0
+          ? readLabel('onlyLocal', 'No server-side annotations. Local annotations are stored only in this browser.')
+          : readLabel('emptyLong', 'Nothing stored yet. Annotations created via the toolbar appear here.'),
+      );
+    } else {
+      renderList(list, result.annotations);
+    }
+  }
+
+  if (deleteAllBtn) {
+    const total = result.annotations.length + local;
+    deleteAllBtn.disabled = total === 0;
+  }
 }
 
 document.addEventListener('click', async (event) => {
@@ -155,48 +336,62 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
-  const del = event.target.closest('[data-agentation-delete-all]');
-  if (del) {
+  const deleteOneBtn = event.target.closest('[data-agentation-delete-one]');
+  if (deleteOneBtn) {
     event.preventDefault();
-    del.disabled = true;
-    const local = countLocal();
-    const serverList = await listServerAnnotations();
-    const total = local + serverList.length;
-    if (total === 0) {
-      Notification.info('Agentation', 'No stored annotations to delete.');
-      del.disabled = false;
+    const id = deleteOneBtn.getAttribute('data-agentation-delete-one');
+    if (!id) {
       return;
     }
+    deleteOneBtn.disabled = true;
+    const ok = await deleteServerAnnotation(id);
+    if (ok) {
+      Notification.success('Agentation', 'Annotation deleted.');
+    } else {
+      Notification.error('Agentation', 'Delete failed.');
+      deleteOneBtn.disabled = false;
+    }
+    await refresh();
+    return;
+  }
+
+  const deleteAll = event.target.closest('[data-agentation-delete-all]');
+  if (deleteAll) {
+    event.preventDefault();
+    deleteAll.disabled = true;
+    const local = countLocal();
+    const result = await fetchServerAnnotations();
+    const serverCount = result.annotations.length;
+    const total = serverCount + local;
+    if (total === 0) {
+      Notification.info('Agentation', 'No stored annotations to delete.');
+      deleteAll.disabled = false;
+      return;
+    }
+    const breakdown = serverCount > 0 ? ` (${serverCount} on server, ${local} local)` : '';
     const confirmed = window.confirm(
-      `Delete ALL ${total} annotations`
-      + (serverList.length > 0 ? ` (${serverList.length} on server, ${local} local)` : '')
-      + '?\n\nThis cannot be undone.'
+      `Delete ALL ${total} annotations${breakdown}?\n\nThis cannot be undone.`,
     );
     if (!confirmed) {
-      del.disabled = false;
+      deleteAll.disabled = false;
       return;
     }
     const localKeys = clearLocal();
-    let deleted = 0;
-    let failed = 0;
-    for (const a of serverList) {
-      const ok = await deleteServerAnnotation(a.id);
-      if (ok) deleted += 1; else failed += 1;
-    }
-    if (failed === 0) {
+    const serverResult = await deleteAllServerAnnotations();
+    if (serverResult.failed === 0) {
       Notification.success(
         'Agentation',
-        `Deleted ${deleted} server annotations and ${localKeys} local storage keys.`
+        `Deleted ${serverResult.deleted} server annotations and ${localKeys} local storage keys.`,
       );
     } else {
       Notification.warning(
         'Agentation',
-        `Deleted ${deleted} on server, ${failed} failed. Local cleared (${localKeys} keys).`
+        `Deleted ${serverResult.deleted} on server, ${serverResult.failed} failed. Local cleared (${localKeys} keys).`,
       );
     }
-    await refreshCounter();
+    await refresh();
   }
 });
 
-document.addEventListener('DOMContentLoaded', refreshCounter, { once: true });
-queueMicrotask(refreshCounter);
+document.addEventListener('DOMContentLoaded', refresh, { once: true });
+queueMicrotask(refresh);

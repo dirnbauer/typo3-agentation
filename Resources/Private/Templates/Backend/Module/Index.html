@@ -145,8 +145,18 @@
         <div class="col-lg-4">
             <div class="card mb-3"
                  data-agentation-annotations
-                 data-sync-endpoint="{syncEndpoint}"
-                 data-api-key="{apiKey}">
+                 data-loading="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading')}"
+                 data-empty="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.empty')}"
+                 data-empty-long="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.emptyLong')}"
+                 data-only-local="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.onlyLocal')}"
+                 data-error-prefix="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.errorPrefix')}"
+                 data-error-short="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.errorShort')}"
+                 data-on-server="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.onServer')}"
+                 data-local="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.local')}"
+                 data-annotation-singular="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.singular')}"
+                 data-annotation-plural="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.plural')}"
+                 data-empty-comment="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.emptyComment')}"
+                 data-delete-one="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.deleteOne')}">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
                         <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.heading" />
@@ -166,6 +176,11 @@
                         </button>
                     </div>
                 </div>
+                <ul class="list-group list-group-flush agentation-annotation-list" data-agentation-list>
+                    <li class="list-group-item text-body-secondary">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading" />
+                    </li>
+                </ul>
             </div>
 
             <div class="card mb-4">
