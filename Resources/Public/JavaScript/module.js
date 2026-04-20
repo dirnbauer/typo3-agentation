@@ -182,12 +182,16 @@ function renderRow(annotation) {
   li.className = 'list-group-item agentation-annotation';
   li.dataset.id = annotation.id || '';
 
+  // Column 1: comment + meta (element + url)
   const main = document.createElement('div');
   main.className = 'agentation-annotation__main';
 
   const comment = document.createElement('p');
   comment.className = 'agentation-annotation__comment mb-1';
-  comment.textContent = truncate(annotation.comment || readLabel('emptyComment', '(no comment)'), MAX_COMMENT_PREVIEW);
+  comment.textContent = truncate(
+    annotation.comment || readLabel('emptyComment', '(no comment)'),
+    MAX_COMMENT_PREVIEW,
+  );
   main.appendChild(comment);
 
   const meta = document.createElement('div');
@@ -213,23 +217,31 @@ function renderRow(annotation) {
     meta.appendChild(link);
   }
 
-  if (annotation.status) {
-    if (meta.children.length > 0) {
-      meta.appendChild(document.createTextNode(' · '));
-    }
-    const badge = document.createElement('span');
-    const variant = annotation.status === 'pending' ? 'bg-warning' : 'bg-secondary';
-    badge.className = `badge ${variant}`;
-    badge.textContent = annotation.status;
-    meta.appendChild(badge);
-  }
-
   if (meta.children.length > 0) {
     main.appendChild(meta);
   }
 
   li.appendChild(main);
 
+  // Column 2: status badge (right-aligned, fixed column width)
+  const statusSlot = document.createElement('div');
+  statusSlot.className = 'agentation-annotation__status';
+  if (annotation.status) {
+    const badge = document.createElement('span');
+    const variant = annotation.status === 'pending'
+      ? 'bg-warning'
+      : annotation.status === 'resolved'
+        ? 'bg-success'
+        : annotation.status === 'dismissed'
+          ? 'bg-secondary'
+          : 'bg-info';
+    badge.className = `badge ${variant}`;
+    badge.textContent = annotation.status;
+    statusSlot.appendChild(badge);
+  }
+  li.appendChild(statusSlot);
+
+  // Column 3: per-row delete button
   const actions = document.createElement('div');
   actions.className = 'agentation-annotation__actions';
   const button = document.createElement('button');

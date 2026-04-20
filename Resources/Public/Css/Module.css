@@ -38,15 +38,24 @@
 }
 
 .agentation-annotation {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
     gap: 0.75rem;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
 }
 
 .agentation-annotation__main {
-    flex: 1 1 auto;
     min-width: 0;
+}
+
+.agentation-annotation__status {
+    display: flex;
+    justify-content: flex-end;
+    min-width: 5rem;
+}
+
+.agentation-annotation__status .badge {
+    text-transform: capitalize;
 }
 
 .agentation-annotation__comment {
