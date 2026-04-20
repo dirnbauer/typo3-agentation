@@ -102,6 +102,9 @@
             <trans-unit id="module.annotations.deleteAll">
                 <source>Delete all stored annotations</source>
             </trans-unit>
+            <trans-unit id="module.annotations.reload">
+                <source>Reload annotations</source>
+            </trans-unit>
             <trans-unit id="module.howto.heading">
                 <source>How to use</source>
             </trans-unit>

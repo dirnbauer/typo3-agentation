@@ -355,6 +355,20 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
+  const reload = event.target.closest('[data-agentation-reload]');
+  if (reload) {
+    event.preventDefault();
+    reload.disabled = true;
+    reload.classList.add('agentation-spinning');
+    try {
+      await refresh();
+    } finally {
+      reload.classList.remove('agentation-spinning');
+      reload.disabled = false;
+    }
+    return;
+  }
+
   const deleteAll = event.target.closest('[data-agentation-delete-all]');
   if (deleteAll) {
     event.preventDefault();

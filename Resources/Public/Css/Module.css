@@ -80,3 +80,20 @@
 .agentation-annotation__actions {
     flex: 0 0 auto;
 }
+
+.agentation-annotations-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+}
+
+@keyframes agentation-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.agentation-spinning typo3-backend-icon {
+    display: inline-block;
+    animation: agentation-spin 0.75s linear infinite;
+}

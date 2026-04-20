@@ -134,6 +134,10 @@
                 <source>Delete all stored annotations</source>
                 <target>Alle gespeicherten Anmerkungen löschen</target>
             </trans-unit>
+            <trans-unit id="module.annotations.reload">
+                <source>Reload annotations</source>
+                <target>Anmerkungen neu laden</target>
+            </trans-unit>
             <trans-unit id="module.howto.heading">
                 <source>How to use</source>
                 <target>Verwendung</target>
