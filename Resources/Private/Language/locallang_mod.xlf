@@ -57,6 +57,18 @@
                 <source>No API key configured. MCP only works in authenticated mode — set Agentation.apiKey in Extension Configuration.</source>
             </trans-unit>
 
+            <trans-unit id="module.annotations.heading">
+                <source>Stored annotations</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.intro">
+                <source>Every annotation you make is stored in your browser's localStorage, scoped per BE module + record. You can delete every stored annotation across every scope in one click.</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.loading">
+                <source>Counting…</source>
+            </trans-unit>
+            <trans-unit id="module.annotations.deleteAll">
+                <source>Delete all stored annotations</source>
+            </trans-unit>
             <trans-unit id="module.howto.heading">
                 <source>How to use</source>
             </trans-unit>

@@ -109,6 +109,31 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.heading" />
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-body-secondary mb-3">
+                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.intro" />
+                    </p>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="badge bg-secondary" data-agentation-counter>
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading" />
+                        </span>
+                        <button type="button"
+                                class="btn btn-danger"
+                                data-agentation-delete-all
+                                disabled>
+                            <typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.deleteAll" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">
                         <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.heading" />
                     </h2>
                 </div>
