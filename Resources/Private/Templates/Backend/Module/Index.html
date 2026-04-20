@@ -109,31 +109,6 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.heading" />
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <p class="text-body-secondary mb-3">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.intro" />
-                    </p>
-                    <div class="d-flex flex-wrap align-items-center gap-2">
-                        <span class="badge bg-secondary" data-agentation-counter>
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading" />
-                        </span>
-                        <button type="button"
-                                class="btn btn-danger"
-                                data-agentation-delete-all
-                                disabled>
-                            <typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.deleteAll" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="card-title mb-0">
                         <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.heading" />
                     </h2>
                 </div>
@@ -168,6 +143,26 @@
         </div>
 
         <div class="col-lg-4">
+            <div class="card mb-3 card-sm"
+                 data-agentation-annotations
+                 data-sync-endpoint="{syncEndpoint}"
+                 data-api-key="{apiKey}">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <small class="text-body-secondary text-nowrap" data-agentation-counter>
+                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading" />
+                        </small>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                data-agentation-delete-all
+                                disabled
+                                title="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.deleteAll')}">
+                            <typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
