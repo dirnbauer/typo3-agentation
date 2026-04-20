@@ -74,6 +74,60 @@ function scopeAgentationStorage() {
   localStorage.removeItem = (k) => origRemoveItem(rewrite(k));
 }
 
+/**
+ * Same-origin broadcast channel used by the Agentation BE module
+ * (System → Agentation) to tell every open tab/iframe that an
+ * annotation (or all) was deleted server-side. Without this, a widget
+ * instance on another page keeps the deleted annotation in its
+ * localStorage and re-pushes it the next time it syncs.
+ *
+ * Message shapes:
+ *   { type: "annotation:delete", id: "…" }
+ *   { type: "annotations:delete-all" }
+ */
+function wireDeletionBroadcast() {
+  if (typeof BroadcastChannel === 'undefined') {
+    return;
+  }
+  const AGENTATION_PREFIXES = [
+    'feedback-annotations-',
+    'agentation-design-',
+    'agentation-rearrange-',
+    'agentation-wireframe-',
+    'agentation-session-',
+  ];
+  const channel = new BroadcastChannel('typo3-agentation');
+  channel.addEventListener('message', (event) => {
+    const payload = event?.data || {};
+    if (payload.type === 'annotation:delete' && payload.id) {
+      // Walk every annotation list in localStorage and filter the id out.
+      for (const key of Object.keys(localStorage)) {
+        if (!key.startsWith('feedback-annotations-')) continue;
+        try {
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          if (!Array.isArray(arr)) continue;
+          const kept = arr.filter((a) => a?.id !== payload.id);
+          if (kept.length !== arr.length) {
+            if (kept.length === 0) {
+              localStorage.removeItem(key);
+            } else {
+              localStorage.setItem(key, JSON.stringify(kept));
+            }
+          }
+        } catch {
+          // ignore malformed entries
+        }
+      }
+    } else if (payload.type === 'annotations:delete-all') {
+      for (const key of Object.keys(localStorage)) {
+        if (AGENTATION_PREFIXES.some((p) => key.startsWith(p))) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+  });
+}
+
 (function bootAgentation() {
   const cfg = readConfig() || {};
   window.TYPO3Agentation = cfg;
@@ -83,6 +137,7 @@ function scopeAgentationStorage() {
   if (cfg.scope === 'backend') {
     scopeAgentationStorage();
   }
+  wireDeletionBroadcast();
 
   // Detect mixed-content trap: HTTPS origin + HTTP sync endpoint.
   // Browsers block the XHR silently — the widget looks fine but

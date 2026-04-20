@@ -105,6 +105,26 @@ async function fetchServerAnnotations() {
   }
 }
 
+const BROADCAST_CHANNEL = 'typo3-agentation';
+
+function getBroadcast() {
+  if (typeof BroadcastChannel === 'undefined') {
+    return null;
+  }
+  if (!window.__agentationChannel) {
+    window.__agentationChannel = new BroadcastChannel(BROADCAST_CHANNEL);
+  }
+  return window.__agentationChannel;
+}
+
+function broadcast(payload) {
+  try {
+    getBroadcast()?.postMessage(payload);
+  } catch {
+    // ignore
+  }
+}
+
 async function deleteServerAnnotation(id) {
   if (!ROUTE_DELETE || !id) {
     return false;
@@ -112,7 +132,11 @@ async function deleteServerAnnotation(id) {
   try {
     const response = await new AjaxRequest(ROUTE_DELETE).post({ id });
     const data = await response.resolve();
-    return data?.ok !== false;
+    const ok = data?.ok !== false;
+    if (ok) {
+      broadcast({ type: 'annotation:delete', id });
+    }
+    return ok;
   } catch {
     return false;
   }
@@ -125,6 +149,7 @@ async function deleteAllServerAnnotations() {
   try {
     const response = await new AjaxRequest(ROUTE_DELETE_ALL).post({});
     const data = await response.resolve();
+    broadcast({ type: 'annotations:delete-all' });
     return {
       deleted: Number(data?.deleted ?? 0),
       failed: Number(data?.failed ?? 0),
