@@ -18,11 +18,25 @@ use TYPO3\CMS\Core\Type\Map;
  * script and the bundle is self-hosted, so we don't need to relax
  * script-src.
  */
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
+
 $mutations = new MutationCollection(
     new Mutation(
         MutationMode::Extend,
         Directive::StyleSrc,
         SourceKeyword::unsafeInline,
+    ),
+    // Allow the widget (and our same-origin proxy fallback) to reach
+    // the agentation-mcp server. Both localhost variants plus the
+    // Docker / Podman bridges used by DDEV + the cloud fallback.
+    new Mutation(
+        MutationMode::Extend,
+        Directive::ConnectSrc,
+        new UriValue('http://localhost:4747'),
+        new UriValue('http://127.0.0.1:4747'),
+        new UriValue('http://host.docker.internal:4747'),
+        new UriValue('http://host.containers.internal:4747'),
+        new UriValue('https://agentation-mcp-cloud.vercel.app'),
     ),
 );
 
