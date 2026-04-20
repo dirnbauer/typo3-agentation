@@ -98,6 +98,10 @@
                 <source>No server-side annotations. Local annotations are stored only in this browser.</source>
                 <target>Keine serverseitigen Anmerkungen. Lokale Anmerkungen liegen nur in diesem Browser.</target>
             </trans-unit>
+            <trans-unit id="module.annotations.localOnly">
+                <source>local only</source>
+                <target>nur lokal</target>
+            </trans-unit>
             <trans-unit id="module.annotations.errorPrefix">
                 <source>Sync endpoint unreachable</source>
                 <target>Sync-Endpunkt nicht erreichbar</target>

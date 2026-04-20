@@ -75,6 +75,9 @@
             <trans-unit id="module.annotations.onlyLocal">
                 <source>No server-side annotations. Local annotations are stored only in this browser.</source>
             </trans-unit>
+            <trans-unit id="module.annotations.localOnly">
+                <source>local only</source>
+            </trans-unit>
             <trans-unit id="module.annotations.errorPrefix">
                 <source>Sync endpoint unreachable</source>
             </trans-unit>

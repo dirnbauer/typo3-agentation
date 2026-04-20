@@ -60,21 +60,81 @@ function readLabel(name, fallback) {
 }
 
 function countLocal() {
-  let total = 0;
+  return collectLocalAnnotations().length;
+}
+
+/**
+ * Walk every feedback-annotations-* localStorage key and return every
+ * annotation blob tagged with __origin = 'local'. Our scoping shim
+ * rewrites keys with a module/record suffix, but the annotation
+ * payload inside still has `id`, `comment`, `element`, `url`, `status`
+ * — which is all renderRow needs.
+ */
+function collectLocalAnnotations() {
+  const out = [];
   for (const key of Object.keys(localStorage)) {
-    if (!key.startsWith('feedback-annotations-')) {
-      continue;
-    }
+    if (!key.startsWith('feedback-annotations-')) continue;
     try {
       const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      if (Array.isArray(arr)) {
-        total += arr.length;
+      if (!Array.isArray(arr)) continue;
+      for (const a of arr) {
+        if (a && typeof a === 'object' && a.id) {
+          out.push({ ...a, __origin: 'local' });
+        }
       }
     } catch {
-      // ignore bad JSON
+      // ignore malformed entry
     }
   }
-  return total;
+  return out;
+}
+
+/**
+ * Remove the given annotation id from every feedback-annotations-*
+ * list in localStorage. Returns true if any row was actually removed.
+ */
+function removeLocalAnnotation(id) {
+  if (!id) return false;
+  let touched = false;
+  for (const key of Object.keys(localStorage)) {
+    if (!key.startsWith('feedback-annotations-')) continue;
+    try {
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(arr)) continue;
+      const kept = arr.filter((a) => a?.id !== id);
+      if (kept.length !== arr.length) {
+        touched = true;
+        if (kept.length === 0) {
+          localStorage.removeItem(key);
+        } else {
+          localStorage.setItem(key, JSON.stringify(kept));
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return touched;
+}
+
+/**
+ * Merge server + local arrays. When the same id exists in both,
+ * server wins. Each entry carries __origin so the row renderer can
+ * tell them apart and the delete handler picks the right store.
+ *
+ * @param {Array} server
+ * @param {Array} local
+ * @returns {Array}
+ */
+function mergeAnnotations(server, local) {
+  const byId = new Map();
+  for (const a of server) {
+    if (a?.id) byId.set(a.id, { ...a, __origin: 'server' });
+  }
+  for (const a of local) {
+    if (a?.id && !byId.has(a.id)) byId.set(a.id, a);
+  }
+  return Array.from(byId.values());
 }
 
 function clearLocal() {
@@ -251,7 +311,13 @@ function renderRow(annotation) {
   // Column 2: status badge (right-aligned, fixed column width)
   const statusSlot = document.createElement('div');
   statusSlot.className = 'agentation-annotation__status';
-  if (annotation.status) {
+  if (annotation.__origin === 'local') {
+    // Local-only annotations: no server status, show origin pill.
+    const badge = document.createElement('span');
+    badge.className = 'badge bg-secondary';
+    badge.textContent = readLabel('localOnly', 'local only');
+    statusSlot.appendChild(badge);
+  } else if (annotation.status) {
     const badge = document.createElement('span');
     const variant = annotation.status === 'pending'
       ? 'bg-warning'
@@ -273,6 +339,9 @@ function renderRow(annotation) {
   button.type = 'button';
   button.className = 'btn btn-sm btn-outline-danger';
   button.dataset.agentationDeleteOne = annotation.id || '';
+  if (annotation.__origin === 'local') {
+    button.dataset.agentationOrigin = 'local';
+  }
   button.title = readLabel('deleteOne', 'Delete annotation');
   button.innerHTML = '<typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>';
   actions.appendChild(button);
@@ -324,32 +393,32 @@ async function refresh() {
     renderEmpty(list, readLabel('loading', 'Loading…'));
   }
 
-  const local = countLocal();
+  const localAll = collectLocalAnnotations();
   const result = await fetchServerAnnotations();
+  const merged = mergeAnnotations(result.annotations, localAll);
+  const serverCount = result.annotations.length;
+  const localOnlyCount = merged.length - serverCount;
 
-  updateCounter(result.annotations.length, local, { error: !result.ok });
+  updateCounter(serverCount, localOnlyCount, { error: !result.ok });
 
   if (list) {
-    if (!result.ok) {
+    if (!result.ok && merged.length === 0) {
       renderError(
         list,
         `${readLabel('errorPrefix', 'Sync endpoint unreachable')}: ${result.error || ''}`.trim(),
       );
-    } else if (result.annotations.length === 0) {
+    } else if (merged.length === 0) {
       renderEmpty(
         list,
-        local > 0
-          ? readLabel('onlyLocal', 'No server-side annotations. Local annotations are stored only in this browser.')
-          : readLabel('emptyLong', 'Nothing stored yet. Annotations created via the toolbar appear here.'),
+        readLabel('emptyLong', 'Nothing stored yet. Annotations created via the toolbar appear here.'),
       );
     } else {
-      renderList(list, result.annotations);
+      renderList(list, merged);
     }
   }
 
   if (deleteAllBtn) {
-    const total = result.annotations.length + local;
-    deleteAllBtn.disabled = total === 0;
+    deleteAllBtn.disabled = merged.length === 0;
   }
 }
 
@@ -381,7 +450,18 @@ document.addEventListener('click', async (event) => {
       return;
     }
     deleteOneBtn.disabled = true;
-    const ok = await deleteServerAnnotation(id);
+    const isLocalOnly = deleteOneBtn.getAttribute('data-agentation-origin') === 'local';
+    let ok;
+    if (isLocalOnly) {
+      // Local-only annotation: strip from localStorage + tell every
+      // other tab/iframe via broadcast so the widget drops it too.
+      ok = removeLocalAnnotation(id);
+      if (ok) broadcast({ type: 'annotation:delete', id });
+    } else {
+      ok = await deleteServerAnnotation(id);
+      // Also sweep any stale localStorage copy with the same id.
+      if (ok) removeLocalAnnotation(id);
+    }
     if (ok) {
       Notification.success('Agentation', 'Annotation deleted.');
     } else {
