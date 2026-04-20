@@ -10,6 +10,7 @@ use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -246,6 +247,7 @@ final class InjectToolbarAssets
             'workspaceId' => $this->config->getWorkspaceId() !== '' ? $this->config->getWorkspaceId() : null,
             'webhookUrl' => $this->config->getWebhookUrl() !== '' ? $this->config->getWebhookUrl() : null,
             'endpoint' => $this->config->getSyncEndpoint() !== '' ? $this->config->getSyncEndpoint() : null,
+            'proxyUrl' => $scope === 'backend' ? $this->buildProxyUrl() : null,
             'context' => 'typo3-' . $scope,
             'typo3Version' => (new Typo3Version())->getVersion(),
             'pageId' => $pageId ?: null,
@@ -256,5 +258,15 @@ final class InjectToolbarAssets
             ],
             'additionalOptions' => $this->config->getAdditionalOptions(),
         ];
+    }
+
+    private function buildProxyUrl(): ?string
+    {
+        try {
+            $uriBuilder = GeneralUtility::makeInstance(BackendUriBuilder::class);
+            return (string)$uriBuilder->buildUriFromRoute('agentation_api_proxy');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

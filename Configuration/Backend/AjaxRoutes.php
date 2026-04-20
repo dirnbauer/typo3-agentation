@@ -34,4 +34,13 @@ return [
         'target' => ApiProxyController::class . '::deleteAllAction',
         'methods' => ['POST'],
     ],
+    // Generic same-origin forward used by the widget itself to escape
+    // the HTTPS → http://localhost:4747 mixed-content trap. The widget's
+    // monkey-patched fetch rewrites every call to the agentation-mcp
+    // HTTP API into `?path=/sessions/...` against this route.
+    'agentation_api_proxy' => [
+        'path' => '/agentation/api/proxy',
+        'target' => ApiProxyController::class . '::proxyAction',
+        'methods' => ['GET', 'POST', 'PATCH', 'DELETE'],
+    ],
 ];

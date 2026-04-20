@@ -90,13 +90,44 @@ function scopeAgentationStorage() {
   if (cfg.endpoint
     && window.location.protocol === 'https:'
     && cfg.endpoint.startsWith('http://')
+    && !cfg.proxyUrl
   ) {
     /* eslint-disable-next-line no-console */
     console.warn(
       '[agentation] Sync endpoint is HTTP but page is HTTPS — browser will block all sync requests (mixed content). '
-      + 'Set Agentation.apiKey in Extension Configuration to use the HTTPS cloud endpoint, '
-      + 'or access the BE over HTTP.'
+      + 'Access the BE over HTTP or set Agentation.apiKey in Extension Configuration.'
     );
+  }
+
+  // Same-origin proxy: when the PHP side provided a proxyUrl, patch
+  // window.fetch so every request to the configured endpoint goes
+  // through /typo3/ajax/agentation/api/proxy?path=... on our own
+  // (HTTPS) origin. Defeats mixed-content blocking without moving
+  // the BE off HTTPS or needing a cloud account. Only patched when
+  // both cfg.endpoint and cfg.proxyUrl are present; everything else
+  // passes through unchanged.
+  if (cfg.endpoint && cfg.proxyUrl) {
+    const origFetch = window.fetch.bind(window);
+    const endpoint = cfg.endpoint.replace(/\/$/, '');
+    const proxyBase = cfg.proxyUrl;
+    window.fetch = function patchedFetch(input, init) {
+      const rawUrl = typeof input === 'string' ? input : (input && input.url) || '';
+      if (rawUrl.startsWith(endpoint)) {
+        const suffix = rawUrl.slice(endpoint.length) || '/';
+        try {
+          const u = new URL(proxyBase, window.location.origin);
+          u.searchParams.set('path', suffix);
+          const newUrl = u.toString();
+          if (typeof input === 'string') {
+            return origFetch(newUrl, init);
+          }
+          return origFetch(new Request(newUrl, input), init);
+        } catch {
+          // fall through to original fetch on URL parsing failure
+        }
+      }
+      return origFetch(input, init);
+    };
   }
 
   const start = () => {

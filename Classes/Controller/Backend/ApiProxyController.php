@@ -52,6 +52,70 @@ final class ApiProxyController
         );
     }
 
+    /**
+     * Forward any widget-originated HTTP call (GET/POST/PATCH/DELETE) to
+     * the real agentation-mcp server.
+     *
+     * Called by the widget's patched fetch() on every request that targets
+     * the configured sync endpoint. The original path is passed via the
+     * `path` query param (so one route covers sessions, annotations,
+     * pending, events, health, …). We forward method + headers + body
+     * and mirror the upstream status + body so the widget can't tell
+     * it's talking to a proxy.
+     */
+    public function proxyAction(ServerRequestInterface $request): ResponseInterface
+    {
+        $params = $request->getQueryParams();
+        $path = is_string($params['path'] ?? null) ? $params['path'] : '';
+        if ($path === '' || $path[0] !== '/') {
+            return new JsonResponse(['error' => 'Missing or invalid path'], 400);
+        }
+
+        $method = strtoupper($request->getMethod());
+        $body = (string)$request->getBody();
+        $headers = ['Accept' => 'application/json'];
+        $contentType = $request->getHeaderLine('Content-Type');
+        if ($contentType !== '') {
+            $headers['Content-Type'] = $contentType;
+        }
+        $apiKey = $this->configuration->getApiKey();
+        if ($apiKey !== '') {
+            $headers['x-api-key'] = $apiKey;
+        }
+
+        foreach ($this->candidateEndpoints() as $base) {
+            try {
+                $upstream = $this->requestFactory->request($base . $path, $method, [
+                    'headers' => $headers,
+                    'body' => $body !== '' ? $body : null,
+                    'timeout' => self::TIMEOUT_SECONDS,
+                    'connect_timeout' => self::TIMEOUT_SECONDS,
+                    'http_errors' => false,
+                ]);
+            } catch (ClientExceptionInterface | \Throwable) {
+                continue;
+            }
+            $response = new \TYPO3\CMS\Core\Http\Response(
+                $upstream->getBody(),
+                $upstream->getStatusCode(),
+            );
+            $upstreamType = $upstream->getHeaderLine('Content-Type');
+            if ($upstreamType !== '') {
+                $response = $response->withHeader('Content-Type', $upstreamType);
+            }
+            return $response;
+        }
+
+        return new JsonResponse(
+            [
+                'error' => 'Sync endpoint unreachable',
+                'endpoint' => $this->endpoint(),
+                'tried' => $this->candidateEndpoints(),
+            ],
+            502,
+        );
+    }
+
     public function deleteAllAction(ServerRequestInterface $request): ResponseInterface
     {
         $listResponse = $this->call('GET', '/pending');
