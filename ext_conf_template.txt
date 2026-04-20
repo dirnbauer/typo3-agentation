@@ -4,6 +4,9 @@ apiKey =
 # cat=basic/enable; type=string; label=Workspace / project ID (optional, shown in MCP config)
 workspaceId =
 
+# cat=basic/enable; type=string; label=Sync endpoint (URL of agentation-mcp server — pushes annotations live; leave empty for localStorage-only mode)
+syncEndpoint = http://localhost:4747
+
 # cat=basic/enable; type=boolean; label=Enable in Frontend (gated per BE-user via Admin Panel opt-in)
 frontendEnabled = 1
 

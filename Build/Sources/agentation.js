@@ -139,6 +139,7 @@ function scopeAgentationStorage() {
     };
 
     const props = {
+      endpoint: cfg.endpoint || undefined,
       webhookUrl: cfg.webhookUrl || undefined,
       sessionId: cfg.sessionId || undefined,
       copyToClipboard,

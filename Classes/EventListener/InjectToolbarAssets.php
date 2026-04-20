@@ -245,6 +245,7 @@ final class InjectToolbarAssets
             'apiKey' => $this->config->getApiKey() !== '' ? $this->config->getApiKey() : null,
             'workspaceId' => $this->config->getWorkspaceId() !== '' ? $this->config->getWorkspaceId() : null,
             'webhookUrl' => $this->config->getWebhookUrl() !== '' ? $this->config->getWebhookUrl() : null,
+            'endpoint' => $this->config->getSyncEndpoint() !== '' ? $this->config->getSyncEndpoint() : null,
             'context' => 'typo3-' . $scope,
             'typo3Version' => (new Typo3Version())->getVersion(),
             'pageId' => $pageId ?: null,

@@ -18,6 +18,7 @@ final class ConfigurationService implements SingletonInterface
     private const DEFAULTS = [
         'apiKey' => '',
         'workspaceId' => '',
+        'syncEndpoint' => 'http://localhost:4747',
         'frontendEnabled' => true,
         'backendEnabled' => true,
         'contextGate' => 'Development',
@@ -52,6 +53,11 @@ final class ConfigurationService implements SingletonInterface
     public function getWorkspaceId(): string
     {
         return (string)$this->config['workspaceId'];
+    }
+
+    public function getSyncEndpoint(): string
+    {
+        return (string)$this->config['syncEndpoint'];
     }
 
     public function isFrontendEnabled(): bool
