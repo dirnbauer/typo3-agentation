@@ -58,6 +58,50 @@
     text-transform: capitalize;
 }
 
+/*
+ * Bootstrap's .bg-* utilities are a fixed palette with baked-in contrast
+ * assumptions that break in dark mode (yellow + dark text, grey + dark text).
+ * Re-map status pills to TYPO3's theme-aware state tokens so light/dark both
+ * pass contrast.
+ */
+.module-body .badge.bg-success,
+.module-body .badge.bg-danger,
+.module-body .badge.bg-warning,
+.module-body .badge.bg-info,
+.module-body .badge.bg-secondary {
+    border: 1px solid transparent;
+}
+
+.module-body .badge.bg-success {
+    background-color: var(--typo3-state-success-bg) !important;
+    color: var(--typo3-state-success-color) !important;
+    border-color: var(--typo3-state-success-border-color);
+}
+
+.module-body .badge.bg-danger {
+    background-color: var(--typo3-state-danger-bg) !important;
+    color: var(--typo3-state-danger-color) !important;
+    border-color: var(--typo3-state-danger-border-color);
+}
+
+.module-body .badge.bg-warning {
+    background-color: var(--typo3-state-warning-bg) !important;
+    color: var(--typo3-state-warning-color) !important;
+    border-color: var(--typo3-state-warning-border-color);
+}
+
+.module-body .badge.bg-info {
+    background-color: var(--typo3-state-info-bg) !important;
+    color: var(--typo3-state-info-color) !important;
+    border-color: var(--typo3-state-info-border-color);
+}
+
+.module-body .badge.bg-secondary {
+    background-color: var(--typo3-state-secondary-bg) !important;
+    color: var(--typo3-state-secondary-color) !important;
+    border-color: var(--typo3-state-secondary-border-color);
+}
+
 .agentation-annotation__comment {
     word-break: break-word;
 }
