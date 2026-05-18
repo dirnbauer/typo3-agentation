@@ -177,6 +177,33 @@ function wireDeletionBroadcast() {
   });
 }
 
+function injectTypo3StyleOverrides() {
+  if (document.getElementById('typo3-agentation-style-overrides')) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.id = 'typo3-agentation-style-overrides';
+  style.textContent = `
+    [data-agentation-theme="dark"] [data-agentation-toolbar] [role="button"] {
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        0 4px 16px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.26),
+        0 0 0 4px rgba(255, 255, 255, 0.08);
+    }
+
+    [data-agentation-theme="dark"] [data-agentation-toolbar] [role="button"]:hover {
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.24),
+        0 4px 16px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.34),
+        0 0 0 4px rgba(255, 255, 255, 0.12);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 (function bootAgentation() {
   const cfg = readConfig() || {};
   window.TYPO3Agentation = cfg;
@@ -188,6 +215,7 @@ function wireDeletionBroadcast() {
   }
   protectHostTypingFromAgentationShortcuts();
   wireDeletionBroadcast();
+  injectTypo3StyleOverrides();
 
   // Detect mixed-content trap: HTTPS origin + HTTP sync endpoint.
   // Browsers block the XHR silently — the widget looks fine but

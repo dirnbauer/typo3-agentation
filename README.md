@@ -167,7 +167,7 @@ sharing. The toolbar itself works locally without them.
 The `agentation` npm package is a React component under the hood. To keep
 the integration framework-agnostic **from the TYPO3 site's perspective**,
 Vite bundles agentation's React runtime + React DOM + our glue into a
-single self-contained ES module (~540 KB, ~136 KB gzipped).
+single self-contained ES module (~547 KB, ~138 KB gzipped).
 
 - Your TYPO3 site does **not** need React, Vue, or Angular.
 - If it already ships React for something else, our bundle runs its own
@@ -176,6 +176,10 @@ single self-contained ES module (~540 KB, ~136 KB gzipped).
 - Toolbar config is passed through an inert JSON data island at
   `#typo3-agentation-config`, so the TYPO3 v14 CSP does not need an inline
   JavaScript nonce or hash for the config payload.
+- TYPO3-specific visual overrides are injected by the entrypoint, not by
+  editing upstream package CSS. The collapsed dark-mode toolbar button gets a
+  subtle outer ring so the circular Agentation icon remains visible on dark
+  backend and frontend surfaces.
 - No custom elements, no shadow DOM, no coupling to host frameworks.
 
 ## TYPO3 entrypoint behavior
@@ -198,6 +202,9 @@ following before mounting React:
   same-origin backend proxy to avoid HTTPS-to-HTTP mixed-content blocking.
 - Installs the backend keyboard guard described below before the upstream
   toolbar registers its own document-level shortcuts.
+- Injects a small `#typo3-agentation-style-overrides` stylesheet for
+  TYPO3-specific presentation tweaks, including the dark-mode contrast ring
+  around the collapsed circular toolbar button.
 - Mounts the toolbar into a detached `#typo3-agentation-root` container.
 
 ## Backend keyboard behavior
