@@ -161,6 +161,28 @@ single self-contained ES module (~540 KB, ~136 KB gzipped).
   `window.TYPO3Agentation` — no custom elements, no shadow DOM, no coupling
   to host frameworks.
 
+## TYPO3 entrypoint behavior
+
+`Build/Sources/agentation.js` is the TYPO3-specific browser entrypoint that
+wraps the upstream `agentation` component. The built Vite asset does the
+following before mounting React:
+
+- Reads toolbar configuration from the inert JSON data island
+  `#typo3-agentation-config`.
+- Stops immediately when the injected payload contains `enabled: false`.
+- In backend scope, namespaces Agentation-owned `localStorage` keys by TYPO3
+  module path and record id, so annotations from one record do not appear on
+  another record using the same module route.
+- Wires a same-origin `BroadcastChannel` named `typo3-agentation` so deletes
+  from **System → Agentation** remove stale browser-local annotations in open
+  widget instances.
+- Patches `fetch()` only when PHP provides both `endpoint` and `proxyUrl`.
+  Requests to the configured sync endpoint are then routed through TYPO3's
+  same-origin backend proxy to avoid HTTPS-to-HTTP mixed-content blocking.
+- Installs the backend keyboard guard described below before the upstream
+  toolbar registers its own document-level shortcuts.
+- Mounts the toolbar into a detached `#typo3-agentation-root` container.
+
 ## Backend keyboard behavior
 
 The upstream toolbar provides single-letter shortcuts such as `L` for layout
