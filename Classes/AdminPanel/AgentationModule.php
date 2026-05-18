@@ -36,6 +36,12 @@ final class AgentationModule extends AbstractModule implements
     ResourceProviderInterface,
     ShortInfoProviderInterface
 {
+    public function __construct(
+        private readonly ConfigurationService $configuration,
+        private readonly UserToolbarSettingsService $userToolbarSettings,
+        private readonly AdminPanelConfigurationService $adminPanelConfiguration,
+    ) {}
+
     public function getIdentifier(): string
     {
         return 'agentation';
@@ -75,22 +81,21 @@ final class AgentationModule extends AbstractModule implements
             'scope' => $this->getScope(),
             'positions' => ['bottom-right', 'bottom-left', 'top-right', 'top-left'],
             'scopes' => ['frontend', 'frontend+adminpanel'],
-            'apiKeySet' => GeneralUtility::makeInstance(ConfigurationService::class)->getApiKey() !== '',
+            'apiKeySet' => $this->configuration->getApiKey() !== '',
         ]);
         return $view->render();
     }
 
     public function getContent(ModuleData $data): string
     {
-        $config = GeneralUtility::makeInstance(ConfigurationService::class);
         $view = $this->createView('ModuleContent');
         $view->assignMultiple([
             'enabled' => $this->isEnabled(),
             'position' => $this->getPosition(),
             'scope' => $this->getScope(),
-            'apiKey' => $config->getApiKey() !== '',
-            'workspaceId' => $config->getWorkspaceId(),
-            'contextAllowed' => $config->isContextAllowed(),
+            'apiKey' => $this->configuration->getApiKey() !== '',
+            'workspaceId' => $this->configuration->getWorkspaceId(),
+            'contextAllowed' => $this->configuration->isContextAllowed(),
         ]);
         return $view->render();
     }
@@ -113,7 +118,7 @@ final class AgentationModule extends AbstractModule implements
 
     public function isEnabled(): bool
     {
-        if (!GeneralUtility::makeInstance(UserToolbarSettingsService::class)->isFrontendToolbarEnabled()) {
+        if (!$this->userToolbarSettings->isFrontendToolbarEnabled()) {
             return false;
         }
 
@@ -122,7 +127,7 @@ final class AgentationModule extends AbstractModule implements
             'enabled'
         );
         if ($value === '' || $value === null) {
-            return GeneralUtility::makeInstance(ConfigurationService::class)->isDefaultOptIn();
+            return $this->configuration->isDefaultOptIn();
         }
         return (bool)$value;
     }
@@ -134,7 +139,7 @@ final class AgentationModule extends AbstractModule implements
             'position'
         );
         if ($value === '') {
-            $value = GeneralUtility::makeInstance(ConfigurationService::class)->getToolbarPosition();
+            $value = $this->configuration->getToolbarPosition();
         }
         return in_array($value, ['bottom-right', 'bottom-left', 'top-right', 'top-left'], true)
             ? $value
@@ -162,6 +167,6 @@ final class AgentationModule extends AbstractModule implements
 
     private function getConfigurationService(): AdminPanelConfigurationService
     {
-        return GeneralUtility::makeInstance(AdminPanelConfigurationService::class);
+        return $this->adminPanelConfiguration;
     }
 }

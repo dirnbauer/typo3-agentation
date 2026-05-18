@@ -111,6 +111,22 @@ The module itself remains available to admins for setup and cleanup. The
 same-origin widget proxy at `/typo3/ajax/agentation/api/proxy` is per-user
 gated: if **Enable toolbar in backend** is off, widget calls receive `403`.
 
+## TYPO3 service wiring
+
+The extension uses TYPO3's Symfony DI container for services that need
+constructor arguments. `Configuration/Services.yaml` keeps services private by
+default and only exposes TYPO3 entrypoints such as backend controllers and the
+Admin Panel module.
+
+The Admin Panel module is registered as a public service and receives the
+extension configuration service, the Admin Panel configuration service, and the
+per-user toolbar settings service through constructor injection. This is
+intentional: `UserToolbarSettingsService` depends on `ConfigurationService`, so
+it must not be instantiated manually with `GeneralUtility::makeInstance()` from
+Admin Panel code. Keeping the module DI-driven makes the frontend Admin Panel
+gate use the same per-user settings logic as the backend asset injector and
+widget proxy.
+
 ## MCP — yes, and here's how
 
 The `agentation` npm package ships an MCP server. Any agent that supports MCP
@@ -157,9 +173,10 @@ single self-contained ES module (~540 KB, ~136 KB gzipped).
 - If it already ships React for something else, our bundle runs its own
   isolated instance via `createRoot` into a detached `#typo3-agentation-root`
   container — no version conflicts, no hydration issues.
-- Toolbar config is passed via a single inline `<script>` tag writing
-  `window.TYPO3Agentation` — no custom elements, no shadow DOM, no coupling
-  to host frameworks.
+- Toolbar config is passed through an inert JSON data island at
+  `#typo3-agentation-config`, so the TYPO3 v14 CSP does not need an inline
+  JavaScript nonce or hash for the config payload.
+- No custom elements, no shadow DOM, no coupling to host frameworks.
 
 ## TYPO3 entrypoint behavior
 
@@ -199,7 +216,8 @@ keeping shortcuts available when focus is outside editable fields.
 - Toolbar never loads for anonymous FE visitors. It requires a valid BE session.
 - `contextGate` blocks production by default.
 - Per-user off/hidden switches are enforced before asset injection. For the
-  backend widget, the same switch is also enforced at the same-origin proxy.
+  frontend Admin Panel module and backend widget, the same switch is also
+  enforced by DI-wired TYPO3 services.
 - API key is rendered into the BE module only — never exposed to the FE unless
   the FE user is the same BE user (which they are, by design, since the
   toolbar only runs when BE session is active).
