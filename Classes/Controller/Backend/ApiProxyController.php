@@ -25,6 +25,7 @@ final class ApiProxyController
 
     public function __construct(
         private readonly ConfigurationService $configuration,
+        private readonly UserToolbarSettingsService $userToolbarSettings,
         private readonly RequestFactory $requestFactory,
     ) {}
 
@@ -65,6 +66,10 @@ final class ApiProxyController
      */
     public function proxyAction(ServerRequestInterface $request): ResponseInterface
     {
+        if (!$this->userToolbarSettings->isBackendToolbarEnabled()) {
+            return new JsonResponse(['error' => 'Agentation backend toolbar is disabled for this user'], 403);
+        }
+
         $params = $request->getQueryParams();
         $path = is_string($params['path'] ?? null) ? $params['path'] : '';
         if ($path === '' || $path[0] !== '/') {

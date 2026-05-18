@@ -37,6 +37,7 @@ final class InjectToolbarAssets
 
     public function __construct(
         private readonly ConfigurationService $config,
+        private readonly UserToolbarSettingsService $userToolbarSettings,
         private readonly ViteAssetResolver $vite,
     ) {}
 
@@ -166,6 +167,9 @@ final class InjectToolbarAssets
         if (!is_object($beUser) || empty($beUser->user['uid'] ?? null)) {
             return null;
         }
+        if (!$this->userToolbarSettings->isFrontendToolbarEnabled($beUser)) {
+            return null;
+        }
 
         $adminPanelService = GeneralUtility::makeInstance(AdminPanelConfigurationService::class);
         $enabled = (string)$adminPanelService->getConfigurationOption('agentation', 'enabled');
@@ -207,24 +211,7 @@ final class InjectToolbarAssets
         if (!is_object($beUser) || empty($beUser->user['uid'] ?? null)) {
             return null;
         }
-
-        // defaultOptIn is only a seed for users who have never opened
-        // User Settings. Once a user saves the form (tick or untick), the
-        // field lands in be_users.user_settings JSON, has() returns true,
-        // and their explicit value wins — including an explicit "off".
-        $enabled = $this->config->isDefaultOptIn();
-        if (method_exists($beUser, 'getUserSettings')) {
-            $settings = $beUser->getUserSettings();
-            if ($settings->has('agentation_backend_enabled')) {
-                $enabled = (bool)$settings->get('agentation_backend_enabled');
-            }
-        } else {
-            $uc = is_array($beUser->uc ?? null) ? $beUser->uc : [];
-            if (array_key_exists('agentation_backend_enabled', $uc)) {
-                $enabled = (bool)$uc['agentation_backend_enabled'];
-            }
-        }
-        if (!$enabled) {
+        if (!$this->userToolbarSettings->isBackendToolbarEnabled($beUser)) {
             return null;
         }
 

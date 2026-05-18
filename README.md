@@ -9,7 +9,7 @@ feedback) with Claude Code, Cursor, or any MCP-capable agent.
 
 | Agentation feature | How this extension surfaces it |
 | --- | --- |
-| Element annotation toolbar | Loaded in FE + BE when enabled; position configurable |
+| Element annotation toolbar | Loaded in FE + BE only when global and per-user switches allow it; position configurable |
 | Hover previews / frame pausing / text selection | Provided by upstream `agentation@^3` bundle |
 | Markdown export | Native upstream feature |
 | MCP (Model Context Protocol) server | BE module renders pre-filled `.mcp.json` snippet, one-click copy |
@@ -50,7 +50,7 @@ Open **Admin Tools → Settings → Extension Configuration → agentation**.
 | --- | --- | --- | --- |
 | `apiKey` | string | _empty_ | Agentation API key. Leave empty for free local-only mode (copy-paste markdown). Required for MCP + webhooks. |
 | `workspaceId` | string | _empty_ | Workspace / project ID shown in the MCP snippet and sent to the toolbar. |
-| `frontendEnabled` | boolean | ✓ | Global on/off for the FE toolbar. Still gated per BE-user via Admin Panel opt-in. |
+| `frontendEnabled` | boolean | ✓ | Global on/off for the FE toolbar. Still gated per BE-user via User Settings and Admin Panel opt-in. |
 | `backendEnabled` | boolean | ✓ | Global on/off for the BE toolbar. Still gated per BE-user via User Settings → Agentation tab. |
 | `contextGate` | options | `Development` | `Development`, `Development and Testing`, or `All contexts`. Prevents production leaks. |
 | `defaultOptIn` | boolean | ✗ | Whether new BE users see the toolbar on by default (they can still toggle off). Tick this to skip the per-user opt-in step during initial setup. |
@@ -69,8 +69,9 @@ Save it as `Documentation/Images/extension-configuration-basic.png` inside the e
 
 ## Frontend: Admin Panel section
 
-When a BE user is authenticated in the frontend and the application context matches
-the gate, a new **Agentation** section appears in the TYPO3 Admin Panel. It exposes:
+When a BE user is authenticated in the frontend, the application context matches
+the gate, and their frontend User Settings switch is enabled, a new
+**Agentation** section appears in the TYPO3 Admin Panel. It exposes:
 
 - **Show toolbar on this page** — per-session opt-in
 - **Toolbar position** — override extension default
@@ -79,7 +80,7 @@ the gate, a new **Agentation** section appears in the TYPO3 Admin Panel. It expo
 No toolbar ever ships to anonymous visitors. The gate is:
 
 ```
-contextGate passes  AND  BE user session  AND  admin panel section toggled on
+contextGate passes  AND  BE user session  AND  frontend user setting enabled  AND  admin panel section toggled on
 ```
 
 ## Backend: User Settings switch
@@ -89,15 +90,26 @@ Each BE user gets an **Agentation** tab under **User Settings → Personal data*
 - Enable toolbar in backend
 - Enable toolbar in frontend (used alongside the Admin Panel opt-in)
 
-Stored in `be_users.uc`, so admins can't force it globally — respect by design.
+The switches are stored in TYPO3 v14's `be_users.user_settings` JSON field
+with `be_users.uc` as migration fallback. A saved off/hidden value is explicit:
+the toolbar assets are not injected, the frontend Admin Panel module reports
+off, and the backend widget proxy refuses widget-originated calls for that user.
+
+`defaultOptIn` is only the seed for users who have never saved these settings.
+Once a user changes either checkbox, their saved value wins.
 
 ## Backend module
 
 A module under **System → Agentation** (admin-only) shows:
 
 - Pre-filled `.mcp.json` snippet with one-click copy
-- Status: API key set, bundle built, context allowed, FE/BE toggles
+- Status: API key set, bundle built, context allowed, FE/BE global toggles
+- Stored annotations from the MCP server and browser-local Agentation storage
 - Link to agentation.com
+
+The module itself remains available to admins for setup and cleanup. The
+same-origin widget proxy at `/typo3/ajax/agentation/api/proxy` is per-user
+gated: if **Enable toolbar in backend** is off, widget calls receive `403`.
 
 ## MCP — yes, and here's how
 
@@ -149,10 +161,23 @@ single self-contained ES module (~540 KB, ~136 KB gzipped).
   `window.TYPO3Agentation` — no custom elements, no shadow DOM, no coupling
   to host frameworks.
 
+## Backend keyboard behavior
+
+The upstream toolbar provides single-letter shortcuts such as `L` for layout
+mode, `P` for pause, `H` for markers, `C` for copy, `X` for clear, and `S` for
+send. In the TYPO3 backend, the integration guards those shortcuts before the
+toolbar mounts: when focus is inside a TYPO3 input, textarea, select,
+contenteditable area, or textbox-like editor, the key event stays with TYPO3.
+
+This prevents Agentation from swallowing normal typing in backend forms while
+keeping shortcuts available when focus is outside editable fields.
+
 ## Security notes
 
 - Toolbar never loads for anonymous FE visitors. It requires a valid BE session.
 - `contextGate` blocks production by default.
+- Per-user off/hidden switches are enforced before asset injection. For the
+  backend widget, the same switch is also enforced at the same-origin proxy.
 - API key is rendered into the BE module only — never exposed to the FE unless
   the FE user is the same BE user (which they are, by design, since the
   toolbar only runs when BE session is active).

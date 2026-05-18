@@ -16,6 +16,7 @@ use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfiguration
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use WebConsulting\Agentation\Service\ConfigurationService;
+use WebConsulting\Agentation\Service\UserToolbarSettingsService;
 
 /**
  * Admin Panel section for the Agentation toolbar.
@@ -112,6 +113,10 @@ final class AgentationModule extends AbstractModule implements
 
     public function isEnabled(): bool
     {
+        if (!GeneralUtility::makeInstance(UserToolbarSettingsService::class)->isFrontendToolbarEnabled()) {
+            return false;
+        }
+
         $value = $this->getConfigurationService()->getConfigurationOption(
             $this->getIdentifier(),
             'enabled'

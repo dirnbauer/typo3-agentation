@@ -30,6 +30,55 @@ function readConfig() {
   }
 }
 
+function isInsideAgentationRoot(target) {
+  return target instanceof Element
+    && target.closest('#typo3-agentation-root, [data-feedback-toolbar]');
+}
+
+function isEditableTarget(event) {
+  const target = event.target;
+  const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+  const candidates = path.length > 0 ? [...path] : [target];
+  if (document.activeElement && !candidates.includes(document.activeElement)) {
+    candidates.push(document.activeElement);
+  }
+
+  return candidates.some((node) => {
+    if (!(node instanceof Element) || isInsideAgentationRoot(node)) {
+      return false;
+    }
+    if (node instanceof HTMLInputElement) {
+      return !['button', 'checkbox', 'color', 'file', 'hidden', 'image', 'radio', 'range', 'reset', 'submit'].includes(node.type);
+    }
+    if (node instanceof HTMLTextAreaElement || node instanceof HTMLSelectElement) {
+      return true;
+    }
+    if (node instanceof HTMLElement && node.isContentEditable) {
+      return true;
+    }
+    return Boolean(node.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="textbox"]'));
+  });
+}
+
+function isAgentationShortcut(event) {
+  if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'f') {
+    return true;
+  }
+  if (event.metaKey || event.ctrlKey || event.altKey) {
+    return false;
+  }
+  return ['p', 'l', 'h', 'c', 'x', 's', 'escape'].includes(event.key.toLowerCase());
+}
+
+function protectHostTypingFromAgentationShortcuts() {
+  document.addEventListener('keydown', (event) => {
+    if (!isAgentationShortcut(event) || !isEditableTarget(event)) {
+      return;
+    }
+    event.stopImmediatePropagation();
+  });
+}
+
 /**
  * Agentation keys its annotation storage by window.location.pathname,
  * but TYPO3 BE modules share one pathname across many records (e.g.
@@ -137,6 +186,7 @@ function wireDeletionBroadcast() {
   if (cfg.scope === 'backend') {
     scopeAgentationStorage();
   }
+  protectHostTypingFromAgentationShortcuts();
   wireDeletionBroadcast();
 
   // Detect mixed-content trap: HTTPS origin + HTTP sync endpoint.
