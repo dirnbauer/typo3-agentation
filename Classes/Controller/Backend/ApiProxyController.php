@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use WebConsulting\Agentation\Service\ConfigurationService;
+use WebConsulting\Agentation\Service\UserToolbarSettingsService;
 
 /**
  * Same-origin proxy for the agentation-mcp HTTP API.

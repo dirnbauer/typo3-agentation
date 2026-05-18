@@ -15,6 +15,7 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use WebConsulting\Agentation\Service\ConfigurationService;
+use WebConsulting\Agentation\Service\UserToolbarSettingsService;
 use WebConsulting\Agentation\Service\ViteAssetResolver;
 
 /**
