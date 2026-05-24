@@ -13,8 +13,9 @@ use TYPO3\CMS\Adminpanel\ModuleApi\ModuleSettingsProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ResourceProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ShortInfoProviderInterface;
 use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfigurationService;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Core\View\ViewInterface;
 use WebConsulting\Agentation\Service\ConfigurationService;
 use WebConsulting\Agentation\Service\UserToolbarSettingsService;
 
@@ -40,6 +41,7 @@ final class AgentationModule extends AbstractModule implements
         private readonly ConfigurationService $configuration,
         private readonly UserToolbarSettingsService $userToolbarSettings,
         private readonly AdminPanelConfigurationService $adminPanelConfiguration,
+        private readonly ViewFactoryInterface $viewFactory,
     ) {}
 
     public function getIdentifier(): string
@@ -70,7 +72,7 @@ final class AgentationModule extends AbstractModule implements
 
     public function getSettings(): string
     {
-        $view = $this->createView('ModuleSettings');
+        $view = $this->createView();
         $view->assignMultiple([
             'moduleData' => $this->getConfigurationService()->getConfigurationOption(
                 $this->getIdentifier(),
@@ -83,12 +85,12 @@ final class AgentationModule extends AbstractModule implements
             'scopes' => ['frontend', 'frontend+adminpanel'],
             'apiKeySet' => $this->configuration->getApiKey() !== '',
         ]);
-        return $view->render();
+        return $view->render('AdminPanel/ModuleSettings');
     }
 
     public function getContent(ModuleData $data): string
     {
-        $view = $this->createView('ModuleContent');
+        $view = $this->createView();
         $view->assignMultiple([
             'enabled' => $this->isEnabled(),
             'position' => $this->getPosition(),
@@ -97,7 +99,7 @@ final class AgentationModule extends AbstractModule implements
             'workspaceId' => $this->configuration->getWorkspaceId(),
             'contextAllowed' => $this->configuration->isContextAllowed(),
         ]);
-        return $view->render();
+        return $view->render('AdminPanel/ModuleContent');
     }
 
     public function getCssFiles(): array
@@ -126,7 +128,7 @@ final class AgentationModule extends AbstractModule implements
             $this->getIdentifier(),
             'enabled'
         );
-        if ($value === '' || $value === null) {
+        if ($value === '') {
             return $this->configuration->isDefaultOptIn();
         }
         return (bool)$value;
@@ -134,7 +136,7 @@ final class AgentationModule extends AbstractModule implements
 
     public function getPosition(): string
     {
-        $value = (string)$this->getConfigurationService()->getConfigurationOption(
+        $value = $this->getConfigurationService()->getConfigurationOption(
             $this->getIdentifier(),
             'position'
         );
@@ -148,21 +150,21 @@ final class AgentationModule extends AbstractModule implements
 
     public function getScope(): string
     {
-        $value = (string)$this->getConfigurationService()->getConfigurationOption(
+        $value = $this->getConfigurationService()->getConfigurationOption(
             $this->getIdentifier(),
             'scope'
         );
         return $value === 'frontend+adminpanel' ? 'frontend+adminpanel' : 'frontend';
     }
 
-    private function createView(string $template): StandaloneView
+    private function createView(): ViewInterface
     {
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplateRootPaths(['EXT:agentation/Resources/Private/Templates/AdminPanel/']);
-        $view->setPartialRootPaths(['EXT:agentation/Resources/Private/Partials/']);
-        $view->setLayoutRootPaths(['EXT:agentation/Resources/Private/Layouts/']);
-        $view->setTemplate($template);
-        return $view;
+        $viewFactoryData = new ViewFactoryData(
+            templateRootPaths: ['EXT:agentation/Resources/Private/Templates'],
+            partialRootPaths: ['EXT:agentation/Resources/Private/Partials'],
+            layoutRootPaths: ['EXT:agentation/Resources/Private/Layouts'],
+        );
+        return $this->viewFactory->create($viewFactoryData);
     }
 
     private function getConfigurationService(): AdminPanelConfigurationService

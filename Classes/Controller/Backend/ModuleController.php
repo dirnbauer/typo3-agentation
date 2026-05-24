@@ -114,8 +114,9 @@ final class ModuleController
 
     private function translate(string $key): string
     {
-        return $GLOBALS['LANG']->sL(
+        $label = $GLOBALS['LANG']->sL(
             'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:' . $key
-        ) ?: $key;
+        );
+        return $label !== '' ? $label : $key;
     }
 }

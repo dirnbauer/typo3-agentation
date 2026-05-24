@@ -79,7 +79,7 @@ final class ViteAssetResolver implements SingletonInterface
     private function publicUrl(string $relative): string
     {
         $base = $this->publicBase ??= PathUtility::getAbsoluteWebPath(
-            (string)GeneralUtility::getFileAbsFileName('EXT:agentation/Resources/Public/Vite/')
+            GeneralUtility::getFileAbsFileName('EXT:agentation/Resources/Public/Vite/')
         );
         return $base . ltrim($relative, '/');
     }

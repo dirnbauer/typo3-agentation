@@ -111,6 +111,9 @@ final class InjectToolbarAssets
         }
     }
 
+    /**
+     * @return 'frontend'|'backend'|null
+     */
     private function resolveScope(ServerRequestInterface $request): ?string
     {
         $type = ApplicationType::fromRequest($request);
@@ -165,7 +168,7 @@ final class InjectToolbarAssets
     private function resolveFrontendPayload(): ?array
     {
         $beUser = $GLOBALS['BE_USER'] ?? null;
-        if (!is_object($beUser) || empty($beUser->user['uid'] ?? null)) {
+        if (!is_object($beUser) || (int)($beUser->user['uid'] ?? 0) <= 0) {
             return null;
         }
         if (!$this->userToolbarSettings->isFrontendToolbarEnabled($beUser)) {
@@ -173,7 +176,7 @@ final class InjectToolbarAssets
         }
 
         $adminPanelService = GeneralUtility::makeInstance(AdminPanelConfigurationService::class);
-        $enabled = (string)$adminPanelService->getConfigurationOption('agentation', 'enabled');
+        $enabled = $adminPanelService->getConfigurationOption('agentation', 'enabled');
         $moduleEnabled = $enabled !== ''
             ? (bool)$enabled
             : $this->config->isDefaultOptIn();
@@ -181,11 +184,11 @@ final class InjectToolbarAssets
             return null;
         }
 
-        $position = (string)$adminPanelService->getConfigurationOption('agentation', 'position');
+        $position = $adminPanelService->getConfigurationOption('agentation', 'position');
         if ($position === '') {
             $position = $this->config->getToolbarPosition();
         }
-        $rawScope = (string)$adminPanelService->getConfigurationOption('agentation', 'scope');
+        $rawScope = $adminPanelService->getConfigurationOption('agentation', 'scope');
         $scope = $rawScope === 'frontend+adminpanel' ? 'frontend+adminpanel' : 'frontend';
 
         $pageId = 0;
@@ -209,7 +212,7 @@ final class InjectToolbarAssets
     private function resolveBackendPayload(): ?array
     {
         $beUser = $GLOBALS['BE_USER'] ?? null;
-        if (!is_object($beUser) || empty($beUser->user['uid'] ?? null)) {
+        if (!is_object($beUser) || (int)($beUser->user['uid'] ?? 0) <= 0) {
             return null;
         }
         if (!$this->userToolbarSettings->isBackendToolbarEnabled($beUser)) {
@@ -246,8 +249,8 @@ final class InjectToolbarAssets
             'proxyUrl' => $scope === 'backend' ? $this->buildProxyUrl() : null,
             'context' => 'typo3-' . $scope,
             'typo3Version' => (new Typo3Version())->getVersion(),
-            'pageId' => $pageId ?: null,
-            'beUser' => $beUserName ?: null,
+            'pageId' => $pageId > 0 ? $pageId : null,
+            'beUser' => $beUserName !== '' ? $beUserName : null,
             'metadata' => [
                 'applicationContext' => (string)Environment::getContext(),
                 'includeAdminPanelChrome' => $includeAdminPanelChrome,

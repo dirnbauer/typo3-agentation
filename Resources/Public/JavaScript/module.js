@@ -55,8 +55,12 @@ function getDeleteAllButton() {
   return document.querySelector('[data-agentation-delete-all]');
 }
 
-function readLabel(name, fallback) {
-  return getCard()?.dataset?.[name] || fallback;
+function readLabel(name) {
+  return getCard()?.dataset?.[name] || name;
+}
+
+function pluralLabel(count, singularKey, pluralKey) {
+  return count === 1 ? readLabel(singularKey) : readLabel(pluralKey);
 }
 
 function countLocal() {
@@ -145,7 +149,7 @@ function clearLocal() {
 
 async function fetchServerAnnotations() {
   if (!ROUTE_LIST) {
-    return { ok: false, annotations: [], error: 'Route not registered' };
+    return { ok: false, annotations: [], error: readLabel('routeNotRegistered') };
   }
   try {
     const response = await new AjaxRequest(ROUTE_LIST).get();
@@ -161,7 +165,7 @@ async function fetchServerAnnotations() {
     }
     return { ok: true, annotations: [] };
   } catch (err) {
-    return { ok: false, annotations: [], error: err?.message || 'Request failed' };
+    return { ok: false, annotations: [], error: err?.message || readLabel('requestFailed') };
   }
 }
 
@@ -274,7 +278,7 @@ function renderRow(annotation) {
   const comment = document.createElement('p');
   comment.className = 'agentation-annotation__comment mb-1';
   comment.textContent = truncate(
-    annotation.comment || readLabel('emptyComment', '(no comment)'),
+    annotation.comment || readLabel('emptyComment'),
     MAX_COMMENT_PREVIEW,
   );
   main.appendChild(comment);
@@ -315,7 +319,7 @@ function renderRow(annotation) {
     // Local-only annotations: no server status, show origin pill.
     const badge = document.createElement('span');
     badge.className = 'badge bg-secondary';
-    badge.textContent = readLabel('localOnly', 'local only');
+    badge.textContent = readLabel('localOnly');
     statusSlot.appendChild(badge);
   } else if (annotation.status) {
     const badge = document.createElement('span');
@@ -342,7 +346,7 @@ function renderRow(annotation) {
   if (annotation.__origin === 'local') {
     button.dataset.agentationOrigin = 'local';
   }
-  button.title = readLabel('deleteOne', 'Delete annotation');
+  button.title = readLabel('deleteOne');
   button.innerHTML = '<typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>';
   actions.appendChild(button);
   li.appendChild(actions);
@@ -364,25 +368,25 @@ function updateCounter(serverCount, localCount, opts = {}) {
   }
   const total = serverCount + localCount;
   if (opts.error && serverCount === 0 && localCount === 0) {
-    target.textContent = readLabel('errorShort', 'Sync endpoint unreachable');
+    target.textContent = readLabel('errorShort');
     target.classList.add('text-danger');
     return;
   }
   target.classList.remove('text-danger');
   if (total === 0) {
-    target.textContent = readLabel('empty', 'No annotations');
+    target.textContent = readLabel('empty');
     return;
   }
   const parts = [];
   if (serverCount > 0) {
-    parts.push(`${serverCount} ${readLabel('onServer', 'on server')}`);
+    parts.push(`${serverCount} ${readLabel('onServer')}`);
   }
   if (localCount > 0) {
-    parts.push(`${localCount} ${readLabel('local', 'local')}`);
+    parts.push(`${localCount} ${readLabel('local')}`);
   }
   const noun = total === 1
-    ? readLabel('annotationSingular', 'annotation')
-    : readLabel('annotationPlural', 'annotations');
+    ? readLabel('annotationSingular')
+    : readLabel('annotationPlural');
   target.textContent = `${total} ${noun} (${parts.join(' + ')})`;
 }
 
@@ -390,7 +394,7 @@ async function refresh() {
   const list = getList();
   const deleteAllBtn = getDeleteAllButton();
   if (list) {
-    renderEmpty(list, readLabel('loading', 'Loading…'));
+    renderEmpty(list, readLabel('loading'));
   }
 
   const localAll = collectLocalAnnotations();
@@ -405,12 +409,12 @@ async function refresh() {
     if (!result.ok && merged.length === 0) {
       renderError(
         list,
-        `${readLabel('errorPrefix', 'Sync endpoint unreachable')}: ${result.error || ''}`.trim(),
+        `${readLabel('errorPrefix')}: ${result.error || ''}`.trim(),
       );
     } else if (merged.length === 0) {
       renderEmpty(
         list,
-        readLabel('emptyLong', 'Nothing stored yet. Annotations created via the toolbar appear here.'),
+        readLabel('emptyLong'),
       );
     } else {
       renderList(list, merged);
@@ -430,14 +434,14 @@ document.addEventListener('click', async (event) => {
     const source = selector ? document.querySelector(selector) : null;
     const text = source?.value ?? source?.textContent ?? '';
     if (!text) {
-      Notification.warning('Agentation', 'Nothing to copy.');
+      Notification.warning('Agentation', readLabel('nothingToCopy'));
       return;
     }
     try {
       await copyToClipboard(text);
-      Notification.success('Agentation', 'MCP config copied to clipboard.');
+      Notification.success('Agentation', readLabel('copySuccess'));
     } catch (err) {
-      Notification.error('Agentation', `Copy failed: ${err.message}`);
+      Notification.error('Agentation', `${readLabel('copyFailedPrefix')} ${err.message}`);
     }
     return;
   }
@@ -463,9 +467,9 @@ document.addEventListener('click', async (event) => {
       if (ok) removeLocalAnnotation(id);
     }
     if (ok) {
-      Notification.success('Agentation', 'Annotation deleted.');
+      Notification.success('Agentation', readLabel('annotationDeleted'));
     } else {
-      Notification.error('Agentation', 'Delete failed.');
+      Notification.error('Agentation', readLabel('deleteFailed'));
       deleteOneBtn.disabled = false;
     }
     await refresh();
@@ -495,13 +499,16 @@ document.addEventListener('click', async (event) => {
     const serverCount = result.annotations.length;
     const total = serverCount + local;
     if (total === 0) {
-      Notification.info('Agentation', 'No stored annotations to delete.');
+      Notification.info('Agentation', readLabel('noneToDelete'));
       deleteAll.disabled = false;
       return;
     }
-    const breakdown = serverCount > 0 ? ` (${serverCount} on server, ${local} local)` : '';
+    const breakdown = serverCount > 0
+      ? ` (${serverCount} ${readLabel('onServer')}, ${local} ${readLabel('local')})`
+      : '';
+    const noun = pluralLabel(total, 'annotationSingular', 'annotationPlural');
     const confirmed = window.confirm(
-      `Delete ALL ${total} annotations${breakdown}?\n\nThis cannot be undone.`,
+      `${readLabel('deleteAllConfirm')} ${total} ${noun}${breakdown}?\n\n${readLabel('deleteAllWarning')}`,
     );
     if (!confirmed) {
       deleteAll.disabled = false;
@@ -509,15 +516,21 @@ document.addEventListener('click', async (event) => {
     }
     const localKeys = clearLocal();
     const serverResult = await deleteAllServerAnnotations();
+    const serverNoun = pluralLabel(
+      serverResult.deleted,
+      'serverAnnotationSingular',
+      'serverAnnotationPlural',
+    );
+    const localNoun = pluralLabel(localKeys, 'localStorageKeySingular', 'localStorageKeyPlural');
     if (serverResult.failed === 0) {
       Notification.success(
         'Agentation',
-        `Deleted ${serverResult.deleted} server annotations and ${localKeys} local storage keys.`,
+        `${readLabel('deleted')} ${serverResult.deleted} ${serverNoun} ${readLabel('and')} ${localKeys} ${localNoun}.`,
       );
     } else {
       Notification.warning(
         'Agentation',
-        `Deleted ${serverResult.deleted} on server, ${serverResult.failed} failed. Local cleared (${localKeys} keys).`,
+        `${readLabel('deleted')} ${serverResult.deleted} ${readLabel('onServer')}, ${serverResult.failed} ${readLabel('failed')}. ${readLabel('localCleared')} (${localKeys} ${localNoun}).`,
       );
     }
     await refresh();

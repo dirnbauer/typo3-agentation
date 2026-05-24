@@ -8,8 +8,8 @@
                 <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status" /></th>
                 <td>
                     <f:if condition="{enabled}">
-                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success">On</span></f:then>
-                        <f:else><span class="typo3-adminPanel-badge">Off</span></f:else>
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.on" /></span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.off" /></span></f:else>
                     </f:if>
                 </td>
             </tr>
@@ -25,8 +25,8 @@
                 <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.apiKey" /></th>
                 <td>
                     <f:if condition="{apiKey}">
-                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success">Set</span></f:then>
-                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning">Local-only</span></f:else>
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.set" /></span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.localOnly" /></span></f:else>
                     </f:if>
                 </td>
             </tr>
@@ -38,8 +38,8 @@
                 <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.context" /></th>
                 <td>
                     <f:if condition="{contextAllowed}">
-                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success">Allowed</span></f:then>
-                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning">Blocked by contextGate</span></f:else>
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.allowed" /></span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.blockedByContext" /></span></f:else>
                     </f:if>
                 </td>
             </tr>

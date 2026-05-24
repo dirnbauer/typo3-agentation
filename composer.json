@@ -1,6 +1,6 @@
 {
     "name": "webconsulting/agentation",
-    "description": "TYPO3 v14 integration for Agentation — visual UI annotations for AI coding agents, in frontend (via Admin Panel) and backend.",
+    "description": "Agentation - Visual UI annotations for AI coding agents in the TYPO3 frontend and backend.",
     "type": "typo3-cms-extension",
     "license": "GPL-2.0-or-later",
     "keywords": [
@@ -13,7 +13,7 @@
         "claude-code",
         "cursor"
     ],
-    "homepage": "https://github.com/webconsulting/typo3-agentation",
+    "homepage": "https://github.com/dirnbauer/typo3-agentation",
     "authors": [
         {
             "name": "webconsulting",
@@ -23,17 +23,17 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/webconsulting/typo3-agentation/issues",
-        "source": "https://github.com/webconsulting/typo3-agentation"
+        "issues": "https://github.com/dirnbauer/typo3-agentation/issues",
+        "source": "https://github.com/dirnbauer/typo3-agentation"
     },
     "require": {
         "php": "^8.2",
-        "typo3/cms-adminpanel": "^14.0",
-        "typo3/cms-backend": "^14.0",
-        "typo3/cms-core": "^14.0",
-        "typo3/cms-extbase": "^14.0",
-        "typo3/cms-fluid": "^14.0",
-        "typo3/cms-frontend": "^14.0"
+        "typo3/cms-adminpanel": "^14.3",
+        "typo3/cms-backend": "^14.3",
+        "typo3/cms-core": "^14.3",
+        "typo3/cms-extbase": "^14.3",
+        "typo3/cms-fluid": "^14.3",
+        "typo3/cms-frontend": "^14.3"
     },
     "require-dev": {
         "phpstan/extension-installer": "^1.4",
@@ -64,11 +64,19 @@
     },
     "scripts": {
         "phpstan": "phpstan analyse --memory-limit=1G",
+        "test": [
+            "@phpstan",
+            "@test:unit"
+        ],
         "test:unit": "phpunit -c Build/phpunit/UnitTests.xml"
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "agentation"
+            "extension-key": "agentation",
+            "version": "1.0.0",
+            "Package": {
+                "providesPackages": {}
+            }
         }
     }
 }

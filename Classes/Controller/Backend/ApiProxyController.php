@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace WebConsulting\Agentation\Controller\Backend;
 
-use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
@@ -45,7 +44,7 @@ final class ApiProxyController
         $body = $this->decodeJsonBody($request);
         $id = is_string($body['id'] ?? null) ? trim($body['id']) : '';
         if ($id === '') {
-            return new JsonResponse(['error' => 'Missing annotation id'], 400);
+            return new JsonResponse(['error' => $this->translate('module.errors.missingAnnotationId')], 400);
         }
         return $this->forwardJson(
             'DELETE',
@@ -68,13 +67,13 @@ final class ApiProxyController
     public function proxyAction(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->userToolbarSettings->isBackendToolbarEnabled()) {
-            return new JsonResponse(['error' => 'Agentation backend toolbar is disabled for this user'], 403);
+            return new JsonResponse(['error' => $this->translate('module.errors.toolbarDisabled')], 403);
         }
 
         $params = $request->getQueryParams();
         $path = is_string($params['path'] ?? null) ? $params['path'] : '';
         if ($path === '' || $path[0] !== '/') {
-            return new JsonResponse(['error' => 'Missing or invalid path'], 400);
+            return new JsonResponse(['error' => $this->translate('module.errors.invalidPath')], 400);
         }
 
         $method = strtoupper($request->getMethod());
@@ -98,7 +97,7 @@ final class ApiProxyController
                     'connect_timeout' => self::TIMEOUT_SECONDS,
                     'http_errors' => false,
                 ]);
-            } catch (ClientExceptionInterface | \Throwable) {
+            } catch (\Throwable) {
                 continue;
             }
             $response = new \TYPO3\CMS\Core\Http\Response(
@@ -114,7 +113,7 @@ final class ApiProxyController
 
         return new JsonResponse(
             [
-                'error' => 'Sync endpoint unreachable',
+                'error' => $this->translate('module.errors.syncUnreachable'),
                 'endpoint' => $this->endpoint(),
                 'tried' => $this->candidateEndpoints(),
             ],
@@ -128,7 +127,7 @@ final class ApiProxyController
         if ($listResponse === null) {
             return new JsonResponse(
                 [
-                    'error' => 'Sync endpoint unreachable',
+                    'error' => $this->translate('module.errors.syncUnreachable'),
                     'endpoint' => $this->endpoint(),
                     'tried' => $this->candidateEndpoints(),
                 ],
@@ -169,7 +168,7 @@ final class ApiProxyController
         if ($response === null) {
             return new JsonResponse(
                 [
-                    'error' => 'Sync endpoint unreachable',
+                    'error' => $this->translate('module.errors.syncUnreachable'),
                     'endpoint' => $this->endpoint(),
                     'tried' => $this->candidateEndpoints(),
                 ],
@@ -218,7 +217,8 @@ final class ApiProxyController
         $configured = rtrim($configured, '/');
         $candidates = [$configured];
 
-        $host = parse_url($configured, PHP_URL_HOST) ?: '';
+        $parsedHost = parse_url($configured, PHP_URL_HOST);
+        $host = is_string($parsedHost) ? $parsedHost : '';
         if (!$this->isInsideContainer() || !in_array($host, ['localhost', '127.0.0.1'], true)) {
             return $candidates;
         }
@@ -261,7 +261,7 @@ final class ApiProxyController
                 'connect_timeout' => self::TIMEOUT_SECONDS,
                 'http_errors' => false,
             ]);
-        } catch (ClientExceptionInterface | \Throwable) {
+        } catch (\Throwable) {
             return null;
         }
     }
@@ -269,6 +269,17 @@ final class ApiProxyController
     private function endpoint(): string
     {
         return $this->configuration->getSyncEndpoint();
+    }
+
+    private function translate(string $key): string
+    {
+        $languageService = $GLOBALS['LANG'] ?? null;
+        $label = is_object($languageService) && method_exists($languageService, 'sL')
+            ? (string)$languageService->sL(
+                'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:' . $key
+            )
+            : '';
+        return $label !== '' ? $label : $key;
     }
 
     /**

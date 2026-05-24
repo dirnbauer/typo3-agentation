@@ -36,7 +36,7 @@ final class UserToolbarSettingsService
     private function isUserSettingEnabled(string $key, bool $default, ?object $backendUser): bool
     {
         $backendUser ??= $GLOBALS['BE_USER'] ?? null;
-        if (!is_object($backendUser) || empty($backendUser->user['uid'] ?? null)) {
+        if (!is_object($backendUser) || (int)($backendUser->user['uid'] ?? 0) <= 0) {
             return false;
         }
 

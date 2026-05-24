@@ -1,0 +1,5 @@
+..  This file contains global substitutions for the Agentation manual.
+
+..  |extension_key| replace:: agentation
+..  |extension_name| replace:: Agentation
+..  |composer_name| replace:: webconsulting/agentation

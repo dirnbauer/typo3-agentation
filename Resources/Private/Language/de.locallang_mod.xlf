@@ -1,244 +1,485 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2026-04-19T00:00:00Z" product-name="agentation">
-        <header/>
-        <body>
-            <trans-unit id="mlang_tabs_tab">
-                <source>Agentation</source>
-                <target>Agentation</target>
-            </trans-unit>
-            <trans-unit id="mlang_labels_tablabel">
-                <source>Agentation</source>
-                <target>Agentation</target>
-            </trans-unit>
-            <trans-unit id="mlang_labels_tabdescr">
-                <source>Manage the agentation MCP config, inspect status, and review which users have the toolbar enabled.</source>
-                <target>MCP-Konfiguration verwalten, Status prüfen und sehen, welche Benutzer die Toolbar aktiviert haben.</target>
-            </trans-unit>
-            <trans-unit id="mod.tabs.label">
-                <source>Agentation</source>
-                <target>Agentation</target>
-            </trans-unit>
-            <trans-unit id="module.heading">
-                <source>Configure your AI agent for Agentation</source>
-                <target>KI-Agent für Agentation konfigurieren</target>
-            </trans-unit>
-
-            <trans-unit id="module.intro.title">
-                <source>Connect your coding agent to Agentation</source>
-                <target>Coding-Agent mit Agentation verbinden</target>
-            </trans-unit>
-            <trans-unit id="module.intro.text">
-                <source>{count, plural, one {Complete # step below} other {Complete # steps below}} to stream visual UI annotations from this site into your AI coding agent. Copy the MCP config into your IDE, flip the toolbar toggles, annotate, ship.</source>
-                <target>{count, plural, one {Folgenden # Schritt ausführen} other {Folgende # Schritte ausführen}}, um visuelle UI-Anmerkungen dieser Seite direkt in deinen KI-Coding-Agent zu streamen. MCP-Konfiguration in die IDE einfügen, Toolbar einschalten, annotieren, fertig.</target>
-            </trans-unit>
-
-            <trans-unit id="module.mcp.heading">
-                <source>MCP configuration</source>
-                <target>MCP-Konfiguration</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.intro">
-                <source>Paste the block below into your coding agent's MCP config (Claude Code ~/.claude/mcp.json, Cursor settings, Windsurf, Zed, Continue). Annotations flow directly to your agent — no copy/paste.</source>
-                <target>Den Block unten in die MCP-Konfiguration deines Coding-Agents einfügen (Claude Code ~/.claude/mcp.json, Cursor-Einstellungen, Windsurf, Zed, Continue). Anmerkungen werden direkt an den Agent übertragen — ohne Copy &amp; Paste.</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.label">
-                <source>MCP server JSON</source>
-                <target>MCP-Server JSON</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.hint">
-                <source>Pre-filled with the API key + workspace from Extension Configuration.</source>
-                <target>Vorausgefüllt mit API-Key und Workspace aus der Extension-Konfiguration.</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.copy">
-                <source>Copy to clipboard</source>
-                <target>In die Zwischenablage kopieren</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.docs">
-                <source>MCP docs</source>
-                <target>MCP-Dokumentation</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.addToCursor">
-                <source>Add to Cursor</source>
-                <target>In Cursor öffnen</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.claudeCliLabel">
-                <source>Claude Code — one-line CLI install</source>
-                <target>Claude Code — Installation per CLI-Einzeiler</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.claudeCliHint">
-                <source>Paste into a terminal where the `claude` CLI is installed to register the MCP server.</source>
-                <target>In einem Terminal mit installierter `claude`-CLI einfügen, um den MCP-Server zu registrieren.</target>
-            </trans-unit>
-            <trans-unit id="module.mcp.noApiKey">
-                <source>No API key configured. MCP only works in authenticated mode — set Agentation.apiKey in Extension Configuration.</source>
-                <target>Kein API-Key konfiguriert. MCP funktioniert nur im authentifizierten Modus — Agentation.apiKey in der Extension-Konfiguration setzen.</target>
-            </trans-unit>
-
-            <trans-unit id="module.annotations.heading">
-                <source>Stored annotations</source>
-                <target>Gespeicherte Anmerkungen</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.intro">
-                <source>Every annotation you make is stored in your browser's localStorage, scoped per BE module + record. You can delete every stored annotation across every scope in one click.</source>
-                <target>Jede Anmerkung wird im localStorage des Browsers gespeichert, pro Backend-Modul und Datensatz getrennt. Mit einem Klick kannst du alle Anmerkungen aus allen Bereichen löschen.</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.loading">
-                <source>Loading…</source>
-                <target>Lade …</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.empty">
-                <source>No annotations</source>
-                <target>Keine Anmerkungen</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.emptyLong">
-                <source>Nothing stored yet. Annotations created via the toolbar appear here.</source>
-                <target>Noch nichts gespeichert. Über die Toolbar erstellte Anmerkungen erscheinen hier.</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.onlyLocal">
-                <source>No server-side annotations. Local annotations are stored only in this browser.</source>
-                <target>Keine serverseitigen Anmerkungen. Lokale Anmerkungen liegen nur in diesem Browser.</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.localOnly">
-                <source>local only</source>
-                <target>nur lokal</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.errorPrefix">
-                <source>Sync endpoint unreachable</source>
-                <target>Sync-Endpunkt nicht erreichbar</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.errorShort">
-                <source>Sync endpoint unreachable</source>
-                <target>Sync-Endpunkt nicht erreichbar</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.onServer">
-                <source>on server</source>
-                <target>am Server</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.local">
-                <source>local</source>
-                <target>lokal</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.singular">
-                <source>annotation</source>
-                <target>Anmerkung</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.plural">
-                <source>annotations</source>
-                <target>Anmerkungen</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.emptyComment">
-                <source>(no comment)</source>
-                <target>(kein Kommentar)</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.deleteOne">
-                <source>Delete annotation</source>
-                <target>Anmerkung löschen</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.deleteAll">
-                <source>Delete all stored annotations</source>
-                <target>Alle gespeicherten Anmerkungen löschen</target>
-            </trans-unit>
-            <trans-unit id="module.annotations.reload">
-                <source>Reload annotations</source>
-                <target>Anmerkungen neu laden</target>
-            </trans-unit>
-            <trans-unit id="module.howto.heading">
-                <source>How to use</source>
-                <target>Verwendung</target>
-            </trans-unit>
-            <trans-unit id="module.howto.summary">
-                <source>{count, plural, one {# step} other {# steps}} from install to first annotation.</source>
-                <target>{count, plural, one {# Schritt} other {# Schritte}} von der Installation bis zur ersten Anmerkung.</target>
-            </trans-unit>
-            <trans-unit id="module.howto.toggleShow">
-                <source>Show step-by-step instructions</source>
-                <target>Schritt-für-Schritt-Anleitung anzeigen</target>
-            </trans-unit>
-            <trans-unit id="module.howto.step1">
-                <source>Paste the MCP JSON above into your coding agent's config and restart the agent.</source>
-                <target>Das obige MCP-JSON in die Konfiguration deines Coding-Agents einfügen und den Agent neu starten.</target>
-            </trans-unit>
-            <trans-unit id="module.howto.step2">
-                <source>Enable the toolbar: frontend via the TYPO3 Admin Panel, backend via User Settings → Agentation tab.</source>
-                <target>Toolbar aktivieren: im Frontend über das TYPO3 Admin Panel, im Backend über Benutzereinstellungen → Reiter Agentation.</target>
-            </trans-unit>
-            <trans-unit id="module.howto.step3">
-                <source>Click the floating bubble, pick an element, write a note — Agentation captures selectors, file paths and computed styles.</source>
-                <target>Auf die schwebende Sprechblase klicken, ein Element auswählen, Notiz schreiben — Agentation erfasst Selektoren, Dateipfade und berechnete Styles.</target>
-            </trans-unit>
-            <trans-unit id="module.howto.step4">
-                <source>Your agent receives the annotation through MCP and resolves it against the codebase directly.</source>
-                <target>Der Agent empfängt die Anmerkung via MCP und setzt sie direkt im Quellcode um.</target>
-            </trans-unit>
-            <trans-unit id="module.howto.readDocs">
-                <source>Read the full MCP docs</source>
-                <target>Komplette MCP-Dokumentation lesen</target>
-            </trans-unit>
-
-            <trans-unit id="module.status.heading">
-                <source>Status</source>
-                <target>Status</target>
-            </trans-unit>
-            <trans-unit id="module.status.apiKey">
-                <source>API key</source>
-                <target>API-Key</target>
-            </trans-unit>
-            <trans-unit id="module.status.bundle">
-                <source>JS bundle</source>
-                <target>JS-Bundle</target>
-            </trans-unit>
-            <trans-unit id="module.status.context">
-                <source>Application context</source>
-                <target>Anwendungskontext</target>
-            </trans-unit>
-            <trans-unit id="module.status.frontend">
-                <source>Frontend toggle</source>
-                <target>Frontend-Schalter</target>
-            </trans-unit>
-            <trans-unit id="module.status.backend">
-                <source>Backend toggle</source>
-                <target>Backend-Schalter</target>
-            </trans-unit>
-            <trans-unit id="module.status.workspace">
-                <source>Workspace</source>
-                <target>Workspace</target>
-            </trans-unit>
-            <trans-unit id="module.status.set">
-                <source>Set</source>
-                <target>Gesetzt</target>
-            </trans-unit>
-            <trans-unit id="module.status.missing">
-                <source>Missing</source>
-                <target>Fehlt</target>
-            </trans-unit>
-            <trans-unit id="module.status.built">
-                <source>Built</source>
-                <target>Gebaut</target>
-            </trans-unit>
-            <trans-unit id="module.status.notBuilt">
-                <source>Run npm run build</source>
-                <target>npm run build ausführen</target>
-            </trans-unit>
-            <trans-unit id="module.status.allowed">
-                <source>Allowed</source>
-                <target>Erlaubt</target>
-            </trans-unit>
-            <trans-unit id="module.status.blocked">
-                <source>Blocked</source>
-                <target>Gesperrt</target>
-            </trans-unit>
-            <trans-unit id="module.status.on">
-                <source>On</source>
-                <target>An</target>
-            </trans-unit>
-            <trans-unit id="module.status.off">
-                <source>Off</source>
-                <target>Aus</target>
-            </trans-unit>
-            <trans-unit id="module.links.site">
-                <source>Open agentation.com</source>
-                <target>agentation.com öffnen</target>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="de">
+  <file id="messages" original="messages">
+    <unit id="mlang_tabs_tab">
+      <segment>
+        <source>Agentation</source>
+        <target>Agentation</target>
+      </segment>
+    </unit>
+    <unit id="mlang_labels_tablabel">
+      <segment>
+        <source>Agentation</source>
+        <target>Agentation</target>
+      </segment>
+    </unit>
+    <unit id="mlang_labels_tabdescr">
+      <segment>
+        <source>Manage the agentation MCP config, inspect status, and review which users have the toolbar enabled.</source>
+        <target>MCP-Konfiguration verwalten, Status prüfen und sehen, welche Benutzer die Toolbar aktiviert haben.</target>
+      </segment>
+    </unit>
+    <unit id="mod.tabs.label">
+      <segment>
+        <source>Agentation</source>
+        <target>Agentation</target>
+      </segment>
+    </unit>
+    <unit id="module.heading">
+      <segment>
+        <source>Configure your AI agent for Agentation</source>
+        <target>KI-Agent für Agentation konfigurieren</target>
+      </segment>
+    </unit>
+    <unit id="module.intro.title">
+      <segment>
+        <source>Connect your coding agent to Agentation</source>
+        <target>Coding-Agent mit Agentation verbinden</target>
+      </segment>
+    </unit>
+    <unit id="module.intro.text">
+      <segment>
+        <source>{count, plural, one {Complete # step below} other {Complete # steps below}} to stream visual UI annotations from this site into your AI coding agent. Copy the MCP config into your IDE, flip the toolbar toggles, annotate, ship.</source>
+        <target>{count, plural, one {Folgenden # Schritt ausführen} other {Folgende # Schritte ausführen}}, um visuelle UI-Anmerkungen dieser Seite direkt in deinen KI-Coding-Agent zu streamen. MCP-Konfiguration in die IDE einfügen, Toolbar einschalten, annotieren, fertig.</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.heading">
+      <segment>
+        <source>MCP configuration</source>
+        <target>MCP-Konfiguration</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.intro">
+      <segment>
+        <source>Paste the block below into your coding agent's MCP config (Claude Code ~/.claude/mcp.json, Cursor settings, Windsurf, Zed, Continue). Annotations flow directly to your agent — no copy/paste.</source>
+        <target>Den Block unten in die MCP-Konfiguration deines Coding-Agents einfügen (Claude Code ~/.claude/mcp.json, Cursor-Einstellungen, Windsurf, Zed, Continue). Anmerkungen werden direkt an den Agent übertragen — ohne Copy &amp; Paste.</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.label">
+      <segment>
+        <source>MCP server JSON</source>
+        <target>MCP-Server JSON</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.hint">
+      <segment>
+        <source>Pre-filled with the API key + workspace from Extension Configuration.</source>
+        <target>Vorausgefüllt mit API-Key und Workspace aus der Extension-Konfiguration.</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.copy">
+      <segment>
+        <source>Copy to clipboard</source>
+        <target>In die Zwischenablage kopieren</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.docs">
+      <segment>
+        <source>MCP docs</source>
+        <target>MCP-Dokumentation</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.addToCursor">
+      <segment>
+        <source>Add to Cursor</source>
+        <target>In Cursor öffnen</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.claudeCliLabel">
+      <segment>
+        <source>Claude Code — one-line CLI install</source>
+        <target>Claude Code — Installation per CLI-Einzeiler</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.claudeCliHint">
+      <segment>
+        <source>Paste into a terminal where the `claude` CLI is installed to register the MCP server.</source>
+        <target>In einem Terminal mit installierter `claude`-CLI einfügen, um den MCP-Server zu registrieren.</target>
+      </segment>
+    </unit>
+    <unit id="module.mcp.noApiKey">
+      <segment>
+        <source>No API key configured. MCP only works in authenticated mode — set Agentation.apiKey in Extension Configuration.</source>
+        <target>Kein API-Key konfiguriert. MCP funktioniert nur im authentifizierten Modus — Agentation.apiKey in der Extension-Konfiguration setzen.</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.heading">
+      <segment>
+        <source>Stored annotations</source>
+        <target>Gespeicherte Anmerkungen</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.intro">
+      <segment>
+        <source>Every annotation you make is stored in your browser's localStorage, scoped per BE module + record. You can delete every stored annotation across every scope in one click.</source>
+        <target>Jede Anmerkung wird im localStorage des Browsers gespeichert, pro Backend-Modul und Datensatz getrennt. Mit einem Klick kannst du alle Anmerkungen aus allen Bereichen löschen.</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.loading">
+      <segment>
+        <source>Loading…</source>
+        <target>Lade …</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.empty">
+      <segment>
+        <source>No annotations</source>
+        <target>Keine Anmerkungen</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.emptyLong">
+      <segment>
+        <source>Nothing stored yet. Annotations created via the toolbar appear here.</source>
+        <target>Noch nichts gespeichert. Über die Toolbar erstellte Anmerkungen erscheinen hier.</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.onlyLocal">
+      <segment>
+        <source>No server-side annotations. Local annotations are stored only in this browser.</source>
+        <target>Keine serverseitigen Anmerkungen. Lokale Anmerkungen liegen nur in diesem Browser.</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.localOnly">
+      <segment>
+        <source>local only</source>
+        <target>nur lokal</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.errorPrefix">
+      <segment>
+        <source>Sync endpoint unreachable</source>
+        <target>Sync-Endpunkt nicht erreichbar</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.errorShort">
+      <segment>
+        <source>Sync endpoint unreachable</source>
+        <target>Sync-Endpunkt nicht erreichbar</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.onServer">
+      <segment>
+        <source>on server</source>
+        <target>am Server</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.local">
+      <segment>
+        <source>local</source>
+        <target>lokal</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.singular">
+      <segment>
+        <source>annotation</source>
+        <target>Anmerkung</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.plural">
+      <segment>
+        <source>annotations</source>
+        <target>Anmerkungen</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.emptyComment">
+      <segment>
+        <source>(no comment)</source>
+        <target>(kein Kommentar)</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.deleteOne">
+      <segment>
+        <source>Delete annotation</source>
+        <target>Anmerkung löschen</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.deleteAll">
+      <segment>
+        <source>Delete all stored annotations</source>
+        <target>Alle gespeicherten Anmerkungen löschen</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.reload">
+      <segment>
+        <source>Reload annotations</source>
+        <target>Anmerkungen neu laden</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.heading">
+      <segment>
+        <source>How to use</source>
+        <target>Verwendung</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.summary">
+      <segment>
+        <source>{count, plural, one {# step} other {# steps}} from install to first annotation.</source>
+        <target>{count, plural, one {# Schritt} other {# Schritte}} von der Installation bis zur ersten Anmerkung.</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.toggleShow">
+      <segment>
+        <source>Show step-by-step instructions</source>
+        <target>Schritt-für-Schritt-Anleitung anzeigen</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.step1">
+      <segment>
+        <source>Paste the MCP JSON above into your coding agent's config and restart the agent.</source>
+        <target>Das obige MCP-JSON in die Konfiguration deines Coding-Agents einfügen und den Agent neu starten.</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.step2">
+      <segment>
+        <source>Enable the toolbar: frontend via the TYPO3 Admin Panel, backend via User Settings → Agentation tab.</source>
+        <target>Toolbar aktivieren: im Frontend über das TYPO3 Admin Panel, im Backend über Benutzereinstellungen → Reiter Agentation.</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.step3">
+      <segment>
+        <source>Click the floating bubble, pick an element, write a note — Agentation captures selectors, file paths and computed styles.</source>
+        <target>Auf die schwebende Sprechblase klicken, ein Element auswählen, Notiz schreiben — Agentation erfasst Selektoren, Dateipfade und berechnete Styles.</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.step4">
+      <segment>
+        <source>Your agent receives the annotation through MCP and resolves it against the codebase directly.</source>
+        <target>Der Agent empfängt die Anmerkung via MCP und setzt sie direkt im Quellcode um.</target>
+      </segment>
+    </unit>
+    <unit id="module.howto.readDocs">
+      <segment>
+        <source>Read the full MCP docs</source>
+        <target>Komplette MCP-Dokumentation lesen</target>
+      </segment>
+    </unit>
+    <unit id="module.status.heading">
+      <segment>
+        <source>Status</source>
+        <target>Status</target>
+      </segment>
+    </unit>
+    <unit id="module.status.apiKey">
+      <segment>
+        <source>API key</source>
+        <target>API-Key</target>
+      </segment>
+    </unit>
+    <unit id="module.status.bundle">
+      <segment>
+        <source>JS bundle</source>
+        <target>JS-Bundle</target>
+      </segment>
+    </unit>
+    <unit id="module.status.context">
+      <segment>
+        <source>Application context</source>
+        <target>Anwendungskontext</target>
+      </segment>
+    </unit>
+    <unit id="module.status.frontend">
+      <segment>
+        <source>Frontend toggle</source>
+        <target>Frontend-Schalter</target>
+      </segment>
+    </unit>
+    <unit id="module.status.backend">
+      <segment>
+        <source>Backend toggle</source>
+        <target>Backend-Schalter</target>
+      </segment>
+    </unit>
+    <unit id="module.status.workspace">
+      <segment>
+        <source>Workspace</source>
+        <target>Workspace</target>
+      </segment>
+    </unit>
+    <unit id="module.status.set">
+      <segment>
+        <source>Set</source>
+        <target>Gesetzt</target>
+      </segment>
+    </unit>
+    <unit id="module.status.missing">
+      <segment>
+        <source>Missing</source>
+        <target>Fehlt</target>
+      </segment>
+    </unit>
+    <unit id="module.status.built">
+      <segment>
+        <source>Built</source>
+        <target>Gebaut</target>
+      </segment>
+    </unit>
+    <unit id="module.status.notBuilt">
+      <segment>
+        <source>Run npm run build</source>
+        <target>npm run build ausführen</target>
+      </segment>
+    </unit>
+    <unit id="module.status.allowed">
+      <segment>
+        <source>Allowed</source>
+        <target>Erlaubt</target>
+      </segment>
+    </unit>
+    <unit id="module.status.blocked">
+      <segment>
+        <source>Blocked</source>
+        <target>Gesperrt</target>
+      </segment>
+    </unit>
+    <unit id="module.status.on">
+      <segment>
+        <source>On</source>
+        <target>An</target>
+      </segment>
+    </unit>
+    <unit id="module.status.off">
+      <segment>
+        <source>Off</source>
+        <target>Aus</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.routeNotRegistered">
+      <segment>
+        <source>Route not registered</source>
+        <target>Route nicht registriert</target>
+      </segment>
+    </unit>
+    <unit id="module.annotations.requestFailed">
+      <segment>
+        <source>Request failed</source>
+        <target>Anfrage fehlgeschlagen</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.nothingToCopy">
+      <segment>
+        <source>Nothing to copy.</source>
+        <target>Nichts zum Kopieren vorhanden.</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.copySuccess">
+      <segment>
+        <source>MCP config copied to clipboard.</source>
+        <target>MCP-Konfiguration in die Zwischenablage kopiert.</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.copyFailedPrefix">
+      <segment>
+        <source>Copy failed:</source>
+        <target>Kopieren fehlgeschlagen:</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.annotationDeleted">
+      <segment>
+        <source>Annotation deleted.</source>
+        <target>Anmerkung gelöscht.</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.deleteFailed">
+      <segment>
+        <source>Delete failed.</source>
+        <target>Löschen fehlgeschlagen.</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.noneToDelete">
+      <segment>
+        <source>No stored annotations to delete.</source>
+        <target>Keine gespeicherten Anmerkungen zum Löschen vorhanden.</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.deleteAllConfirm">
+      <segment>
+        <source>Delete all</source>
+        <target>Alle löschen</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.deleteAllWarning">
+      <segment>
+        <source>This cannot be undone.</source>
+        <target>Dies kann nicht rückgängig gemacht werden.</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.deleted">
+      <segment>
+        <source>Deleted</source>
+        <target>Gelöscht</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.and">
+      <segment>
+        <source>and</source>
+        <target>und</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.serverAnnotationSingular">
+      <segment>
+        <source>server annotation</source>
+        <target>Server-Anmerkung</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.serverAnnotationPlural">
+      <segment>
+        <source>server annotations</source>
+        <target>Server-Anmerkungen</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.localStorageKeySingular">
+      <segment>
+        <source>local storage key</source>
+        <target>lokaler Speicherschlüssel</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.localStorageKeyPlural">
+      <segment>
+        <source>local storage keys</source>
+        <target>lokale Speicherschlüssel</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.failed">
+      <segment>
+        <source>failed</source>
+        <target>fehlgeschlagen</target>
+      </segment>
+    </unit>
+    <unit id="module.notifications.localCleared">
+      <segment>
+        <source>Local cleared</source>
+        <target>Lokal gelöscht</target>
+      </segment>
+    </unit>
+    <unit id="module.errors.missingAnnotationId">
+      <segment>
+        <source>Missing annotation id</source>
+        <target>Anmerkungs-ID fehlt</target>
+      </segment>
+    </unit>
+    <unit id="module.errors.toolbarDisabled">
+      <segment>
+        <source>Agentation backend toolbar is disabled for this user</source>
+        <target>Die Agentation-Toolbar im Backend ist für diesen Benutzer deaktiviert</target>
+      </segment>
+    </unit>
+    <unit id="module.errors.invalidPath">
+      <segment>
+        <source>Missing or invalid path</source>
+        <target>Pfad fehlt oder ist ungültig</target>
+      </segment>
+    </unit>
+    <unit id="module.errors.syncUnreachable">
+      <segment>
+        <source>Sync endpoint unreachable</source>
+        <target>Sync-Endpunkt nicht erreichbar</target>
+      </segment>
+    </unit>
+    <unit id="module.links.site">
+      <segment>
+        <source>Open agentation.com</source>
+        <target>agentation.com öffnen</target>
+      </segment>
+    </unit>
+  </file>
 </xliff>

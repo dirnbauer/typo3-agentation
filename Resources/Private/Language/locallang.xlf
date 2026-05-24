@@ -1,59 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-    <file source-language="en" datatype="plaintext" original="messages" date="2026-04-19T00:00:00Z" product-name="agentation">
-        <header/>
-        <body>
-            <trans-unit id="setup.tab">
-                <source>Agentation</source>
-            </trans-unit>
-            <trans-unit id="setup.backend.enabled">
-                <source>Enable Agentation toolbar in TYPO3 backend</source>
-            </trans-unit>
-            <trans-unit id="setup.frontend.enabled">
-                <source>Enable Agentation toolbar in TYPO3 frontend (requires Admin Panel opt-in per request)</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.label">
-                <source>Agentation</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.shortinfo.on">
-                <source>Toolbar on</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.shortinfo.off">
-                <source>Toolbar off</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.enabled">
-                <source>Show Agentation toolbar on this page</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.status">
-                <source>Status</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.position">
-                <source>Toolbar position</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.scope">
-                <source>Annotation scope</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.scope.frontend">
-                <source>Frontend page only</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.scope.frontend+adminpanel">
-                <source>Frontend page + admin panel chrome</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.apiKey">
-                <source>API key</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.workspace">
-                <source>Workspace</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.context">
-                <source>Application context</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.noApiKey">
-                <source>No API key set — running in local copy-paste mode. Set one in Extension Configuration to enable MCP and webhooks.</source>
-            </trans-unit>
-            <trans-unit id="adminpanel.openBackendModule">
-                <source>Open Agentation backend module (MCP config &amp; status)</source>
-            </trans-unit>
-        </body>
-    </file>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en">
+  <file id="messages" original="messages">
+    <unit id="setup.tab">
+      <segment>
+        <source>Agentation</source>
+      </segment>
+    </unit>
+    <unit id="setup.backend.enabled">
+      <segment>
+        <source>Enable Agentation toolbar in TYPO3 backend</source>
+      </segment>
+    </unit>
+    <unit id="setup.frontend.enabled">
+      <segment>
+        <source>Enable Agentation toolbar in TYPO3 frontend (requires Admin Panel opt-in per request)</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.label">
+      <segment>
+        <source>Agentation</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.shortinfo.on">
+      <segment>
+        <source>Toolbar on</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.shortinfo.off">
+      <segment>
+        <source>Toolbar off</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.enabled">
+      <segment>
+        <source>Show Agentation toolbar on this page</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status">
+      <segment>
+        <source>Status</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.position">
+      <segment>
+        <source>Toolbar position</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.scope">
+      <segment>
+        <source>Annotation scope</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.scope.frontend">
+      <segment>
+        <source>Frontend page only</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.scope.frontend+adminpanel">
+      <segment>
+        <source>Frontend page + admin panel chrome</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.apiKey">
+      <segment>
+        <source>API key</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.workspace">
+      <segment>
+        <source>Workspace</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.context">
+      <segment>
+        <source>Application context</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.noApiKey">
+      <segment>
+        <source>No API key set — running in local copy-paste mode. Set one in Extension Configuration to enable MCP and webhooks.</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.openBackendModule">
+      <segment>
+        <source>Open Agentation backend module (MCP config &amp; status)</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.on">
+      <segment>
+        <source>On</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.off">
+      <segment>
+        <source>Off</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.set">
+      <segment>
+        <source>Set</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.localOnly">
+      <segment>
+        <source>Local-only</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.allowed">
+      <segment>
+        <source>Allowed</source>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.blockedByContext">
+      <segment>
+        <source>Blocked by contextGate</source>
+      </segment>
+    </unit>
+  </file>
 </xliff>
