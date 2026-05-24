@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.0] - 2026-05-24
+
+### Changed
+
+- Adopt TYPO3 14 translation-domain syntax in Fluid templates and backend
+  translation helpers.
+
 ## [1.0.0] - 2026-05-24
 
 ### Added

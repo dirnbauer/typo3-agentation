@@ -276,7 +276,7 @@ final class ApiProxyController
         $languageService = $GLOBALS['LANG'] ?? null;
         $label = is_object($languageService) && method_exists($languageService, 'sL')
             ? (string)$languageService->sL(
-                'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:' . $key
+                'agentation.mod:' . $key
             )
             : '';
         return $label !== '' ? $label : $key;

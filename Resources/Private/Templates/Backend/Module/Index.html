@@ -13,10 +13,10 @@
     <div class="callout callout-info mb-4">
         <div class="callout-body">
             <strong>
-                <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.intro.title" />
+                <f:translate domain="agentation.mod" key="module.intro.title" />
             </strong>
             <p class="mb-0">
-                <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.intro.text"
+                <f:translate domain="agentation.mod" key="module.intro.text"
                              arguments="{count: stepCount}" />
             </p>
         </div>
@@ -28,25 +28,25 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.heading" />
+                        <f:translate domain="agentation.mod" key="module.mcp.heading" />
                     </h2>
                 </div>
                 <div class="card-body">
                     <p class="text-body-secondary">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.intro" />
+                        <f:translate domain="agentation.mod" key="module.mcp.intro" />
                     </p>
 
                     <f:if condition="!{apiKeyConfigured}">
                         <div class="callout callout-warning">
                             <div class="callout-body">
-                                <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.noApiKey" />
+                                <f:translate domain="agentation.mod" key="module.mcp.noApiKey" />
                             </div>
                         </div>
                     </f:if>
 
                     <div class="mb-3">
                         <label class="form-label" for="agentation-mcp-json">
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.label" />
+                            <f:translate domain="agentation.mod" key="module.mcp.label" />
                         </label>
                         <textarea id="agentation-mcp-json"
                                   class="form-control font-monospace"
@@ -55,7 +55,7 @@
                                   spellcheck="false"
                                   aria-describedby="agentation-mcp-hint">{mcpJson}</textarea>
                         <small id="agentation-mcp-hint" class="form-text text-body-secondary">
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.hint" />
+                            <f:translate domain="agentation.mod" key="module.mcp.hint" />
                         </small>
                     </div>
 
@@ -64,26 +64,26 @@
                            href="{cursorDeepLink}"
                            target="_top">
                             <typo3-backend-icon identifier="actions-plus" size="small"></typo3-backend-icon>
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.addToCursor" />
+                            <f:translate domain="agentation.mod" key="module.mcp.addToCursor" />
                         </a>
                         <button type="button"
                                 class="btn btn-default"
                                 data-agentation-copy="#agentation-mcp-json">
                             <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.copy" />
+                            <f:translate domain="agentation.mod" key="module.mcp.copy" />
                         </button>
                         <a class="btn btn-default"
                            href="{mcpDocsUrl}"
                            target="_blank"
                            rel="noopener noreferrer">
                             <typo3-backend-icon identifier="actions-link" size="small"></typo3-backend-icon>
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.docs" />
+                            <f:translate domain="agentation.mod" key="module.mcp.docs" />
                         </a>
                     </div>
 
                     <div class="mt-4">
                         <label class="form-label" for="agentation-claude-cli">
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.claudeCliLabel" />
+                            <f:translate domain="agentation.mod" key="module.mcp.claudeCliLabel" />
                         </label>
                         <div class="input-group">
                             <input id="agentation-claude-cli"
@@ -95,12 +95,12 @@
                             <button type="button"
                                     class="btn btn-default"
                                     data-agentation-copy="#agentation-claude-cli"
-                                    title="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.copy')}">
+                                    title="{f:translate(domain: 'agentation.mod', key: 'module.mcp.copy')}">
                                 <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
                             </button>
                         </div>
                         <small id="agentation-claude-cli-hint" class="form-text text-body-secondary">
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.mcp.claudeCliHint" />
+                            <f:translate domain="agentation.mod" key="module.mcp.claudeCliHint" />
                         </small>
                     </div>
                 </div>
@@ -109,29 +109,29 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.heading" />
+                        <f:translate domain="agentation.mod" key="module.howto.heading" />
                     </h2>
                 </div>
                 <div class="card-body">
                     <p class="text-body-secondary mb-3">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.summary"
+                        <f:translate domain="agentation.mod" key="module.howto.summary"
                                      arguments="{count: stepCount}" />
                     </p>
 
                     <details class="agentation-details">
                         <summary>
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.toggleShow" />
+                            <f:translate domain="agentation.mod" key="module.howto.toggleShow" />
                         </summary>
                         <div class="mt-3">
                             <ol class="mb-3">
-                                <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step1" /></li>
-                                <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step2" /></li>
-                                <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step3" /></li>
-                                <li><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.step4" /></li>
+                                <li><f:translate domain="agentation.mod" key="module.howto.step1" /></li>
+                                <li><f:translate domain="agentation.mod" key="module.howto.step2" /></li>
+                                <li><f:translate domain="agentation.mod" key="module.howto.step3" /></li>
+                                <li><f:translate domain="agentation.mod" key="module.howto.step4" /></li>
                             </ol>
                             <p class="mb-0">
                                 <a href="{mcpDocsUrl}" target="_blank" rel="noopener noreferrer">
-                                    <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.howto.readDocs" />
+                                    <f:translate domain="agentation.mod" key="module.howto.readDocs" />
                                     &nbsp;&rarr;
                                 </a>
                             </p>
@@ -145,64 +145,64 @@
         <div class="col-lg-4">
             <div class="card mb-3"
                  data-agentation-annotations
-                 data-loading="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading')}"
-                 data-empty="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.empty')}"
-                 data-empty-long="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.emptyLong')}"
-                 data-only-local="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.onlyLocal')}"
-                 data-error-prefix="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.errorPrefix')}"
-                 data-error-short="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.errorShort')}"
-                 data-on-server="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.onServer')}"
-                 data-local="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.local')}"
-                 data-annotation-singular="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.singular')}"
-                 data-annotation-plural="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.plural')}"
-                 data-empty-comment="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.emptyComment')}"
-                 data-delete-one="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.deleteOne')}"
-                 data-route-not-registered="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.routeNotRegistered')}"
-                 data-request-failed="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.requestFailed')}"
-                 data-nothing-to-copy="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.nothingToCopy')}"
-                 data-copy-success="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.copySuccess')}"
-                 data-copy-failed-prefix="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.copyFailedPrefix')}"
-                 data-annotation-deleted="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.annotationDeleted')}"
-                 data-delete-failed="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.deleteFailed')}"
-                 data-none-to-delete="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.noneToDelete')}"
-                 data-delete-all-confirm="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.deleteAllConfirm')}"
-                 data-delete-all-warning="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.deleteAllWarning')}"
-                 data-deleted="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.deleted')}"
-                 data-and="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.and')}"
-                 data-server-annotation-singular="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.serverAnnotationSingular')}"
-                 data-server-annotation-plural="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.serverAnnotationPlural')}"
-                 data-local-storage-key-singular="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.localStorageKeySingular')}"
-                 data-local-storage-key-plural="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.localStorageKeyPlural')}"
-                 data-failed="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.failed')}"
-                 data-local-cleared="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.notifications.localCleared')}">
+                 data-loading="{f:translate(domain: 'agentation.mod', key: 'module.annotations.loading')}"
+                 data-empty="{f:translate(domain: 'agentation.mod', key: 'module.annotations.empty')}"
+                 data-empty-long="{f:translate(domain: 'agentation.mod', key: 'module.annotations.emptyLong')}"
+                 data-only-local="{f:translate(domain: 'agentation.mod', key: 'module.annotations.onlyLocal')}"
+                 data-error-prefix="{f:translate(domain: 'agentation.mod', key: 'module.annotations.errorPrefix')}"
+                 data-error-short="{f:translate(domain: 'agentation.mod', key: 'module.annotations.errorShort')}"
+                 data-on-server="{f:translate(domain: 'agentation.mod', key: 'module.annotations.onServer')}"
+                 data-local="{f:translate(domain: 'agentation.mod', key: 'module.annotations.local')}"
+                 data-annotation-singular="{f:translate(domain: 'agentation.mod', key: 'module.annotations.singular')}"
+                 data-annotation-plural="{f:translate(domain: 'agentation.mod', key: 'module.annotations.plural')}"
+                 data-empty-comment="{f:translate(domain: 'agentation.mod', key: 'module.annotations.emptyComment')}"
+                 data-delete-one="{f:translate(domain: 'agentation.mod', key: 'module.annotations.deleteOne')}"
+                 data-route-not-registered="{f:translate(domain: 'agentation.mod', key: 'module.annotations.routeNotRegistered')}"
+                 data-request-failed="{f:translate(domain: 'agentation.mod', key: 'module.annotations.requestFailed')}"
+                 data-nothing-to-copy="{f:translate(domain: 'agentation.mod', key: 'module.notifications.nothingToCopy')}"
+                 data-copy-success="{f:translate(domain: 'agentation.mod', key: 'module.notifications.copySuccess')}"
+                 data-copy-failed-prefix="{f:translate(domain: 'agentation.mod', key: 'module.notifications.copyFailedPrefix')}"
+                 data-annotation-deleted="{f:translate(domain: 'agentation.mod', key: 'module.notifications.annotationDeleted')}"
+                 data-delete-failed="{f:translate(domain: 'agentation.mod', key: 'module.notifications.deleteFailed')}"
+                 data-none-to-delete="{f:translate(domain: 'agentation.mod', key: 'module.notifications.noneToDelete')}"
+                 data-delete-all-confirm="{f:translate(domain: 'agentation.mod', key: 'module.notifications.deleteAllConfirm')}"
+                 data-delete-all-warning="{f:translate(domain: 'agentation.mod', key: 'module.notifications.deleteAllWarning')}"
+                 data-deleted="{f:translate(domain: 'agentation.mod', key: 'module.notifications.deleted')}"
+                 data-and="{f:translate(domain: 'agentation.mod', key: 'module.notifications.and')}"
+                 data-server-annotation-singular="{f:translate(domain: 'agentation.mod', key: 'module.notifications.serverAnnotationSingular')}"
+                 data-server-annotation-plural="{f:translate(domain: 'agentation.mod', key: 'module.notifications.serverAnnotationPlural')}"
+                 data-local-storage-key-singular="{f:translate(domain: 'agentation.mod', key: 'module.notifications.localStorageKeySingular')}"
+                 data-local-storage-key-plural="{f:translate(domain: 'agentation.mod', key: 'module.notifications.localStorageKeyPlural')}"
+                 data-failed="{f:translate(domain: 'agentation.mod', key: 'module.notifications.failed')}"
+                 data-local-cleared="{f:translate(domain: 'agentation.mod', key: 'module.notifications.localCleared')}">
                 <div class="card-header d-flex align-items-center justify-content-between gap-2">
                     <h2 class="card-title mb-0">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.heading" />
+                        <f:translate domain="agentation.mod" key="module.annotations.heading" />
                     </h2>
                     <div class="agentation-annotations-toolbar">
                         <button type="button"
                                 class="btn btn-sm btn-default"
                                 data-agentation-reload
-                                title="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.reload')}">
+                                title="{f:translate(domain: 'agentation.mod', key: 'module.annotations.reload')}">
                             <typo3-backend-icon identifier="actions-refresh" size="small"></typo3-backend-icon>
                         </button>
                         <button type="button"
                                 class="btn btn-sm btn-danger"
                                 data-agentation-delete-all
                                 disabled
-                                title="{f:translate(key: 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.deleteAll')}">
+                                title="{f:translate(domain: 'agentation.mod', key: 'module.annotations.deleteAll')}">
                             <typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>
                         </button>
                     </div>
                 </div>
                 <div class="card-body py-2 px-3">
                     <small class="text-body-secondary text-nowrap" data-agentation-counter>
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading" />
+                        <f:translate domain="agentation.mod" key="module.annotations.loading" />
                     </small>
                 </div>
                 <ul class="list-group list-group-flush agentation-annotation-list" data-agentation-list>
                     <li class="list-group-item text-body-secondary">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.annotations.loading" />
+                        <f:translate domain="agentation.mod" key="module.annotations.loading" />
                     </li>
                 </ul>
             </div>
@@ -210,48 +210,48 @@
             <div class="card mb-4">
                 <div class="card-header">
                     <h2 class="card-title mb-0">
-                        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.heading" />
+                        <f:translate domain="agentation.mod" key="module.status.heading" />
                     </h2>
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.apiKey" /></span>
+                        <span><f:translate domain="agentation.mod" key="module.status.apiKey" /></span>
                         <f:if condition="{apiKeyConfigured}">
-                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.set" /></span></f:then>
-                            <f:else><span class="badge bg-warning"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.missing" /></span></f:else>
+                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.set" /></span></f:then>
+                            <f:else><span class="badge bg-warning"><f:translate domain="agentation.mod" key="module.status.missing" /></span></f:else>
                         </f:if>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.bundle" /></span>
+                        <span><f:translate domain="agentation.mod" key="module.status.bundle" /></span>
                         <f:if condition="{bundleBuilt}">
-                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.built" /></span></f:then>
-                            <f:else><span class="badge bg-danger"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.notBuilt" /></span></f:else>
+                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.built" /></span></f:then>
+                            <f:else><span class="badge bg-danger"><f:translate domain="agentation.mod" key="module.status.notBuilt" /></span></f:else>
                         </f:if>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.context" /></span>
+                        <span><f:translate domain="agentation.mod" key="module.status.context" /></span>
                         <f:if condition="{contextAllowed}">
-                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.allowed" /></span></f:then>
-                            <f:else><span class="badge bg-secondary"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.blocked" /></span></f:else>
+                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.allowed" /></span></f:then>
+                            <f:else><span class="badge bg-secondary"><f:translate domain="agentation.mod" key="module.status.blocked" /></span></f:else>
                         </f:if>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.frontend" /></span>
+                        <span><f:translate domain="agentation.mod" key="module.status.frontend" /></span>
                         <f:if condition="{frontendEnabled}">
-                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.on" /></span></f:then>
-                            <f:else><span class="badge bg-secondary"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.off" /></span></f:else>
+                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.on" /></span></f:then>
+                            <f:else><span class="badge bg-secondary"><f:translate domain="agentation.mod" key="module.status.off" /></span></f:else>
                         </f:if>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.backend" /></span>
+                        <span><f:translate domain="agentation.mod" key="module.status.backend" /></span>
                         <f:if condition="{backendEnabled}">
-                            <f:then><span class="badge bg-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.on" /></span></f:then>
-                            <f:else><span class="badge bg-secondary"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.off" /></span></f:else>
+                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.on" /></span></f:then>
+                            <f:else><span class="badge bg-secondary"><f:translate domain="agentation.mod" key="module.status.off" /></span></f:else>
                         </f:if>
                     </li>
                     <li class="list-group-item">
                         <small class="text-body-secondary d-block mb-1">
-                            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.status.workspace" />
+                            <f:translate domain="agentation.mod" key="module.status.workspace" />
                         </small>
                         <code>{workspaceId -> f:or(alternative: '—')}</code>
                     </li>
@@ -259,7 +259,7 @@
             </div>
 
             <a class="btn btn-default w-100" href="https://www.agentation.com/" target="_blank" rel="noopener noreferrer">
-                <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf:module.links.site" />
+                <f:translate domain="agentation.mod" key="module.links.site" />
             </a>
         </div>
     </div>

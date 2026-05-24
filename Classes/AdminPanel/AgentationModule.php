@@ -52,7 +52,7 @@ final class AgentationModule extends AbstractModule implements
     public function getLabel(): string
     {
         return $this->getLanguageService()->sL(
-            'LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.label'
+            'agentation.messages:adminpanel.label'
         );
     }
 
@@ -65,8 +65,8 @@ final class AgentationModule extends AbstractModule implements
     {
         return $this->getLanguageService()->sL(
             $this->isEnabled()
-                ? 'LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.shortinfo.on'
-                : 'LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.shortinfo.off'
+                ? 'agentation.messages:adminpanel.shortinfo.on'
+                : 'agentation.messages:adminpanel.shortinfo.off'
         );
     }
 

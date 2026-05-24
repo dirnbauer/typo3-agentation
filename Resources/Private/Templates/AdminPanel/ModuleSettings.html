@@ -10,14 +10,14 @@
                value="1"
                {f:if(condition: enabled, then: 'checked="checked"')} />
         <label for="agentation_enabled">
-            <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.enabled" />
+            <f:translate domain="agentation.messages" key="adminpanel.enabled" />
         </label>
     </div>
 </fieldset>
 
 <fieldset class="typo3-adminPanel-form-group">
     <label for="agentation_position" class="typo3-adminPanel-form-label">
-        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.position" />
+        <f:translate domain="agentation.messages" key="adminpanel.position" />
     </label>
     <select id="agentation_position"
             name="TSFE_ADMIN_PANEL[agentation_position]"
@@ -30,14 +30,14 @@
 
 <fieldset class="typo3-adminPanel-form-group">
     <label for="agentation_scope" class="typo3-adminPanel-form-label">
-        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.scope" />
+        <f:translate domain="agentation.messages" key="adminpanel.scope" />
     </label>
     <select id="agentation_scope"
             name="TSFE_ADMIN_PANEL[agentation_scope]"
             class="typo3-adminPanel-form-select">
         <f:for each="{scopes}" as="s">
             <option value="{s}" {f:if(condition: '{s} == {scope}', then: 'selected="selected"')}>
-                <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.scope.{s}" />
+                <f:translate domain="agentation.messages" key="adminpanel.scope.{s}" />
             </option>
         </f:for>
     </select>
@@ -45,7 +45,7 @@
 
 <f:if condition="!{apiKeySet}">
     <p class="typo3-adminPanel-form-note">
-        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.noApiKey" />
+        <f:translate domain="agentation.messages" key="adminpanel.noApiKey" />
     </p>
 </f:if>
 

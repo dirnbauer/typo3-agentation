@@ -5,41 +5,41 @@
     <table class="typo3-adminPanel-table">
         <tbody>
             <tr>
-                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status" /></th>
+                <th><f:translate domain="agentation.messages" key="adminpanel.status" /></th>
                 <td>
                     <f:if condition="{enabled}">
-                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.on" /></span></f:then>
-                        <f:else><span class="typo3-adminPanel-badge"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.off" /></span></f:else>
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate domain="agentation.messages" key="adminpanel.status.on" /></span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge"><f:translate domain="agentation.messages" key="adminpanel.status.off" /></span></f:else>
                     </f:if>
                 </td>
             </tr>
             <tr>
-                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.position" /></th>
+                <th><f:translate domain="agentation.messages" key="adminpanel.position" /></th>
                 <td><code>{position}</code></td>
             </tr>
             <tr>
-                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.scope" /></th>
+                <th><f:translate domain="agentation.messages" key="adminpanel.scope" /></th>
                 <td><code>{scope}</code></td>
             </tr>
             <tr>
-                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.apiKey" /></th>
+                <th><f:translate domain="agentation.messages" key="adminpanel.apiKey" /></th>
                 <td>
                     <f:if condition="{apiKey}">
-                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.set" /></span></f:then>
-                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.localOnly" /></span></f:else>
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate domain="agentation.messages" key="adminpanel.status.set" /></span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning"><f:translate domain="agentation.messages" key="adminpanel.status.localOnly" /></span></f:else>
                     </f:if>
                 </td>
             </tr>
             <tr>
-                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.workspace" /></th>
+                <th><f:translate domain="agentation.messages" key="adminpanel.workspace" /></th>
                 <td><code>{workspaceId -> f:or(alternative: '—')}</code></td>
             </tr>
             <tr>
-                <th><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.context" /></th>
+                <th><f:translate domain="agentation.messages" key="adminpanel.context" /></th>
                 <td>
                     <f:if condition="{contextAllowed}">
-                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.allowed" /></span></f:then>
-                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning"><f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.status.blockedByContext" /></span></f:else>
+                        <f:then><span class="typo3-adminPanel-badge typo3-adminPanel-badge-success"><f:translate domain="agentation.messages" key="adminpanel.status.allowed" /></span></f:then>
+                        <f:else><span class="typo3-adminPanel-badge typo3-adminPanel-badge-warning"><f:translate domain="agentation.messages" key="adminpanel.status.blockedByContext" /></span></f:else>
                     </f:if>
                 </td>
             </tr>
@@ -51,7 +51,7 @@
     <a href="/typo3/module/system/agentation"
        target="_blank"
        rel="noopener noreferrer">
-        <f:translate key="LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:adminpanel.openBackendModule" />
+        <f:translate domain="agentation.messages" key="adminpanel.openBackendModule" />
         &nbsp;&rarr;
     </a>
 </div>
