@@ -13,7 +13,7 @@
         "claude-code",
         "cursor"
     ],
-    "homepage": "https://github.com/dirnbauer/typo3-agentation",
+    "homepage": "https://github.com/webconsulting-at/typo3-agentation",
     "authors": [
         {
             "name": "webconsulting",
@@ -23,8 +23,8 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/dirnbauer/typo3-agentation/issues",
-        "source": "https://github.com/dirnbauer/typo3-agentation"
+        "issues": "https://github.com/webconsulting-at/typo3-agentation/issues",
+        "source": "https://github.com/webconsulting-at/typo3-agentation"
     },
     "require": {
         "php": "^8.2",
@@ -73,7 +73,7 @@
     "extra": {
         "typo3/cms": {
             "extension-key": "agentation",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "Package": {
                 "providesPackages": {}
             }
