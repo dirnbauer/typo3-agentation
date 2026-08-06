@@ -1,6 +1,6 @@
 {
   "name": "typo3-agentation",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Vite build for the TYPO3 agentation extension — bundles agentation + React into a self-contained, framework-agnostic toolbar.",
   "private": true,
   "type": "module",

@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.5] - 2026-08-06
+
+### Fixed
+
+- Respect explicit per-user toolbar toggles while retaining the configured opt-in default.
+- Ship the toolbar-toggle integration tests upstream so installations no longer need a local Composer patch.
+
 ## [1.1.4] - 2026-08-06
 
 ### Changed

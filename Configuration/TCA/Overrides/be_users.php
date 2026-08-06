@@ -4,9 +4,19 @@ declare(strict_types=1);
 
 defined('TYPO3') or die();
 
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 (static function (): void {
+    $defaultOptIn = false;
+    try {
+        $configuration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('agentation');
+        $defaultOptIn = is_array($configuration) && (bool)($configuration['defaultOptIn'] ?? false);
+    } catch (\Throwable) {
+        // Extension configuration may be unavailable during early setup.
+    }
+
     ExtensionManagementUtility::addUserSetting(
         'agentation_backend_enabled',
         [
@@ -14,6 +24,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
             'config' => [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',
+                'default' => $defaultOptIn ? 1 : 0,
             ],
         ]
     );
@@ -25,6 +36,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
             'config' => [
                 'type' => 'check',
                 'renderType' => 'checkboxToggle',
+                'default' => $defaultOptIn ? 1 : 0,
             ],
         ]
     );
