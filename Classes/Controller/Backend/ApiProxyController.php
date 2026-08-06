@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\Controller\Backend;
+namespace Webconsulting\Agentation\Controller\Backend;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RequestFactory;
-use WebConsulting\Agentation\Service\ConfigurationService;
-use WebConsulting\Agentation\Service\UserToolbarSettingsService;
+use Webconsulting\Agentation\Service\ConfigurationService;
+use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 
 /**
  * Same-origin proxy for the agentation-mcp HTTP API.

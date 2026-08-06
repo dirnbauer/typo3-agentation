@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\Service;
+namespace Webconsulting\Agentation\Service;
 
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\SingletonInterface;

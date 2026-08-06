@@ -14,7 +14,7 @@ Asset flow
 The browser entrypoint lives in :file:`Build/Sources/agentation.js`. The Vite
 build writes a manifest and hashed assets to :file:`Resources/Public/Vite/`.
 
-:php:`WebConsulting\\Agentation\\Service\\ViteAssetResolver` reads the
+:php:`Webconsulting\\Agentation\\Service\\ViteAssetResolver` reads the
 manifest at runtime and returns the entrypoint and CSS URLs for TYPO3's
 :php:`AssetCollector`.
 

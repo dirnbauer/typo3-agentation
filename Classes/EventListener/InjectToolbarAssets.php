@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\EventListener;
+namespace Webconsulting\Agentation\EventListener;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfigurationService;
@@ -14,9 +14,9 @@ use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use WebConsulting\Agentation\Service\ConfigurationService;
-use WebConsulting\Agentation\Service\UserToolbarSettingsService;
-use WebConsulting\Agentation\Service\ViteAssetResolver;
+use Webconsulting\Agentation\Service\ConfigurationService;
+use Webconsulting\Agentation\Service\UserToolbarSettingsService;
+use Webconsulting\Agentation\Service\ViteAssetResolver;
 
 /**
  * Injects the agentation toolbar bundle into FE and BE page renders.

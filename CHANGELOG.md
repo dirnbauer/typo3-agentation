@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.4] - 2026-08-06
+
+### Changed
+
+- Require PHP 8.4 for the TYPO3 14 runtime.
+- Normalize the PHP namespace to `Webconsulting\\Agentation` across runtime code, configuration, tests and documentation.
+
+## [1.1.3] - 2026-08-06
+
+### Changed
+
+- Improve the TYPO3 14 extension and backend module icons.
+
+## [1.1.2] - 2026-08-06
+
+### Fixed
+
+- Restore the canonical `dirnbauer` GitHub repository metadata.
+
+## [1.1.1] - 2026-08-06
+
+### Changed
+
+- Normalize Composer and documentation links to the canonical GitHub repository.
+
 ## [1.1.0] - 2026-05-24
 
 ### Changed

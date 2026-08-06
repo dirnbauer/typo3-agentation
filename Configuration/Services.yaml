@@ -4,14 +4,14 @@ services:
     autoconfigure: true
     public: false
 
-  WebConsulting\Agentation\:
+  Webconsulting\Agentation\:
     resource: '../Classes/*'
 
-  WebConsulting\Agentation\Controller\Backend\ModuleController:
+  Webconsulting\Agentation\Controller\Backend\ModuleController:
     public: true
 
-  WebConsulting\Agentation\Controller\Backend\ApiProxyController:
+  Webconsulting\Agentation\Controller\Backend\ApiProxyController:
     public: true
 
-  WebConsulting\Agentation\AdminPanel\AgentationModule:
+  Webconsulting\Agentation\AdminPanel\AgentationModule:
     public: true

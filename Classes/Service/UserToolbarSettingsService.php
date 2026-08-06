@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\Service;
+namespace Webconsulting\Agentation\Service;
 
 use Psr\Container\ContainerInterface;
 

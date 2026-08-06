@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\Controller\Backend;
+namespace Webconsulting\Agentation\Controller\Backend;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
-use WebConsulting\Agentation\Service\ConfigurationService;
-use WebConsulting\Agentation\Service\ViteAssetResolver;
+use Webconsulting\Agentation\Service\ConfigurationService;
+use Webconsulting\Agentation\Service\ViteAssetResolver;
 
 /**
  * Backend module: shows agentation health/status and an MCP config snippet

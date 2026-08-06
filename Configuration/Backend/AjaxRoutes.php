@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use WebConsulting\Agentation\Controller\Backend\ApiProxyController;
+use Webconsulting\Agentation\Controller\Backend\ApiProxyController;
 
 /*
  * Same-origin AJAX proxy for the agentation-mcp HTTP API.

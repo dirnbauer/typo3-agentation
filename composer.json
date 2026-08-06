@@ -27,7 +27,7 @@
         "source": "https://github.com/dirnbauer/typo3-agentation"
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "typo3/cms-adminpanel": "^14.3",
         "typo3/cms-backend": "^14.3",
         "typo3/cms-core": "^14.3",
@@ -46,12 +46,12 @@
     },
     "autoload": {
         "psr-4": {
-            "WebConsulting\\Agentation\\": "Classes/"
+            "Webconsulting\\Agentation\\": "Classes/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "WebConsulting\\Agentation\\Tests\\": "Tests/"
+            "Webconsulting\\Agentation\\Tests\\": "Tests/"
         }
     },
     "config": {
@@ -73,7 +73,7 @@
     "extra": {
         "typo3/cms": {
             "extension-key": "agentation",
-            "version": "1.1.2",
+            "version": "1.1.4",
             "Package": {
                 "providesPackages": {}
             }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\Tests\Unit\Release;
+namespace Webconsulting\Agentation\Tests\Unit\Release;
 
 use PHPUnit\Framework\TestCase;
 

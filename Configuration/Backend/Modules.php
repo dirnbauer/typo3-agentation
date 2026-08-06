@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use WebConsulting\Agentation\Controller\Backend\ModuleController;
+use Webconsulting\Agentation\Controller\Backend\ModuleController;
 
 return [
     'agentation' => [

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WebConsulting\Agentation\AdminPanel;
+namespace Webconsulting\Agentation\AdminPanel;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\AbstractModule;
@@ -16,8 +16,8 @@ use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfiguration
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
-use WebConsulting\Agentation\Service\ConfigurationService;
-use WebConsulting\Agentation\Service\UserToolbarSettingsService;
+use Webconsulting\Agentation\Service\ConfigurationService;
+use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 
 /**
  * Admin Panel section for the Agentation toolbar.
