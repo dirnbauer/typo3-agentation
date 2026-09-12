@@ -5,33 +5,37 @@ declare(strict_types=1);
 namespace Webconsulting\Agentation\AdminPanel;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Adminpanel\ModuleApi\AbstractModule;
-use TYPO3\CMS\Adminpanel\ModuleApi\ConfigurableInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ContentProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ModuleData;
 use TYPO3\CMS\Adminpanel\ModuleApi\ModuleSettingsProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ResourceProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ShortInfoProviderInterface;
-use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfigurationService;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
+use Webconsulting\Agentation\Enum\AnnotationScope;
+use Webconsulting\Agentation\Enum\ToolbarPosition;
 use Webconsulting\Agentation\Service\ConfigurationService;
+use Webconsulting\Agentation\Service\FrontendToolbarSettingsService;
 use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 
 /**
  * Admin Panel section for the Agentation toolbar.
  *
- * Provides per-user opt-in plus a handful of base settings:
- *   - enabled (on/off for this session)
- *   - position (bottom-right / bottom-left / top-right / top-left)
- *   - scope (annotate frontend page only / include admin panel chrome)
+ * The section is listed for every backend user whose User Settings switch
+ * for the frontend toolbar is on (or who inherits the default opt-in).
+ * Inside the section the user toggles the toolbar itself and picks the
+ * position and annotation scope; the Admin Panel persists those values in
+ * the user's uc and FrontendToolbarSettingsService reads them back for
+ * both this module and the asset listener.
  *
- * Settings are persisted by the Admin Panel itself in its module data,
- * and read back by FrontendAssetListener when injecting the bundle.
+ * Registered in ext_localconf.php via
+ * $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'].
  */
+#[Autoconfigure(public: true)]
 final class AgentationModule extends AbstractModule implements
-    ConfigurableInterface,
     ContentProviderInterface,
     ModuleSettingsProviderInterface,
     ResourceProviderInterface,
@@ -40,20 +44,18 @@ final class AgentationModule extends AbstractModule implements
     public function __construct(
         private readonly ConfigurationService $configuration,
         private readonly UserToolbarSettingsService $userToolbarSettings,
-        private readonly AdminPanelConfigurationService $adminPanelConfiguration,
+        private readonly FrontendToolbarSettingsService $toolbarSettings,
         private readonly ViewFactoryInterface $viewFactory,
     ) {}
 
     public function getIdentifier(): string
     {
-        return 'agentation';
+        return FrontendToolbarSettingsService::MODULE_IDENTIFIER;
     }
 
     public function getLabel(): string
     {
-        return $this->getLanguageService()->sL(
-            'agentation.messages:adminpanel.label'
-        );
+        return $this->getLanguageService()->sL('agentation.messages:adminpanel.label');
     }
 
     public function getIconIdentifier(): string
@@ -64,25 +66,31 @@ final class AgentationModule extends AbstractModule implements
     public function getShortInfo(): string
     {
         return $this->getLanguageService()->sL(
-            $this->isEnabled()
+            $this->toolbarSettings->isToolbarActive()
                 ? 'agentation.messages:adminpanel.shortinfo.on'
                 : 'agentation.messages:adminpanel.shortinfo.off'
         );
+    }
+
+    /**
+     * Whether the section appears in the Admin Panel at all. The per-session
+     * checkbox lives inside the section, so it must not gate visibility -
+     * otherwise a switched-off toolbar could never be switched on again.
+     */
+    public function isEnabled(): bool
+    {
+        return $this->userToolbarSettings->isFrontendToolbarEnabled();
     }
 
     public function getSettings(): string
     {
         $view = $this->createView();
         $view->assignMultiple([
-            'moduleData' => $this->getConfigurationService()->getConfigurationOption(
-                $this->getIdentifier(),
-                ''
-            ),
-            'enabled' => $this->isEnabled(),
-            'position' => $this->getPosition(),
-            'scope' => $this->getScope(),
-            'positions' => ['bottom-right', 'bottom-left', 'top-right', 'top-left'],
-            'scopes' => ['frontend', 'frontend+adminpanel'],
+            'enabled' => $this->toolbarSettings->isToolbarActive(),
+            'position' => $this->toolbarSettings->getPosition()->value,
+            'scope' => $this->toolbarSettings->getScope()->value,
+            'positions' => ToolbarPosition::values(),
+            'scopes' => AnnotationScope::values(),
             'apiKeySet' => $this->configuration->getApiKey() !== '',
         ]);
         return $view->render('AdminPanel/ModuleSettings');
@@ -92,9 +100,9 @@ final class AgentationModule extends AbstractModule implements
     {
         $view = $this->createView();
         $view->assignMultiple([
-            'enabled' => $this->isEnabled(),
-            'position' => $this->getPosition(),
-            'scope' => $this->getScope(),
+            'enabled' => $this->toolbarSettings->isToolbarActive(),
+            'position' => $this->toolbarSettings->getPosition()->value,
+            'scope' => $this->toolbarSettings->getScope()->value,
             'apiKey' => $this->configuration->getApiKey() !== '',
             'workspaceId' => $this->configuration->getWorkspaceId(),
             'contextAllowed' => $this->configuration->isContextAllowed(),
@@ -105,9 +113,7 @@ final class AgentationModule extends AbstractModule implements
     /** @return list<string> */
     public function getCssFiles(): array
     {
-        return [
-            'EXT:agentation/Resources/Public/Css/AdminPanel.css',
-        ];
+        return ['EXT:agentation/Resources/Public/Css/AdminPanel.css'];
     }
 
     /** @return list<string> */
@@ -118,57 +124,12 @@ final class AgentationModule extends AbstractModule implements
 
     public function onSubmit(ModuleData $moduleData, ServerRequestInterface $request): void {}
 
-    public function isEnabled(): bool
-    {
-        if (!$this->userToolbarSettings->isFrontendToolbarEnabled()) {
-            return false;
-        }
-
-        $value = $this->getConfigurationService()->getConfigurationOption(
-            $this->getIdentifier(),
-            'enabled'
-        );
-        if ($value === '') {
-            return $this->configuration->isDefaultOptIn();
-        }
-        return (bool)$value;
-    }
-
-    public function getPosition(): string
-    {
-        $value = $this->getConfigurationService()->getConfigurationOption(
-            $this->getIdentifier(),
-            'position'
-        );
-        if ($value === '') {
-            $value = $this->configuration->getToolbarPosition();
-        }
-        return in_array($value, ['bottom-right', 'bottom-left', 'top-right', 'top-left'], true)
-            ? $value
-            : 'bottom-right';
-    }
-
-    public function getScope(): string
-    {
-        $value = $this->getConfigurationService()->getConfigurationOption(
-            $this->getIdentifier(),
-            'scope'
-        );
-        return $value === 'frontend+adminpanel' ? 'frontend+adminpanel' : 'frontend';
-    }
-
     private function createView(): ViewInterface
     {
-        $viewFactoryData = new ViewFactoryData(
+        return $this->viewFactory->create(new ViewFactoryData(
             templateRootPaths: ['EXT:agentation/Resources/Private/Templates'],
             partialRootPaths: ['EXT:agentation/Resources/Private/Partials'],
             layoutRootPaths: ['EXT:agentation/Resources/Private/Layouts'],
-        );
-        return $this->viewFactory->create($viewFactoryData);
-    }
-
-    private function getConfigurationService(): AdminPanelConfigurationService
-    {
-        return $this->adminPanelConfiguration;
+        ));
     }
 }

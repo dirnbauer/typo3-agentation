@@ -6,12 +6,7 @@ services:
 
   Webconsulting\Agentation\:
     resource: '../Classes/*'
+    exclude: '../Classes/Enum/*'
 
-  Webconsulting\Agentation\Controller\Backend\ModuleController:
-    public: true
-
-  Webconsulting\Agentation\Controller\Backend\ApiProxyController:
-    public: true
-
-  Webconsulting\Agentation\AdminPanel\AgentationModule:
-    public: true
+  # Public services are declared with #[Autoconfigure(public: true)] on the
+  # classes themselves (backend controllers, Admin Panel module).

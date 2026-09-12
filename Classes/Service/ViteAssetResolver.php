@@ -4,82 +4,102 @@ declare(strict_types=1);
 
 namespace Webconsulting\Agentation\Service;
 
-use TYPO3\CMS\Core\SingletonInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
 /**
- * Resolves the built agentation entrypoint from the Vite manifest.
+ * Resolves the built toolbar entrypoint from the Vite manifest.
  *
- * Self-contained: no third-party TYPO3-Vite integration is required.
- * If the manifest is missing (e.g. extension installed without build),
- * callers get null and can surface that to admins.
+ * Self-contained: no third-party TYPO3-Vite integration is required. When
+ * the manifest is missing (extension installed without a build) callers
+ * get null / an empty list and can surface that to admins.
  */
-final class ViteAssetResolver implements SingletonInterface
+final class ViteAssetResolver
 {
-    private const MANIFEST_PATH = 'EXT:agentation/Resources/Public/Vite/manifest.json';
-    private const ENTRY = 'Build/Sources/agentation.js';
+    private const string EXTENSION_KEY = 'agentation';
+    private const string PUBLIC_DIRECTORY = 'Resources/Public/Vite/';
+    private const string ENTRY = 'Build/Sources/agentation.js';
 
-    private ?string $publicBase = null;
+    /** @var array<mixed>|null */
+    private ?array $manifest = null;
+    private bool $manifestLoaded = false;
+    private ?string $publicBaseUrl = null;
+
+    public function __construct(
+        private readonly PackageManager $packageManager,
+    ) {}
 
     public function hasBuild(): bool
     {
-        return $this->resolveManifest() !== null;
+        return $this->loadManifest() !== null;
     }
 
     public function getEntryUrl(): ?string
     {
-        $manifest = $this->resolveManifest();
-        if ($manifest === null) {
-            return null;
-        }
-        $entry = $manifest[self::ENTRY] ?? null;
-        if (!is_array($entry) || !is_string($entry['file'] ?? null)) {
-            return null;
-        }
-        return $this->publicUrl($entry['file']);
+        $entry = $this->entry();
+        $file = $entry['file'] ?? null;
+        return is_string($file) && $file !== '' ? $this->publicUrl($file) : null;
     }
 
     /** @return list<string> */
     public function getEntryCssUrls(): array
     {
-        $manifest = $this->resolveManifest();
-        if ($manifest === null) {
-            return [];
-        }
-        $entry = $manifest[self::ENTRY] ?? null;
-        if (!is_array($entry) || !is_array($entry['css'] ?? null)) {
+        $entry = $this->entry();
+        $cssFiles = $entry['css'] ?? null;
+        if (!is_array($cssFiles)) {
             return [];
         }
         $urls = [];
-        foreach ($entry['css'] as $cssFile) {
-            if (is_string($cssFile)) {
+        foreach ($cssFiles as $cssFile) {
+            if (is_string($cssFile) && $cssFile !== '') {
                 $urls[] = $this->publicUrl($cssFile);
             }
         }
         return $urls;
     }
 
-    /** @return array<string, mixed>|null */
-    private function resolveManifest(): ?array
+    /** @return array<mixed>|null */
+    private function entry(): ?array
     {
-        $path = GeneralUtility::getFileAbsFileName(self::MANIFEST_PATH);
-        if ($path === '' || !is_file($path)) {
+        $entry = $this->loadManifest()[self::ENTRY] ?? null;
+        return is_array($entry) ? $entry : null;
+    }
+
+    /** @return array<mixed>|null */
+    private function loadManifest(): ?array
+    {
+        if ($this->manifestLoaded) {
+            return $this->manifest;
+        }
+        $this->manifestLoaded = true;
+
+        $path = $this->publicDirectory() . 'manifest.json';
+        if (!is_file($path)) {
+            return null;
+        }
+        $content = file_get_contents($path);
+        if ($content === false) {
             return null;
         }
         try {
-            $data = json_decode((string)file_get_contents($path), true, 32, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($content, true, 32, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             return null;
         }
-        return is_array($data) ? $data : null;
+        if (is_array($decoded)) {
+            $this->manifest = $decoded;
+        }
+        return $this->manifest;
+    }
+
+    private function publicDirectory(): string
+    {
+        return $this->packageManager->getPackage(self::EXTENSION_KEY)->getPackagePath() . self::PUBLIC_DIRECTORY;
     }
 
     private function publicUrl(string $relative): string
     {
-        $base = $this->publicBase ??= PathUtility::getAbsoluteWebPath(
-            GeneralUtility::getFileAbsFileName('EXT:agentation/Resources/Public/Vite/')
-        );
-        return $base . ltrim($relative, '/');
+        $this->publicBaseUrl ??= PathUtility::getAbsoluteWebPath($this->publicDirectory());
+        return $this->publicBaseUrl . ltrim($relative, '/');
     }
 }

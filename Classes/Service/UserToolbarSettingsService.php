@@ -4,79 +4,56 @@ declare(strict_types=1);
 
 namespace Webconsulting\Agentation\Service;
 
-use Psr\Container\ContainerInterface;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 
 /**
- * Evaluates the per-BE-user toolbar switches from TYPO3 user settings.
+ * Evaluates the per-user toolbar switches from User Settings > Agentation.
+ *
+ * The fields are registered in Configuration/TCA/Overrides/be_users.php.
+ * A user who never saved the settings inherits the extension's default
+ * opt-in; an explicit choice always wins.
  */
-final class UserToolbarSettingsService
+final readonly class UserToolbarSettingsService
 {
+    private const string FRONTEND_SETTING = 'agentation_frontend_enabled';
+    private const string BACKEND_SETTING = 'agentation_backend_enabled';
+
     public function __construct(
-        private readonly ConfigurationService $configuration,
+        private ConfigurationService $configuration,
     ) {}
 
-    public function isFrontendToolbarEnabled(?object $backendUser = null): bool
+    public function isFrontendToolbarEnabled(?BackendUserAuthentication $backendUser = null): bool
     {
-        return $this->isUserSettingEnabled(
-            'agentation_frontend_enabled',
-            $this->configuration->isDefaultOptIn(),
-            $backendUser,
-        );
+        return $this->isUserSettingEnabled(self::FRONTEND_SETTING, $backendUser);
     }
 
-    public function isBackendToolbarEnabled(?object $backendUser = null): bool
+    public function isBackendToolbarEnabled(?BackendUserAuthentication $backendUser = null): bool
     {
-        return $this->isUserSettingEnabled(
-            'agentation_backend_enabled',
-            $this->configuration->isDefaultOptIn(),
-            $backendUser,
-        );
+        return $this->isUserSettingEnabled(self::BACKEND_SETTING, $backendUser);
     }
 
-    private function isUserSettingEnabled(string $key, bool $default, ?object $backendUser): bool
+    private function isUserSettingEnabled(string $key, ?BackendUserAuthentication $backendUser): bool
     {
-        $backendUser ??= $GLOBALS['BE_USER'] ?? null;
-        if (!is_object($backendUser) || (int)($backendUser->user['uid'] ?? 0) <= 0) {
+        $backendUser ??= $this->currentBackendUser();
+        if ($backendUser === null || (int)($backendUser->user['uid'] ?? 0) <= 0) {
             return false;
         }
 
-        if (method_exists($backendUser, 'getUserSettings')) {
-            $settings = $backendUser->getUserSettings();
-            if ($settings instanceof ContainerInterface && $settings->has($key)) {
-                return $this->toBool($settings->get($key));
-            }
+        $settings = $backendUser->getUserSettings();
+        if ($settings->has($key)) {
+            return self::toBool($settings->get($key));
         }
 
-        $userSettings = $this->extractUserSettingsJson($backendUser);
-        if (array_key_exists($key, $userSettings)) {
-            return $this->toBool($userSettings[$key]);
-        }
-
-        $uc = is_array($backendUser->uc ?? null) ? $backendUser->uc : [];
-        if (array_key_exists($key, $uc)) {
-            return $this->toBool($uc[$key]);
-        }
-
-        return $default;
+        return $this->configuration->isDefaultOptIn();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function extractUserSettingsJson(object $backendUser): array
+    private function currentBackendUser(): ?BackendUserAuthentication
     {
-        $raw = $backendUser->user['user_settings'] ?? null;
-        if (is_array($raw)) {
-            return $raw;
-        }
-        if (!is_string($raw) || trim($raw) === '') {
-            return [];
-        }
-        $decoded = json_decode($raw, true);
-        return is_array($decoded) ? $decoded : [];
+        $backendUser = $GLOBALS['BE_USER'] ?? null;
+        return $backendUser instanceof BackendUserAuthentication ? $backendUser : null;
     }
 
-    private function toBool(mixed $value): bool
+    private static function toBool(mixed $value): bool
     {
         if (is_bool($value)) {
             return $value;
@@ -84,9 +61,12 @@ final class UserToolbarSettingsService
         if (is_int($value)) {
             return $value !== 0;
         }
+        if (is_float($value)) {
+            return $value !== 0.0;
+        }
         if (is_string($value)) {
             return !in_array(strtolower(trim($value)), ['', '0', 'false', 'off', 'no'], true);
         }
-        return (bool)$value;
+        return false;
     }
 }

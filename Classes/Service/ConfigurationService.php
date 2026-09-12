@@ -4,35 +4,34 @@ declare(strict_types=1);
 
 namespace Webconsulting\Agentation\Service;
 
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationExtensionNotConfiguredException;
+use TYPO3\CMS\Core\Configuration\Exception\ExtensionConfigurationPathDoesNotExistException;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\SingletonInterface;
+use Webconsulting\Agentation\Enum\ContextGate;
+use Webconsulting\Agentation\Enum\ToolbarPosition;
 
 /**
- * Reads extension configuration from ext_conf_template.txt and evaluates
- * the application-context gate. All callers go through here so the rules
- * are enforced in one place.
+ * Typed view on the extension configuration (ext_conf_template.txt).
+ *
+ * Values are normalised once at construction time so every consumer sees
+ * the same defaults, enums and the application-context gate.
  */
-final class ConfigurationService implements SingletonInterface
+final readonly class ConfigurationService
 {
-    private const DEFAULTS = [
-        'apiKey' => '',
-        'workspaceId' => '',
-        'syncEndpoint' => '',
-        'frontendEnabled' => true,
-        'backendEnabled' => true,
-        'contextGate' => 'Development',
-        'defaultOptIn' => false,
-        'toolbarPosition' => 'bottom-right',
-        'webhookUrl' => '',
-        'additionalOptions' => '',
-    ];
+    private const string CLOUD_ENDPOINT = 'https://agentation-mcp-cloud.vercel.app/api';
+    private const string LOCAL_ENDPOINT = 'http://localhost:4747';
 
-    private const CLOUD_ENDPOINT = 'https://agentation-mcp-cloud.vercel.app/api';
-    private const LOCAL_ENDPOINT = 'http://localhost:4747';
-
-    /** @var array<string, mixed> */
-    private array $config;
+    private string $apiKey;
+    private string $workspaceId;
+    private string $syncEndpoint;
+    private bool $frontendEnabled;
+    private bool $backendEnabled;
+    private ContextGate $contextGate;
+    private bool $defaultOptIn;
+    private ToolbarPosition $toolbarPosition;
+    private string $webhookUrl;
+    private string $additionalOptions;
 
     public function __construct(ExtensionConfiguration $extensionConfiguration)
     {
@@ -42,67 +41,85 @@ final class ConfigurationService implements SingletonInterface
             if (is_array($loaded)) {
                 $raw = $loaded;
             }
-        } catch (\Throwable) {
-            // Extension not yet configured — fall back to defaults.
+        } catch (ExtensionConfigurationExtensionNotConfiguredException|ExtensionConfigurationPathDoesNotExistException) {
+            // Extension not configured yet (fresh install) - use the defaults.
         }
-        $this->config = array_merge(self::DEFAULTS, $this->normalize($raw));
+
+        $this->apiKey = self::stringValue($raw, 'apiKey');
+        $this->workspaceId = self::stringValue($raw, 'workspaceId');
+        $this->syncEndpoint = self::stringValue($raw, 'syncEndpoint');
+        $this->frontendEnabled = self::boolValue($raw, 'frontendEnabled', true);
+        $this->backendEnabled = self::boolValue($raw, 'backendEnabled', true);
+        $this->contextGate = ContextGate::fromSetting(self::stringValue($raw, 'contextGate'));
+        $this->defaultOptIn = self::boolValue($raw, 'defaultOptIn', false);
+        $this->toolbarPosition = ToolbarPosition::fromSetting(self::stringValue($raw, 'toolbarPosition'));
+        $this->webhookUrl = self::stringValue($raw, 'webhookUrl');
+        $this->additionalOptions = self::stringValue($raw, 'additionalOptions');
     }
 
     public function getApiKey(): string
     {
-        return (string)$this->config['apiKey'];
+        return $this->apiKey;
     }
 
     public function getWorkspaceId(): string
     {
-        return (string)$this->config['workspaceId'];
+        return $this->workspaceId;
     }
 
+    /**
+     * Explicit endpoint, or auto-selected: the cloud API when an API key
+     * is present (HTTPS works from any backend origin), otherwise the local
+     * agentation-mcp server (HTTP - browsers block it from HTTPS origins,
+     * which the backend proxy route works around).
+     */
     public function getSyncEndpoint(): string
     {
-        $configured = (string)$this->config['syncEndpoint'];
-        if ($configured !== '') {
-            return $configured;
+        if ($this->syncEndpoint !== '') {
+            return $this->syncEndpoint;
         }
-        // Auto-select: cloud when an API key is present (HTTPS → HTTPS
-        // origins work from any BE install), else local agentation-mcp
-        // server on http://localhost:4747 (works for HTTP-only BE
-        // origins — mixed-content will block it from HTTPS origins).
-        return $this->getApiKey() !== '' ? self::CLOUD_ENDPOINT : self::LOCAL_ENDPOINT;
+        return $this->apiKey !== '' ? self::CLOUD_ENDPOINT : self::LOCAL_ENDPOINT;
     }
 
     public function isFrontendEnabled(): bool
     {
-        return (bool)$this->config['frontendEnabled'];
+        return $this->frontendEnabled;
     }
 
     public function isBackendEnabled(): bool
     {
-        return (bool)$this->config['backendEnabled'];
+        return $this->backendEnabled;
     }
 
     public function isDefaultOptIn(): bool
     {
-        return (bool)$this->config['defaultOptIn'];
+        return $this->defaultOptIn;
     }
 
-    public function getToolbarPosition(): string
+    public function getToolbarPosition(): ToolbarPosition
     {
-        $position = (string)$this->config['toolbarPosition'];
-        return in_array($position, ['bottom-right', 'bottom-left', 'top-right', 'top-left'], true)
-            ? $position
-            : 'bottom-right';
+        return $this->toolbarPosition;
+    }
+
+    public function getContextGate(): ContextGate
+    {
+        return $this->contextGate;
     }
 
     public function getWebhookUrl(): string
     {
-        return (string)$this->config['webhookUrl'];
+        return $this->webhookUrl;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Extra props merged into the toolbar's init call; invalid JSON and
+     * non-object payloads are ignored.
+     *
+     * @return array<string, mixed>
+     */
     public function getAdditionalOptions(): array
     {
-        $raw = trim((string)$this->config['additionalOptions']);
+        $raw = trim($this->additionalOptions);
         if ($raw === '') {
             return [];
         }
@@ -111,61 +128,44 @@ final class ConfigurationService implements SingletonInterface
         } catch (\JsonException) {
             return [];
         }
-        return is_array($decoded) ? $decoded : [];
+        if (!is_array($decoded)) {
+            return [];
+        }
+        $options = [];
+        foreach ($decoded as $key => $value) {
+            if (is_string($key)) {
+                $options[$key] = $value;
+            }
+        }
+        return $options;
     }
 
     public function isContextAllowed(): bool
     {
-        $gate = (string)$this->config['contextGate'];
-        $appContext = (string)Environment::getContext();
-
-        return match ($gate) {
-            'All contexts' => true,
-            'Development and Testing' => str_starts_with($appContext, 'Development')
-                || str_starts_with($appContext, 'Testing'),
-            default => str_starts_with($appContext, 'Development'),
-        };
-    }
-
-    /**
-     * @return array{
-     *   apiKey: string, workspaceId: string, frontendEnabled: bool,
-     *   backendEnabled: bool, defaultOptIn: bool, toolbarPosition: string,
-     *   webhookUrl: string, additionalOptions: array<string, mixed>,
-     *   contextAllowed: bool
-     * }
-     */
-    public function toArray(): array
-    {
-        return [
-            'apiKey' => $this->getApiKey(),
-            'workspaceId' => $this->getWorkspaceId(),
-            'frontendEnabled' => $this->isFrontendEnabled(),
-            'backendEnabled' => $this->isBackendEnabled(),
-            'defaultOptIn' => $this->isDefaultOptIn(),
-            'toolbarPosition' => $this->getToolbarPosition(),
-            'webhookUrl' => $this->getWebhookUrl(),
-            'additionalOptions' => $this->getAdditionalOptions(),
-            'contextAllowed' => $this->isContextAllowed(),
-        ];
+        return $this->contextGate->allows(Environment::getContext());
     }
 
     /**
      * @param array<int|string, mixed> $raw
-     * @return array<string, mixed>
      */
-    private function normalize(array $raw): array
+    private static function stringValue(array $raw, string $key, string $default = ''): string
     {
-        $out = [];
-        foreach ($raw as $key => $value) {
-            if (!is_string($key)) {
-                continue;
-            }
-            $out[$key] = match ($key) {
-                'frontendEnabled', 'backendEnabled', 'defaultOptIn' => (bool)$value,
-                default => $value,
-            };
+        $value = $raw[$key] ?? null;
+        return is_scalar($value) ? trim((string)$value) : $default;
+    }
+
+    /**
+     * @param array<int|string, mixed> $raw
+     */
+    private static function boolValue(array $raw, string $key, bool $default): bool
+    {
+        $value = $raw[$key] ?? null;
+        if ($value === null) {
+            return $default;
         }
-        return $out;
+        if (is_string($value)) {
+            return !in_array(strtolower(trim($value)), ['', '0', 'false', 'off', 'no'], true);
+        }
+        return is_scalar($value) ? (bool)$value : $default;
     }
 }

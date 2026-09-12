@@ -6,30 +6,38 @@ namespace Webconsulting\Agentation\Controller\Backend;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use Webconsulting\Agentation\Service\ConfigurationService;
 use Webconsulting\Agentation\Service\ViteAssetResolver;
 
 /**
- * Backend module: shows agentation health/status and an MCP config snippet
- * pre-filled with the configured API key and workspace. Implemented with
- * TYPO3 v14's ModuleTemplate so it inherits styleguide-compliant chrome.
+ * Backend module System > Agentation: health/status overview plus an MCP
+ * configuration snippet pre-filled with the configured API key and
+ * workspace. Rendered through ModuleTemplate for standard backend chrome.
  */
-final class ModuleController
+#[Autoconfigure(public: true)]
+final readonly class ModuleController
 {
+    private const string MCP_DOCS_URL = 'https://www.agentation.com/mcp';
+
     public function __construct(
-        private readonly ModuleTemplateFactory $moduleTemplateFactory,
-        private readonly ConfigurationService $configuration,
-        private readonly ViteAssetResolver $vite,
+        private ModuleTemplateFactory $moduleTemplateFactory,
+        private ConfigurationService $configuration,
+        private ViteAssetResolver $vite,
+        private LanguageServiceFactory $languageServiceFactory,
     ) {}
 
     public function indexAction(ServerRequestInterface $request): ResponseInterface
     {
+        $languageService = $this->languageServiceFactory->createFromUserPreferences($this->currentBackendUser());
         $view = $this->moduleTemplateFactory->create($request);
         $view->setTitle(
-            $this->translate('mod.tabs.label'),
-            $this->translate('module.heading')
+            self::label($languageService, 'mod.tabs.label'),
+            self::label($languageService, 'module.heading')
         );
 
         $serverConfig = $this->buildServerConfig();
@@ -42,7 +50,7 @@ final class ModuleController
             'backendEnabled' => $this->configuration->isBackendEnabled(),
             'contextAllowed' => $this->configuration->isContextAllowed(),
             'defaultOptIn' => $this->configuration->isDefaultOptIn(),
-            'toolbarPosition' => $this->configuration->getToolbarPosition(),
+            'toolbarPosition' => $this->configuration->getToolbarPosition()->value,
             'webhookUrl' => $this->configuration->getWebhookUrl(),
             'bundleBuilt' => $this->vite->hasBuild(),
             'mcpJson' => json_encode(
@@ -51,7 +59,7 @@ final class ModuleController
             ),
             'cursorDeepLink' => $this->buildCursorDeepLink($serverConfig),
             'claudeCodeCli' => $this->buildClaudeCodeCli($serverConfig),
-            'mcpDocsUrl' => 'https://www.agentation.com/mcp',
+            'mcpDocsUrl' => self::MCP_DOCS_URL,
             'stepCount' => 4,
         ]);
 
@@ -59,13 +67,13 @@ final class ModuleController
     }
 
     /**
-     * @return array<string, mixed>
+     * The MCP server is the separate npm package `agentation-mcp` (not a
+     * subcommand of `agentation`); its binary is run as `agentation-mcp server`.
+     *
+     * @return array{command: string, args: list<string>, env?: array<string, string>}
      */
     private function buildServerConfig(): array
     {
-        // The MCP server is published as a separate npm package named
-        // `agentation-mcp` (NOT a subcommand of `agentation`). The CLI
-        // binary is invoked as `agentation-mcp server`.
         $server = [
             'command' => 'npx',
             'args' => ['-y', 'agentation-mcp', 'server'],
@@ -84,7 +92,7 @@ final class ModuleController
     }
 
     /**
-     * @param array<string, mixed> $serverConfig
+     * @param array{command: string, args: list<string>, env?: array<string, string>} $serverConfig
      */
     private function buildCursorDeepLink(array $serverConfig): string
     {
@@ -96,27 +104,31 @@ final class ModuleController
     }
 
     /**
-     * @param array<string, mixed> $serverConfig
+     * @param array{command: string, args: list<string>, env?: array<string, string>} $serverConfig
      */
     private function buildClaudeCodeCli(array $serverConfig): string
     {
         $parts = ['claude mcp add agentation'];
-        foreach (($serverConfig['env'] ?? []) as $key => $value) {
+        foreach ($serverConfig['env'] ?? [] as $key => $value) {
             $parts[] = '--env ' . escapeshellarg($key . '=' . $value);
         }
         $parts[] = '--';
-        $parts[] = escapeshellarg((string)$serverConfig['command']);
-        foreach (($serverConfig['args'] ?? []) as $arg) {
-            $parts[] = escapeshellarg((string)$arg);
+        $parts[] = escapeshellarg($serverConfig['command']);
+        foreach ($serverConfig['args'] as $arg) {
+            $parts[] = escapeshellarg($arg);
         }
         return implode(' ', $parts);
     }
 
-    private function translate(string $key): string
+    private function currentBackendUser(): ?BackendUserAuthentication
     {
-        $label = $GLOBALS['LANG']->sL(
-            'agentation.mod:' . $key
-        );
+        $backendUser = $GLOBALS['BE_USER'] ?? null;
+        return $backendUser instanceof BackendUserAuthentication ? $backendUser : null;
+    }
+
+    private static function label(LanguageService $languageService, string $key): string
+    {
+        $label = $languageService->sL('agentation.mod:' . $key);
         return $label !== '' ? $label : $key;
     }
 }

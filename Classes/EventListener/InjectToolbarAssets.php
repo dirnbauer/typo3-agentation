@@ -5,53 +5,61 @@ declare(strict_types=1);
 namespace Webconsulting\Agentation\EventListener;
 
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfigurationService;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Attribute\AsEventListener;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Http\ApplicationType;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
+use Webconsulting\Agentation\Enum\InjectionScope;
+use Webconsulting\Agentation\Enum\ToolbarPosition;
 use Webconsulting\Agentation\Service\ConfigurationService;
+use Webconsulting\Agentation\Service\FrontendToolbarSettingsService;
 use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 use Webconsulting\Agentation\Service\ViteAssetResolver;
 
 /**
- * Injects the agentation toolbar bundle into FE and BE page renders.
+ * Injects the Agentation toolbar bundle into frontend and backend renders.
  *
  * Gating:
- *   - contextGate passes (Development by default)
- *   - Extension enabled for the current scope (FE / BE)
- *   - FE: BE user session exists AND admin panel's agentation module toggled on
- *   - BE: BE user's uc has `agentation_backend_enabled`
+ *   - the application-context gate passes (Development by default)
+ *   - the extension is enabled for the current scope (frontend / backend)
+ *   - frontend: a backend user is logged in, the User Settings switch is on
+ *     and the Admin Panel section has the toolbar switched on
+ *   - backend: the User Settings switch for the backend toolbar is on
  *
- * The config is written as an inline script (priority = true so it lands in
- * <head>), and the external module bundle is added with priority = false.
- * Module scripts defer, so the inline config always sets
- * `window.TYPO3Agentation` before the bundle reads it.
+ * The config is shipped as an inert JSON data island so the strict v14
+ * backend CSP ignores it; the module bundle reads it on boot.
  */
 final class InjectToolbarAssets
 {
+    private const string CONFIG_ASSET = 'agentation-config';
+    private const string CONFIG_ELEMENT_ID = 'typo3-agentation-config';
+    private const string BUNDLE_ASSET = 'agentation-toolbar';
+    private const string BACKEND_MODULE_PREFIX = '/typo3/module/';
+    private const string OWN_MODULE_PREFIX = '/typo3/module/system/agentation';
+
     private bool $alreadyAdded = false;
 
     public function __construct(
         private readonly ConfigurationService $config,
         private readonly UserToolbarSettingsService $userToolbarSettings,
+        private readonly FrontendToolbarSettingsService $frontendToolbarSettings,
         private readonly ViteAssetResolver $vite,
+        private readonly BackendUriBuilder $backendUriBuilder,
     ) {}
 
     #[AsEventListener('agentation/inject-toolbar')]
     public function __invoke(BeforeJavaScriptsRenderingEvent $event): void
     {
-        if ($this->alreadyAdded) {
+        if ($this->alreadyAdded || !$this->config->isContextAllowed()) {
             return;
         }
-        if (!$this->config->isContextAllowed()) {
-            return;
-        }
+        // The event carries no request; the global is the PSR-7 request
+        // TYPO3 is currently handling.
         $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
         if (!$request instanceof ServerRequestInterface) {
             return;
@@ -63,8 +71,8 @@ final class InjectToolbarAssets
         }
 
         $payload = match ($scope) {
-            'frontend' => $this->resolveFrontendPayload($request),
-            'backend' => $this->resolveBackendPayload(),
+            InjectionScope::Frontend => $this->resolveFrontendPayload($request),
+            InjectionScope::Backend => $this->resolveBackendPayload(),
         };
         if ($payload === null) {
             return;
@@ -75,8 +83,7 @@ final class InjectToolbarAssets
             return;
         }
 
-        $collector = $event->getAssetCollector();
-        $this->addAssets($collector, $payload, $entry);
+        $this->addAssets($event->getAssetCollector(), $payload, $entry);
         $this->alreadyAdded = true;
     }
 
@@ -85,19 +92,18 @@ final class InjectToolbarAssets
      */
     private function addAssets(AssetCollector $collector, array $payload, string $entry): void
     {
-        // Ship the config as a JSON data island rather than executable inline
-        // JS. <script type="application/json"> is inert to the browser, so
-        // the strict v14 backend CSP (script-src 'self' 'nonce-…') ignores
-        // it entirely — no hash or nonce dance needed. The bundle reads it
-        // from #typo3-agentation-config on boot.
+        // <script type="application/json"> is never executed, so the strict
+        // backend CSP (script-src 'self' 'nonce-…') does not need a hash or
+        // nonce for it. Priority puts it into <head>; the deferred module
+        // bundle below reads it from #typo3-agentation-config on boot.
         $collector->addInlineJavaScript(
-            'agentation-config',
+            self::CONFIG_ASSET,
             (string)json_encode($payload, JSON_UNESCAPED_SLASHES),
-            ['type' => 'application/json', 'id' => 'typo3-agentation-config'],
+            ['type' => 'application/json', 'id' => self::CONFIG_ELEMENT_ID],
             ['priority' => true]
         );
         $collector->addJavaScript(
-            'agentation-toolbar',
+            self::BUNDLE_ASSET,
             $entry,
             ['type' => 'module', 'defer' => 'defer'],
             ['priority' => false, 'csp' => true]
@@ -112,55 +118,48 @@ final class InjectToolbarAssets
         }
     }
 
-    /**
-     * @return 'frontend'|'backend'|null
-     */
-    private function resolveScope(ServerRequestInterface $request): ?string
+    private function resolveScope(ServerRequestInterface $request): ?InjectionScope
     {
         $type = ApplicationType::fromRequest($request);
         if ($type->isFrontend() && $this->config->isFrontendEnabled()) {
-            // Skip if this FE render is served inside a BE preview iframe
-            // (visual-editor's canvas, Web → Layout / Web → Edit preview
-            // panes, etc.). Browsers send the BE URL as Referer for same-
-            // origin iframes, so same-host + /typo3/ prefix is a reliable
-            // signal without adding JS overhead.
-            $referer = $request->getHeaderLine('Referer');
-            $host = $request->getUri()->getHost();
-            if ($referer !== '' && $host !== ''
-                && (
-                    str_contains($referer, '://' . $host . '/typo3/')
-                    || str_contains($referer, '://' . $host . ':' . $request->getUri()->getPort() . '/typo3/')
-                )
-            ) {
-                return null;
-            }
-            return 'frontend';
+            return $this->isRenderedInsideBackendFrame($request) ? null : InjectionScope::Frontend;
         }
         if ($type->isBackend() && $this->config->isBackendEnabled()) {
-            // Only inject into module content iframes at /typo3/module/*.
-            // TYPO3 v14 BE renders two frames per navigation:
-            //   - shell at /typo3/main (module menu, docheader, page tree)
-            //   - content iframe at /typo3/module/* (the editable area)
-            // React can't portal across iframe boundaries, so injecting
-            // into both would produce two toolbars. Injecting only into
-            // the iframe gives a single bubble per page where the user
-            // actually edits. The shell chrome (fixed TYPO3 UI) is out
-            // of annotation scope by design.
+            // TYPO3 v14 renders two documents per backend navigation: the
+            // shell at /typo3/main and the module content iframe at
+            // /typo3/module/*. React cannot portal across iframes, so the
+            // toolbar is mounted only into the content frame where the user
+            // edits; the fixed shell chrome is out of annotation scope.
             $path = $request->getUri()->getPath();
-            if (!str_starts_with($path, '/typo3/module/')) {
+            if (!str_starts_with($path, self::BACKEND_MODULE_PREFIX)) {
                 return null;
             }
-            // Never mount the widget on Agentation's own admin module —
-            // it's a management UI for existing annotations. When the
-            // widget is live there, its localStorage + EventSource
-            // sync fights our per-row delete (re-pushing annotations
-            // immediately after we remove them from the server).
-            if (str_starts_with($path, '/typo3/module/system/agentation')) {
+            // Never mount the widget on Agentation's own management module:
+            // its localStorage/EventSource sync would re-push annotations
+            // right after the module deleted them server-side.
+            if (str_starts_with($path, self::OWN_MODULE_PREFIX)) {
                 return null;
             }
-            return 'backend';
+            return InjectionScope::Backend;
         }
         return null;
+    }
+
+    /**
+     * A frontend render served inside a backend preview iframe (visual
+     * editor canvas, Web > Layout preview panes, ...) carries the backend
+     * URL as same-origin Referer.
+     */
+    private function isRenderedInsideBackendFrame(ServerRequestInterface $request): bool
+    {
+        $referer = $request->getHeaderLine('Referer');
+        $host = $request->getUri()->getHost();
+        if ($referer === '' || $host === '') {
+            return false;
+        }
+        $port = $request->getUri()->getPort();
+        return str_contains($referer, '://' . $host . '/typo3/')
+            || ($port !== null && str_contains($referer, '://' . $host . ':' . $port . '/typo3/'));
     }
 
     /**
@@ -168,29 +167,10 @@ final class InjectToolbarAssets
      */
     private function resolveFrontendPayload(ServerRequestInterface $request): ?array
     {
-        $beUser = $GLOBALS['BE_USER'] ?? null;
-        if (!is_object($beUser) || (int)($beUser->user['uid'] ?? 0) <= 0) {
+        $beUser = $this->currentBackendUser();
+        if ($beUser === null || !$this->frontendToolbarSettings->isToolbarActive($beUser)) {
             return null;
         }
-        if (!$this->userToolbarSettings->isFrontendToolbarEnabled($beUser)) {
-            return null;
-        }
-
-        $adminPanelService = GeneralUtility::makeInstance(AdminPanelConfigurationService::class);
-        $enabled = $adminPanelService->getConfigurationOption('agentation', 'enabled');
-        $moduleEnabled = $enabled !== ''
-            ? (bool)$enabled
-            : $this->config->isDefaultOptIn();
-        if (!$moduleEnabled) {
-            return null;
-        }
-
-        $position = $adminPanelService->getConfigurationOption('agentation', 'position');
-        if ($position === '') {
-            $position = $this->config->getToolbarPosition();
-        }
-        $rawScope = $adminPanelService->getConfigurationOption('agentation', 'scope');
-        $scope = $rawScope === 'frontend+adminpanel' ? 'frontend+adminpanel' : 'frontend';
 
         // TYPO3 v14 has no TypoScriptFrontendController; the resolved page
         // lives in the PSR-7 request attribute set by the frontend middleware.
@@ -198,10 +178,10 @@ final class InjectToolbarAssets
         $pageId = $pageInformation instanceof PageInformation ? $pageInformation->getId() : 0;
 
         return $this->buildPayload(
-            scope: 'frontend',
-            position: $position,
-            includeAdminPanelChrome: $scope === 'frontend+adminpanel',
-            beUserName: (string)($beUser->user['username'] ?? ''),
+            scope: InjectionScope::Frontend,
+            position: $this->frontendToolbarSettings->getPosition(),
+            includeAdminPanelChrome: $this->frontendToolbarSettings->getScope()->includesAdminPanelChrome(),
+            beUserName: self::userName($beUser),
             pageId: $pageId,
         );
     }
@@ -211,19 +191,16 @@ final class InjectToolbarAssets
      */
     private function resolveBackendPayload(): ?array
     {
-        $beUser = $GLOBALS['BE_USER'] ?? null;
-        if (!is_object($beUser) || (int)($beUser->user['uid'] ?? 0) <= 0) {
-            return null;
-        }
-        if (!$this->userToolbarSettings->isBackendToolbarEnabled($beUser)) {
+        $beUser = $this->currentBackendUser();
+        if ($beUser === null || !$this->userToolbarSettings->isBackendToolbarEnabled($beUser)) {
             return null;
         }
 
         return $this->buildPayload(
-            scope: 'backend',
+            scope: InjectionScope::Backend,
             position: $this->config->getToolbarPosition(),
             includeAdminPanelChrome: true,
-            beUserName: (string)($beUser->user['username'] ?? ''),
+            beUserName: self::userName($beUser),
             pageId: 0,
         );
     }
@@ -232,25 +209,25 @@ final class InjectToolbarAssets
      * @return array<string, mixed>
      */
     private function buildPayload(
-        string $scope,
-        string $position,
+        InjectionScope $scope,
+        ToolbarPosition $position,
         bool $includeAdminPanelChrome,
         string $beUserName,
         int $pageId,
     ): array {
         return [
             'enabled' => true,
-            'scope' => $scope,
-            'position' => $position,
-            'apiKey' => $this->config->getApiKey() !== '' ? $this->config->getApiKey() : null,
-            'workspaceId' => $this->config->getWorkspaceId() !== '' ? $this->config->getWorkspaceId() : null,
-            'webhookUrl' => $this->config->getWebhookUrl() !== '' ? $this->config->getWebhookUrl() : null,
-            'endpoint' => $this->config->getSyncEndpoint() !== '' ? $this->config->getSyncEndpoint() : null,
-            'proxyUrl' => $scope === 'backend' ? $this->buildProxyUrl() : null,
-            'context' => 'typo3-' . $scope,
+            'scope' => $scope->value,
+            'position' => $position->value,
+            'apiKey' => self::nullIfEmpty($this->config->getApiKey()),
+            'workspaceId' => self::nullIfEmpty($this->config->getWorkspaceId()),
+            'webhookUrl' => self::nullIfEmpty($this->config->getWebhookUrl()),
+            'endpoint' => self::nullIfEmpty($this->config->getSyncEndpoint()),
+            'proxyUrl' => $scope === InjectionScope::Backend ? $this->buildProxyUrl() : null,
+            'context' => 'typo3-' . $scope->value,
             'typo3Version' => (new Typo3Version())->getVersion(),
             'pageId' => $pageId > 0 ? $pageId : null,
-            'beUser' => $beUserName !== '' ? $beUserName : null,
+            'beUser' => self::nullIfEmpty($beUserName),
             'metadata' => [
                 'applicationContext' => (string)Environment::getContext(),
                 'includeAdminPanelChrome' => $includeAdminPanelChrome,
@@ -262,10 +239,29 @@ final class InjectToolbarAssets
     private function buildProxyUrl(): ?string
     {
         try {
-            $uriBuilder = GeneralUtility::makeInstance(BackendUriBuilder::class);
-            return (string)$uriBuilder->buildUriFromRoute('agentation_api_proxy');
+            return (string)$this->backendUriBuilder->buildUriFromRoute('agentation_api_proxy');
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    private function currentBackendUser(): ?BackendUserAuthentication
+    {
+        $beUser = $GLOBALS['BE_USER'] ?? null;
+        if (!$beUser instanceof BackendUserAuthentication || (int)($beUser->user['uid'] ?? 0) <= 0) {
+            return null;
+        }
+        return $beUser;
+    }
+
+    private static function userName(BackendUserAuthentication $beUser): string
+    {
+        $username = $beUser->user['username'] ?? '';
+        return is_string($username) ? $username : '';
+    }
+
+    private static function nullIfEmpty(string $value): ?string
+    {
+        return $value !== '' ? $value : null;
     }
 }

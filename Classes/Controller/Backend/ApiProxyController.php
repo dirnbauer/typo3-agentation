@@ -6,27 +6,34 @@ namespace Webconsulting\Agentation\Controller\Backend;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RequestFactory;
+use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use Webconsulting\Agentation\Service\ConfigurationService;
 use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 
 /**
  * Same-origin proxy for the agentation-mcp HTTP API.
  *
- * Browsers block fetch() from an HTTPS backend to http://localhost:4747
- * as mixed content. The backend module talks to these routes instead
- * and we forward to the configured sync endpoint server-side. The API
- * key (when configured) is injected here so it never leaves PHP.
+ * Browsers block fetch() from an HTTPS backend to http://localhost:4747 as
+ * mixed content. The backend module and the widget talk to these routes
+ * instead and PHP forwards to the configured sync endpoint. The API key
+ * (when configured) is injected here so it never leaves the server.
  */
-final class ApiProxyController
+#[Autoconfigure(public: true)]
+final readonly class ApiProxyController
 {
-    private const TIMEOUT_SECONDS = 4.0;
+    private const float TIMEOUT_SECONDS = 4.0;
+    private const string LANGUAGE_DOMAIN = 'agentation.mod:';
 
     public function __construct(
-        private readonly ConfigurationService $configuration,
-        private readonly UserToolbarSettingsService $userToolbarSettings,
-        private readonly RequestFactory $requestFactory,
+        private ConfigurationService $configuration,
+        private UserToolbarSettingsService $userToolbarSettings,
+        private RequestFactory $requestFactory,
+        private LanguageServiceFactory $languageServiceFactory,
     ) {}
 
     public function listAction(ServerRequestInterface $request): ResponseInterface
@@ -54,15 +61,13 @@ final class ApiProxyController
     }
 
     /**
-     * Forward any widget-originated HTTP call (GET/POST/PATCH/DELETE) to
-     * the real agentation-mcp server.
+     * Forward any widget-originated call (GET/POST/PATCH/DELETE) to the
+     * real agentation-mcp server.
      *
-     * Called by the widget's patched fetch() on every request that targets
-     * the configured sync endpoint. The original path is passed via the
-     * `path` query param (so one route covers sessions, annotations,
-     * pending, events, health, …). We forward method + headers + body
-     * and mirror the upstream status + body so the widget can't tell
-     * it's talking to a proxy.
+     * The widget's patched fetch() sends the original path in the `path`
+     * query parameter, so one route covers sessions, annotations, pending,
+     * events and health. Method, headers and body are forwarded and the
+     * upstream status and body mirrored back.
      */
     public function proxyAction(ServerRequestInterface $request): ResponseInterface
     {
@@ -72,20 +77,16 @@ final class ApiProxyController
 
         $params = $request->getQueryParams();
         $path = is_string($params['path'] ?? null) ? $params['path'] : '';
-        if ($path === '' || $path[0] !== '/') {
+        if ($path === '' || !str_starts_with($path, '/')) {
             return new JsonResponse(['error' => $this->translate('module.errors.invalidPath')], 400);
         }
 
         $method = strtoupper($request->getMethod());
         $body = (string)$request->getBody();
-        $headers = ['Accept' => 'application/json'];
+        $headers = $this->upstreamHeaders();
         $contentType = $request->getHeaderLine('Content-Type');
         if ($contentType !== '') {
             $headers['Content-Type'] = $contentType;
-        }
-        $apiKey = $this->configuration->getApiKey();
-        if ($apiKey !== '') {
-            $headers['x-api-key'] = $apiKey;
         }
 
         foreach ($this->candidateEndpoints() as $base) {
@@ -100,10 +101,7 @@ final class ApiProxyController
             } catch (\Throwable) {
                 continue;
             }
-            $response = new \TYPO3\CMS\Core\Http\Response(
-                $upstream->getBody(),
-                $upstream->getStatusCode(),
-            );
+            $response = new Response($upstream->getBody(), $upstream->getStatusCode());
             $upstreamType = $upstream->getHeaderLine('Content-Type');
             if ($upstreamType !== '') {
                 $response = $response->withHeader('Content-Type', $upstreamType);
@@ -111,31 +109,16 @@ final class ApiProxyController
             return $response;
         }
 
-        return new JsonResponse(
-            [
-                'error' => $this->translate('module.errors.syncUnreachable'),
-                'endpoint' => $this->endpoint(),
-                'tried' => $this->candidateEndpoints(),
-            ],
-            502,
-        );
+        return $this->unreachableResponse();
     }
 
     public function deleteAllAction(ServerRequestInterface $request): ResponseInterface
     {
         $listResponse = $this->call('GET', '/pending');
         if ($listResponse === null) {
-            return new JsonResponse(
-                [
-                    'error' => $this->translate('module.errors.syncUnreachable'),
-                    'endpoint' => $this->endpoint(),
-                    'tried' => $this->candidateEndpoints(),
-                ],
-                502,
-            );
+            return $this->unreachableResponse();
         }
-        $payload = $this->decodeBody($listResponse);
-        $annotations = $this->extractAnnotations($payload);
+        $annotations = $this->extractAnnotations($this->decodeBody($listResponse));
 
         $deleted = 0;
         $failed = 0;
@@ -166,21 +149,25 @@ final class ApiProxyController
     {
         $response = $this->call($method, $path);
         if ($response === null) {
-            return new JsonResponse(
-                [
-                    'error' => $this->translate('module.errors.syncUnreachable'),
-                    'endpoint' => $this->endpoint(),
-                    'tried' => $this->candidateEndpoints(),
-                ],
-                502,
-            );
+            return $this->unreachableResponse();
         }
         $status = $response->getStatusCode();
         if (!$expectJson) {
             return new JsonResponse(['ok' => $status < 400, 'status' => $status], $status);
         }
-        $payload = $this->decodeBody($response);
-        return new JsonResponse($payload, $status);
+        return new JsonResponse($this->decodeBody($response), $status);
+    }
+
+    private function unreachableResponse(): JsonResponse
+    {
+        return new JsonResponse(
+            [
+                'error' => $this->translate('module.errors.syncUnreachable'),
+                'endpoint' => $this->configuration->getSyncEndpoint(),
+                'tried' => $this->candidateEndpoints(),
+            ],
+            502,
+        );
     }
 
     private function call(string $method, string $path): ?ResponseInterface
@@ -195,26 +182,21 @@ final class ApiProxyController
     }
 
     /**
-     * Build the list of URLs to try for a given call, with container-aware
-     * fallbacks.
+     * URLs to try for a call, with container-aware fallbacks.
      *
-     * TYPO3 runs inside a Docker container when used via DDEV (or similar).
-     * A configured endpoint like http://localhost:4747 points at the
-     * container's own network namespace — which is NOT where the Mac's
-     * `agentation-mcp server` is listening. Docker exposes the host under
-     * `host.docker.internal` (and Podman under `host.containers.internal`),
-     * so when we detect we're in a container + the endpoint uses a loopback
-     * host, we also try those aliases.
+     * Inside DDEV/Docker a configured http://localhost:4747 points at the
+     * container's own loopback, not at the host where `agentation-mcp
+     * server` listens. Docker exposes the host as host.docker.internal and
+     * Podman as host.containers.internal, so both are tried as well.
      *
      * @return list<string>
      */
     private function candidateEndpoints(): array
     {
-        $configured = $this->endpoint();
+        $configured = rtrim($this->configuration->getSyncEndpoint(), '/');
         if ($configured === '') {
             return [];
         }
-        $configured = rtrim($configured, '/');
         $candidates = [$configured];
 
         $parsedHost = parse_url($configured, PHP_URL_HOST);
@@ -238,25 +220,16 @@ final class ApiProxyController
 
     private function isInsideContainer(): bool
     {
-        if (file_exists('/.dockerenv')) {
-            return true;
-        }
-        if (getenv('DDEV_HOSTNAME') !== false || getenv('DDEV_PROJECT') !== false) {
-            return true;
-        }
-        return false;
+        return file_exists('/.dockerenv')
+            || getenv('DDEV_HOSTNAME') !== false
+            || getenv('DDEV_PROJECT') !== false;
     }
 
     private function doCall(string $method, string $url): ?ResponseInterface
     {
-        $headers = ['Accept' => 'application/json'];
-        $apiKey = $this->configuration->getApiKey();
-        if ($apiKey !== '') {
-            $headers['x-api-key'] = $apiKey;
-        }
         try {
             return $this->requestFactory->request($url, $method, [
-                'headers' => $headers,
+                'headers' => $this->upstreamHeaders(),
                 'timeout' => self::TIMEOUT_SECONDS,
                 'connect_timeout' => self::TIMEOUT_SECONDS,
                 'http_errors' => false,
@@ -266,19 +239,26 @@ final class ApiProxyController
         }
     }
 
-    private function endpoint(): string
+    /**
+     * @return array<string, string>
+     */
+    private function upstreamHeaders(): array
     {
-        return $this->configuration->getSyncEndpoint();
+        $headers = ['Accept' => 'application/json'];
+        $apiKey = $this->configuration->getApiKey();
+        if ($apiKey !== '') {
+            $headers['x-api-key'] = $apiKey;
+        }
+        return $headers;
     }
 
     private function translate(string $key): string
     {
-        $languageService = $GLOBALS['LANG'] ?? null;
-        $label = is_object($languageService) && method_exists($languageService, 'sL')
-            ? (string)$languageService->sL(
-                'agentation.mod:' . $key
-            )
-            : '';
+        $backendUser = $GLOBALS['BE_USER'] ?? null;
+        $languageService = $this->languageServiceFactory->createFromUserPreferences(
+            $backendUser instanceof BackendUserAuthentication ? $backendUser : null
+        );
+        $label = $languageService->sL(self::LANGUAGE_DOMAIN . $key);
         return $label !== '' ? $label : $key;
     }
 
@@ -287,16 +267,7 @@ final class ApiProxyController
      */
     private function decodeBody(ResponseInterface $response): array
     {
-        $body = (string)$response->getBody();
-        if ($body === '') {
-            return [];
-        }
-        try {
-            $decoded = json_decode($body, true, 32, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
-            return [];
-        }
-        return is_array($decoded) ? $decoded : [];
+        return self::decodeJson((string)$response->getBody(), 32);
     }
 
     /**
@@ -308,12 +279,20 @@ final class ApiProxyController
         if (is_array($parsed) && $parsed !== []) {
             return $parsed;
         }
-        $raw = (string)$request->getBody();
+        return self::decodeJson((string)$request->getBody(), 16);
+    }
+
+    /**
+     * @param positive-int $depth
+     * @return array<int|string, mixed>
+     */
+    private static function decodeJson(string $raw, int $depth): array
+    {
         if ($raw === '') {
             return [];
         }
         try {
-            $decoded = json_decode($raw, true, 16, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($raw, true, $depth, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             return [];
         }
@@ -322,7 +301,7 @@ final class ApiProxyController
 
     /**
      * @param array<int|string, mixed> $payload
-     * @return list<array<string, mixed>>
+     * @return list<array<int|string, mixed>>
      */
     private function extractAnnotations(array $payload): array
     {
