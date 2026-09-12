@@ -70,7 +70,7 @@
     "scripts": {
         "cgl": "php-cs-fixer fix --dry-run --diff",
         "cgl:fix": "php-cs-fixer fix",
-        "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude public --exclude var --exclude .Build .",
+        "lint": "parallel-lint Build Classes Configuration Tests ext_localconf.php .php-cs-fixer.dist.php",
         "phpstan": "phpstan analyse --memory-limit=1G",
         "test": [
             "@lint",
