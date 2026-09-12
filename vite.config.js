@@ -19,7 +19,8 @@ function stripDependencyClientDirective() {
  * bundle ships its own isolated instance.
  *
  * No external peers, no dynamic chunks — one file, hashed, loaded by
- * PageRenderer when the toolbar is enabled.
+ * PageRenderer when the toolbar is enabled. The manifest is read by
+ * Classes/Service/ViteAssetResolver.php.
  */
 export default defineConfig({
   base: '',
@@ -35,12 +36,12 @@ export default defineConfig({
     outDir: resolve(process.cwd(), 'Resources/Public/Vite'),
     emptyOutDir: true,
     target: 'es2020',
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         agentation: resolve(process.cwd(), 'Build/Sources/agentation.js'),
       },
       output: {
-        inlineDynamicImports: true,
+        codeSplitting: false,
       },
     },
   },
