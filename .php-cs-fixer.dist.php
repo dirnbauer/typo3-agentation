@@ -8,6 +8,7 @@ $config = CsFixerConfig::create();
 $config->setCacheFile(__DIR__ . '/.php-cs-fixer.cache');
 $config->getFinder()
     ->in([
+        __DIR__ . '/Build/phpunit',
         __DIR__ . '/Classes',
         __DIR__ . '/Configuration',
         __DIR__ . '/Tests',
