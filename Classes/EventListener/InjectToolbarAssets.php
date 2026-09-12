@@ -14,6 +14,7 @@ use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Frontend\Page\PageInformation;
 use Webconsulting\Agentation\Service\ConfigurationService;
 use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 use Webconsulting\Agentation\Service\ViteAssetResolver;
@@ -62,7 +63,7 @@ final class InjectToolbarAssets
         }
 
         $payload = match ($scope) {
-            'frontend' => $this->resolveFrontendPayload(),
+            'frontend' => $this->resolveFrontendPayload($request),
             'backend' => $this->resolveBackendPayload(),
         };
         if ($payload === null) {
@@ -165,7 +166,7 @@ final class InjectToolbarAssets
     /**
      * @return array<string, mixed>|null
      */
-    private function resolveFrontendPayload(): ?array
+    private function resolveFrontendPayload(ServerRequestInterface $request): ?array
     {
         $beUser = $GLOBALS['BE_USER'] ?? null;
         if (!is_object($beUser) || (int)($beUser->user['uid'] ?? 0) <= 0) {
@@ -191,11 +192,10 @@ final class InjectToolbarAssets
         $rawScope = $adminPanelService->getConfigurationOption('agentation', 'scope');
         $scope = $rawScope === 'frontend+adminpanel' ? 'frontend+adminpanel' : 'frontend';
 
-        $pageId = 0;
-        $frontendController = $GLOBALS['TSFE'] ?? null;
-        if (is_object($frontendController) && isset($frontendController->id)) {
-            $pageId = (int)$frontendController->id;
-        }
+        // TYPO3 v14 has no TypoScriptFrontendController; the resolved page
+        // lives in the PSR-7 request attribute set by the frontend middleware.
+        $pageInformation = $request->getAttribute('frontend.page.information');
+        $pageId = $pageInformation instanceof PageInformation ? $pageInformation->getId() : 0;
 
         return $this->buildPayload(
             scope: 'frontend',
