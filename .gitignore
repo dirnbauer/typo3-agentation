@@ -11,3 +11,6 @@
 # Resources/Public/Vite/ is intentionally committed so composer/VCS
 # installations get the built assets without a node toolchain.
 # Regenerate locally with `npm install && npm run build` before pushing.
+
+# Tooling caches
+/.php-cs-fixer.cache

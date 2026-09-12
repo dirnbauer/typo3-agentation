@@ -57,8 +57,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
             '',
             $current
         ) ?? $current;
-        $GLOBALS['TCA']['be_users']['columns']['user_settings']['showitem'] =
-            rtrim($current, ', ')
+        $GLOBALS['TCA']['be_users']['columns']['user_settings']['showitem']
+            = rtrim($current, ', ')
             . ',' . $divider
             . ',agentation_backend_enabled,agentation_frontend_enabled';
     }

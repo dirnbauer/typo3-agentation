@@ -102,6 +102,7 @@ final class AgentationModule extends AbstractModule implements
         return $view->render('AdminPanel/ModuleContent');
     }
 
+    /** @return list<string> */
     public function getCssFiles(): array
     {
         return [
@@ -109,14 +110,13 @@ final class AgentationModule extends AbstractModule implements
         ];
     }
 
+    /** @return list<string> */
     public function getJavaScriptFiles(): array
     {
         return [];
     }
 
-    public function onSubmit(ModuleData $moduleData, ServerRequestInterface $request): void
-    {
-    }
+    public function onSubmit(ModuleData $moduleData, ServerRequestInterface $request): void {}
 
     public function isEnabled(): bool
     {

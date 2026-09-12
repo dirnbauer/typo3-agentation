@@ -17,6 +17,7 @@ final class UserToolbarSettingsServiceTest extends TestCase
     {
         $service = new UserToolbarSettingsService($this->createConfigurationService(true));
         $backendUser = new class {
+            /** @var array<string, mixed> */
             public array $user = ['uid' => 1];
 
             public function getUserSettings(): UserSettings
@@ -32,6 +33,7 @@ final class UserToolbarSettingsServiceTest extends TestCase
     {
         $service = new UserToolbarSettingsService($this->createConfigurationService(true));
         $backendUser = new class {
+            /** @var array<string, mixed> */
             public array $user = ['uid' => 1];
 
             public function getUserSettings(): UserSettings
@@ -47,6 +49,7 @@ final class UserToolbarSettingsServiceTest extends TestCase
     {
         $service = new UserToolbarSettingsService($this->createConfigurationService(true));
         $backendUser = new class {
+            /** @var array<string, mixed> */
             public array $user = ['uid' => 1];
 
             public function getUserSettings(): UserSettings
