@@ -2,6 +2,59 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.2.0] - 2026-09-12
+
+### Added
+
+- Enums `ToolbarPosition`, `ContextGate`, `AnnotationScope` and `InjectionScope`
+  replace loose string handling of extension and Admin Panel settings.
+- `FrontendToolbarSettingsService` as the single source of truth for the Admin
+  Panel toggle, position and scope, shared by the module and the asset listener.
+- Unit tests for `ConfigurationService`, `ViteAssetResolver`,
+  `UserToolbarSettingsService`, `FrontendToolbarSettingsService`,
+  `InjectToolbarAssets` and the enums; a functional test that boots the
+  extension and asserts the Admin Panel module, backend module and AJAX
+  routes, the rendered `System > Agentation` module, icons, user settings TCA
+  and the public DI services (`Build/phpunit/FunctionalTests.xml`, SQLite
+  locally, MariaDB in CI).
+- Composer scripts `lint`, `cgl`, `cgl:fix`, `test:functional`;
+  `Build/Scripts/runTests.sh` mirrors the CI jobs.
+
+### Changed
+
+- PHPStan level 8 with phpstan-typo3, phpstan-phpunit, strict and deprecation
+  rules; php-cs-fixer with the TYPO3 coding standards; a single GitHub
+  Actions workflow (lint, cgl, phpstan, unit on PHP 8.4/8.5, functional on
+  MariaDB 10.11, committed-asset check).
+- Services are `readonly` with constructor promotion and typed constants;
+  controllers and the Admin Panel module are published via
+  `#[Autoconfigure(public: true)]` instead of `Services.yaml` overrides.
+- `UriBuilder`, the Admin Panel `ConfigurationService`, `LanguageServiceFactory`
+  and `PackageManager` are injected instead of `GeneralUtility::makeInstance()`
+  and `$GLOBALS['LANG']`.
+- `ConfigurationService::getToolbarPosition()` returns `ToolbarPosition`,
+  `getContextGate()` was added and `toArray()` removed;
+  `UserToolbarSettingsService` expects a `BackendUserAuthentication`.
+- Toolbar bundle rebuilt with Vite 8 (Rolldown); npm dependencies updated,
+  `npm audit --audit-level=high` is clean. Upstream `agentation` stays at 3.0.2
+  (latest).
+- README restructured; documentation updated for the new services, tests and
+  the naming of directory, Composer package and GitHub repository.
+
+### Fixed
+
+- The frontend payload carries the page id again: TYPO3 v14 has no
+  `$GLOBALS['TSFE']`, the id is read from the `frontend.page.information`
+  request attribute.
+- The Admin Panel section is listed whenever the user's frontend toolbar
+  setting is on. Previously its own checkbox gated the visibility, so with the
+  shipped default `defaultOptIn = 0` the section could never appear.
+
+### Removed
+
+- Empty `ext_tables.php` and the unused `Configuration/TypoScript` files
+  (never included; nothing read `plugin.tx_agentation`).
+
 ## [1.1.5] - 2026-08-06
 
 ### Fixed

@@ -14,3 +14,7 @@
 
 # Tooling caches
 /.php-cs-fixer.cache
+/.Build/
+/typo3temp/
+/.php-cs-fixer.php
+/.phpunit.result.cache

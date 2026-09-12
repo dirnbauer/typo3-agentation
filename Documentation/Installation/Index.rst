@@ -6,7 +6,10 @@
 Installation
 ============
 
-Install the extension with Composer:
+The extension key and directory are ``agentation``, the Composer package is
+``webconsulting/agentation`` and the source repository is
+`dirnbauer/typo3-agentation <https://github.com/dirnbauer/typo3-agentation>`__.
+The package is distributed via Composer only:
 
 ..  code-block:: bash
     :caption: Composer installation

@@ -16,10 +16,14 @@ Frontend annotation requires all gates to pass:
 * TYPO3 application context matches the configured context gate.
 * A backend user session is active.
 * The user's frontend toolbar setting is enabled.
-* The :guilabel:`Agentation` Admin Panel section is enabled for the request.
+* The toolbar checkbox in the :guilabel:`Agentation` Admin Panel section is
+  ticked (or :confval:`defaultOptIn <agentation-default-opt-in>` is set and
+  the checkbox was never touched).
 
-Use the Admin Panel section to choose the toolbar position and annotation
-scope for the current frontend request.
+The Admin Panel section is listed as soon as the user's frontend toolbar
+setting is on. Inside the section, switch the toolbar on or off and choose
+the toolbar position and annotation scope; the Admin Panel stores the values
+per backend user.
 
 ..  _usage-backend:
 

@@ -31,8 +31,8 @@ Requirements
 ============
 
 * TYPO3 14.3 or later
-* PHP 8.2 or later
+* PHP 8.4 or later
 * `typo3/cms-adminpanel`
-* Node.js 20 or later only when rebuilding the bundled Vite assets
+* Node.js 22.12 or later only when rebuilding the bundled Vite assets
 
 The toolbar is never injected for anonymous frontend visitors.
