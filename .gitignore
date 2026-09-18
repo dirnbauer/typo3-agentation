@@ -1,20 +1,27 @@
-/node_modules/
-/vendor/
-/var/
-/public/
-/.phpunit.cache/
-/.phpstan.cache/
-/composer.lock
+# OS / IDE
 .DS_Store
+._*
 .idea/
+.vscode/
 
-# Resources/Public/Vite/ is intentionally committed so composer/VCS
-# installations get the built assets without a node toolchain.
-# Regenerate locally with `npm install && npm run build` before pushing.
-
-# Tooling caches
-/.php-cs-fixer.cache
+# Dependencies and build sandbox
 /.Build/
+/vendor/
+/node_modules/
+/composer.lock
+/public/
+/var/
 /typo3temp/
+
+# Tooling caches and reports
+*.cache
+/.php-cs-fixer.cache
 /.php-cs-fixer.php
+/.phpunit.cache/
 /.phpunit.result.cache
+/.phpstan.cache/
+/Build/Reports/
+*.map
+
+# Resources/Public/Vite/ is committed on purpose: Composer installations get
+# the built assets without a Node toolchain. Rebuild with `npm run build`.

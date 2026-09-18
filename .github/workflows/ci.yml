@@ -54,7 +54,7 @@ jobs:
           coverage: none
           tools: composer:v2
       - run: composer install $COMPOSER_FLAGS
-      - run: composer phpstan -- --no-progress
+      - run: composer phpstan -- --no-progress --error-format=github
 
   unit:
     name: Unit tests (PHP ${{ matrix.php }})

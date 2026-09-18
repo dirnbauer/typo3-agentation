@@ -5,6 +5,5 @@ parameters:
         - Configuration
         - Tests
         - ext_localconf.php
-    tmpDir: .phpstan.cache
-    treatPhpDocTypesAsCertain: false
+    tmpDir: .Build/.phpstan.cache
     checkMissingOverrideMethodAttribute: false

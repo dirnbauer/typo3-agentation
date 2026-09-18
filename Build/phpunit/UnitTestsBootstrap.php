@@ -28,12 +28,12 @@ use TYPO3\TestingFramework\Core\Testbase;
     // Point the testing framework at the Composer web directory so it does
     // not create typo3temp/ and typo3conf/ in the repository root.
     if (getenv('TYPO3_PATH_ROOT') === false) {
-        putenv('TYPO3_PATH_ROOT=' . $projectRoot . '/public');
+        putenv('TYPO3_PATH_ROOT=' . $projectRoot . '/.Build/public');
     }
     if (getenv('TYPO3_PATH_WEB') === false) {
-        putenv('TYPO3_PATH_WEB=' . $projectRoot . '/public');
+        putenv('TYPO3_PATH_WEB=' . $projectRoot . '/.Build/public');
     }
-    require $projectRoot . '/vendor/autoload.php';
+    require $projectRoot . '/.Build/vendor/autoload.php';
 
     $testbase = new Testbase();
     $testbase->defineSitePath();

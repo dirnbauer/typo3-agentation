@@ -44,7 +44,7 @@
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^11.5",
+        "phpunit/phpunit": "^12.4 || ^13.0",
         "saschaegerer/phpstan-typo3": "^3.1",
         "typo3/coding-standards": "^0.9",
         "typo3/testing-framework": "^9.5"
@@ -65,12 +65,15 @@
             "phpstan/extension-installer": true,
             "typo3/class-alias-loader": true,
             "typo3/cms-composer-installers": true
-        }
+        },
+        "vendor-dir": ".Build/vendor",
+        "bin-dir": ".Build/bin"
     },
     "scripts": {
         "cgl": "php-cs-fixer fix --dry-run --diff",
         "cgl:fix": "php-cs-fixer fix",
-        "lint": "parallel-lint Build Classes Configuration Tests ext_localconf.php .php-cs-fixer.dist.php",
+        "ci": "@test",
+        "lint": "parallel-lint Build/phpunit Classes Configuration Tests ext_localconf.php .php-cs-fixer.dist.php",
         "phpstan": "phpstan analyse --memory-limit=1G",
         "test": [
             "@lint",
@@ -86,9 +89,7 @@
         "typo3/cms": {
             "extension-key": "agentation",
             "version": "1.2.0",
-            "Package": {
-                "providesPackages": {}
-            }
+            "web-dir": ".Build/public"
         }
     }
 }
