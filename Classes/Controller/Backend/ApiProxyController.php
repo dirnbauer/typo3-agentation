@@ -11,87 +11,149 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Http\Response;
-use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
-use Webconsulting\Agentation\Service\ConfigurationService;
-use Webconsulting\Agentation\Service\UserToolbarSettingsService;
+use Webconsulting\Agentation\Settings\ExtensionSettings;
+use Webconsulting\Agentation\Settings\ToolbarSettings;
 
 /**
  * Same-origin proxy for the agentation-mcp HTTP API.
  *
  * Browsers block fetch() from an HTTPS backend to http://localhost:4747 as
- * mixed content. The backend module and the widget talk to these routes
- * instead and PHP forwards to the configured sync endpoint. The API key
- * (when configured) is injected here so it never leaves the server.
+ * mixed content. The toolbar widget and System > Agentation call these
+ * routes instead; PHP forwards to the configured sync endpoint and injects
+ * the API key, which therefore never leaves the server.
+ *
+ * Errors are returned as machine-readable codes (`{"error": "<code>"}`);
+ * the module's JavaScript translates them (module.errors.* labels).
  */
 #[Autoconfigure(public: true)]
 final readonly class ApiProxyController
 {
     private const float TIMEOUT_SECONDS = 4.0;
-    private const string LANGUAGE_DOMAIN = 'agentation.mod:';
+    private const string PENDING_PATH = '/pending';
+    private const string ANNOTATION_PATH = '/annotations/';
 
     public function __construct(
-        private ConfigurationService $configuration,
-        private UserToolbarSettingsService $userToolbarSettings,
+        private ExtensionSettings $settings,
+        private ToolbarSettings $toolbar,
         private RequestFactory $requestFactory,
-        private LanguageServiceFactory $languageServiceFactory,
     ) {}
 
+    /**
+     * System > Agentation: pending annotations stored on the sync server.
+     */
     public function listAction(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->forwardJson('GET', '/pending');
-    }
-
-    public function sessionsAction(ServerRequestInterface $request): ResponseInterface
-    {
-        return $this->forwardJson('GET', '/sessions');
-    }
-
-    public function deleteAction(ServerRequestInterface $request): ResponseInterface
-    {
-        $body = $this->decodeJsonBody($request);
-        $id = is_string($body['id'] ?? null) ? trim($body['id']) : '';
-        if ($id === '') {
-            return new JsonResponse(['error' => $this->translate('module.errors.missingAnnotationId')], 400);
+        if (!$this->backendUser()->isAdmin()) {
+            return self::error('adminOnly', 403);
         }
-        return $this->forwardJson(
-            'DELETE',
-            '/annotations/' . rawurlencode($id),
-            expectJson: false,
-        );
+        $upstream = $this->forward('GET', self::PENDING_PATH);
+        return $upstream === null
+            ? $this->unreachable()
+            : new JsonResponse(self::decodeJson((string)$upstream->getBody()), $upstream->getStatusCode());
     }
 
     /**
-     * Forward any widget-originated call (GET/POST/PATCH/DELETE) to the
-     * real agentation-mcp server.
+     * System > Agentation: delete one annotation by id (JSON body `{"id": "..."}`).
+     */
+    public function deleteAction(ServerRequestInterface $request): ResponseInterface
+    {
+        if (!$this->backendUser()->isAdmin()) {
+            return self::error('adminOnly', 403);
+        }
+        $id = self::requestedAnnotationId($request);
+        if ($id === '') {
+            return self::error('missingAnnotationId', 400);
+        }
+        $upstream = $this->forward('DELETE', self::ANNOTATION_PATH . rawurlencode($id));
+        if ($upstream === null) {
+            return $this->unreachable();
+        }
+        $status = $upstream->getStatusCode();
+        return new JsonResponse(['ok' => $status < 400, 'status' => $status], $status);
+    }
+
+    /**
+     * System > Agentation: delete every pending annotation on the sync server.
+     */
+    public function deleteAllAction(ServerRequestInterface $request): ResponseInterface
+    {
+        if (!$this->backendUser()->isAdmin()) {
+            return self::error('adminOnly', 403);
+        }
+        $pending = $this->forward('GET', self::PENDING_PATH);
+        if ($pending === null) {
+            return $this->unreachable();
+        }
+
+        $deleted = [];
+        $failed = [];
+        foreach (self::annotationIds(self::decodeJson((string)$pending->getBody())) as $id) {
+            $upstream = $this->forward('DELETE', self::ANNOTATION_PATH . rawurlencode($id));
+            if ($upstream !== null && $upstream->getStatusCode() < 400) {
+                $deleted[] = $id;
+            } else {
+                $failed[] = $id;
+            }
+        }
+
+        return new JsonResponse([
+            'deleted' => count($deleted),
+            'failed' => count($failed),
+            'failures' => $failed,
+            'total' => count($deleted) + count($failed),
+        ]);
+    }
+
+    /**
+     * Generic forward for the toolbar widget (GET/POST/PATCH/DELETE).
      *
-     * The widget's patched fetch() sends the original path in the `path`
+     * The widget's patched fetch() sends the original API path in the `path`
      * query parameter, so one route covers sessions, annotations, pending,
-     * events and health. Method, headers and body are forwarded and the
-     * upstream status and body mirrored back.
+     * events and health. Method, content type and body are forwarded; the
+     * upstream status, body and content type are mirrored back.
      */
     public function proxyAction(ServerRequestInterface $request): ResponseInterface
     {
-        if (!$this->userToolbarSettings->isBackendToolbarEnabled()) {
-            return new JsonResponse(['error' => $this->translate('module.errors.toolbarDisabled')], 403);
+        if (!$this->toolbar->isBackendToolbarEnabled($this->backendUser())) {
+            return self::error('toolbarDisabled', 403);
+        }
+        $path = $request->getQueryParams()['path'] ?? '';
+        if (!is_string($path) || !str_starts_with($path, '/')) {
+            return self::error('invalidPath', 400);
         }
 
-        $params = $request->getQueryParams();
-        $path = is_string($params['path'] ?? null) ? $params['path'] : '';
-        if ($path === '' || !str_starts_with($path, '/')) {
-            return new JsonResponse(['error' => $this->translate('module.errors.invalidPath')], 400);
-        }
-
-        $method = strtoupper($request->getMethod());
-        $body = (string)$request->getBody();
-        $headers = $this->upstreamHeaders();
         $contentType = $request->getHeaderLine('Content-Type');
-        if ($contentType !== '') {
-            $headers['Content-Type'] = $contentType;
+        $upstream = $this->forward(
+            strtoupper($request->getMethod()),
+            $path,
+            $contentType !== '' ? ['Content-Type' => $contentType] : [],
+            (string)$request->getBody(),
+        );
+        if ($upstream === null) {
+            return $this->unreachable();
         }
 
+        $response = new Response($upstream->getBody(), $upstream->getStatusCode());
+        $upstreamType = $upstream->getHeaderLine('Content-Type');
+        return $upstreamType !== '' ? $response->withHeader('Content-Type', $upstreamType) : $response;
+    }
+
+    /**
+     * Sends one request to the first reachable candidate endpoint. Upstream
+     * HTTP errors (4xx/5xx) are responses, not failures; only transport
+     * failures move on to the next candidate.
+     *
+     * @param array<string, string> $headers
+     */
+    private function forward(string $method, string $path, array $headers = [], string $body = ''): ?ResponseInterface
+    {
+        $headers += ['Accept' => 'application/json'];
+        if ($this->settings->apiKey !== '') {
+            $headers['x-api-key'] = $this->settings->apiKey;
+        }
         foreach ($this->candidateEndpoints() as $base) {
             try {
-                $upstream = $this->requestFactory->request($base . $path, $method, [
+                return $this->requestFactory->request($base . $path, $method, [
                     'headers' => $headers,
                     'body' => $body !== '' ? $body : null,
                     'timeout' => self::TIMEOUT_SECONDS,
@@ -101,84 +163,16 @@ final readonly class ApiProxyController
             } catch (\Throwable) {
                 continue;
             }
-            $response = new Response($upstream->getBody(), $upstream->getStatusCode());
-            $upstreamType = $upstream->getHeaderLine('Content-Type');
-            if ($upstreamType !== '') {
-                $response = $response->withHeader('Content-Type', $upstreamType);
-            }
-            return $response;
-        }
-
-        return $this->unreachableResponse();
-    }
-
-    public function deleteAllAction(ServerRequestInterface $request): ResponseInterface
-    {
-        $listResponse = $this->call('GET', '/pending');
-        if ($listResponse === null) {
-            return $this->unreachableResponse();
-        }
-        $annotations = $this->extractAnnotations($this->decodeBody($listResponse));
-
-        $deleted = 0;
-        $failed = 0;
-        $failures = [];
-        foreach ($annotations as $annotation) {
-            $id = is_string($annotation['id'] ?? null) ? $annotation['id'] : '';
-            if ($id === '') {
-                continue;
-            }
-            $delResponse = $this->call('DELETE', '/annotations/' . rawurlencode($id));
-            if ($delResponse !== null && $delResponse->getStatusCode() < 400) {
-                $deleted++;
-            } else {
-                $failed++;
-                $failures[] = $id;
-            }
-        }
-
-        return new JsonResponse([
-            'deleted' => $deleted,
-            'failed' => $failed,
-            'failures' => $failures,
-            'total' => $deleted + $failed,
-        ]);
-    }
-
-    private function forwardJson(string $method, string $path, bool $expectJson = true): ResponseInterface
-    {
-        $response = $this->call($method, $path);
-        if ($response === null) {
-            return $this->unreachableResponse();
-        }
-        $status = $response->getStatusCode();
-        if (!$expectJson) {
-            return new JsonResponse(['ok' => $status < 400, 'status' => $status], $status);
-        }
-        return new JsonResponse($this->decodeBody($response), $status);
-    }
-
-    private function unreachableResponse(): JsonResponse
-    {
-        return new JsonResponse(
-            [
-                'error' => $this->translate('module.errors.syncUnreachable'),
-                'endpoint' => $this->configuration->getSyncEndpoint(),
-                'tried' => $this->candidateEndpoints(),
-            ],
-            502,
-        );
-    }
-
-    private function call(string $method, string $path): ?ResponseInterface
-    {
-        foreach ($this->candidateEndpoints() as $candidate) {
-            $response = $this->doCall($method, $candidate . $path);
-            if ($response !== null) {
-                return $response;
-            }
         }
         return null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function candidateEndpoints(): array
+    {
+        return self::endpointsToTry($this->settings->syncEndpoint, self::isInsideContainer());
     }
 
     /**
@@ -191,130 +185,100 @@ final readonly class ApiProxyController
      *
      * @return list<string>
      */
-    private function candidateEndpoints(): array
+    public static function endpointsToTry(string $configuredEndpoint, bool $insideContainer): array
     {
-        $configured = rtrim($this->configuration->getSyncEndpoint(), '/');
+        $configured = rtrim($configuredEndpoint, '/');
         if ($configured === '') {
             return [];
         }
+        $host = parse_url($configured, PHP_URL_HOST);
+        if (!$insideContainer || !in_array($host, ['localhost', '127.0.0.1'], true)) {
+            return [$configured];
+        }
         $candidates = [$configured];
-
-        $parsedHost = parse_url($configured, PHP_URL_HOST);
-        $host = is_string($parsedHost) ? $parsedHost : '';
-        if (!$this->isInsideContainer() || !in_array($host, ['localhost', '127.0.0.1'], true)) {
-            return $candidates;
-        }
         foreach (['host.docker.internal', 'host.containers.internal'] as $alias) {
-            $rewritten = preg_replace(
-                '#://' . preg_quote($host, '#') . '(?=[:/]|$)#',
-                '://' . $alias,
-                $configured,
-                1,
-            );
-            if (is_string($rewritten) && $rewritten !== $configured) {
-                $candidates[] = $rewritten;
-            }
+            $candidates[] = preg_replace('#://' . preg_quote($host, '#') . '(?=[:/]|$)#', '://' . $alias, $configured, 1)
+                ?? $configured;
         }
-        return $candidates;
+        return array_values(array_unique($candidates));
     }
 
-    private function isInsideContainer(): bool
+    private static function isInsideContainer(): bool
     {
         return file_exists('/.dockerenv')
             || getenv('DDEV_HOSTNAME') !== false
             || getenv('DDEV_PROJECT') !== false;
     }
 
-    private function doCall(string $method, string $url): ?ResponseInterface
+    private function unreachable(): JsonResponse
     {
-        try {
-            return $this->requestFactory->request($url, $method, [
-                'headers' => $this->upstreamHeaders(),
-                'timeout' => self::TIMEOUT_SECONDS,
-                'connect_timeout' => self::TIMEOUT_SECONDS,
-                'http_errors' => false,
-            ]);
-        } catch (\Throwable) {
-            return null;
-        }
+        return new JsonResponse([
+            'error' => 'syncUnreachable',
+            'endpoint' => $this->settings->syncEndpoint,
+            'tried' => $this->candidateEndpoints(),
+        ], 502);
+    }
+
+    private static function error(string $code, int $status): JsonResponse
+    {
+        return new JsonResponse(['error' => $code], $status);
     }
 
     /**
-     * @return array<string, string>
+     * Backend AJAX routes are authenticated by the backend middleware, which
+     * always provides the user in the global.
      */
-    private function upstreamHeaders(): array
+    private function backendUser(): BackendUserAuthentication
     {
-        $headers = ['Accept' => 'application/json'];
-        $apiKey = $this->configuration->getApiKey();
-        if ($apiKey !== '') {
-            $headers['x-api-key'] = $apiKey;
-        }
-        return $headers;
+        $user = $GLOBALS['BE_USER'] ?? null;
+        return $user instanceof BackendUserAuthentication
+            ? $user
+            : throw new \RuntimeException('Backend user missing on an authenticated AJAX route.', 1758196800);
     }
 
-    private function translate(string $key): string
+    private static function requestedAnnotationId(ServerRequestInterface $request): string
     {
-        $backendUser = $GLOBALS['BE_USER'] ?? null;
-        $languageService = $this->languageServiceFactory->createFromUserPreferences(
-            $backendUser instanceof BackendUserAuthentication ? $backendUser : null
-        );
-        $label = $languageService->sL(self::LANGUAGE_DOMAIN . $key);
-        return $label !== '' ? $label : $key;
+        $body = $request->getParsedBody();
+        if (!is_array($body) || $body === []) {
+            $body = self::decodeJson((string)$request->getBody());
+        }
+        $id = $body['id'] ?? null;
+        return is_string($id) ? trim($id) : '';
+    }
+
+    /**
+     * The pending list is either a bare array of annotations or wrapped in
+     * `{"annotations": [...]}`.
+     *
+     * @param array<int|string, mixed> $payload
+     * @return list<string>
+     */
+    private static function annotationIds(array $payload): array
+    {
+        $annotations = $payload['annotations'] ?? $payload;
+        $ids = [];
+        foreach (is_array($annotations) ? $annotations : [] as $annotation) {
+            $id = is_array($annotation) ? ($annotation['id'] ?? null) : null;
+            if (is_string($id) && $id !== '') {
+                $ids[] = $id;
+            }
+        }
+        return $ids;
     }
 
     /**
      * @return array<int|string, mixed>
      */
-    private function decodeBody(ResponseInterface $response): array
+    private static function decodeJson(string $json): array
     {
-        return self::decodeJson((string)$response->getBody(), 32);
-    }
-
-    /**
-     * @return array<int|string, mixed>
-     */
-    private function decodeJsonBody(ServerRequestInterface $request): array
-    {
-        $parsed = $request->getParsedBody();
-        if (is_array($parsed) && $parsed !== []) {
-            return $parsed;
-        }
-        return self::decodeJson((string)$request->getBody(), 16);
-    }
-
-    /**
-     * @param positive-int $depth
-     * @return array<int|string, mixed>
-     */
-    private static function decodeJson(string $raw, int $depth): array
-    {
-        if ($raw === '') {
+        if ($json === '') {
             return [];
         }
         try {
-            $decoded = json_decode($raw, true, $depth, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             return [];
         }
         return is_array($decoded) ? $decoded : [];
-    }
-
-    /**
-     * @param array<int|string, mixed> $payload
-     * @return list<array<int|string, mixed>>
-     */
-    private function extractAnnotations(array $payload): array
-    {
-        $candidate = $payload['annotations'] ?? $payload;
-        if (!is_array($candidate)) {
-            return [];
-        }
-        $out = [];
-        foreach ($candidate as $entry) {
-            if (is_array($entry) && isset($entry['id'])) {
-                $out[] = $entry;
-            }
-        }
-        return $out;
     }
 }

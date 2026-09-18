@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Webconsulting\Agentation\Tests\Functional;
 
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Adminpanel\ModuleApi\ModuleData;
 use TYPO3\CMS\Adminpanel\Service\ModuleLoader;
 use TYPO3\CMS\Backend\Module\ModuleProvider;
 use TYPO3\CMS\Backend\Routing\Router;
@@ -25,6 +26,9 @@ use Webconsulting\Agentation\Controller\Backend\ModuleController;
  */
 final class ExtensionRegistrationTest extends FunctionalTestCase
 {
+    private const int ADMIN_UID = 1;
+    private const int EDITOR_UID = 2;
+
     protected array $coreExtensionsToLoad = ['adminpanel'];
 
     protected array $testExtensionsToLoad = ['webconsulting/agentation'];
@@ -41,12 +45,11 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->getConnectionPool()->getConnectionForTable('be_users')->insert('be_users', [
-            'uid' => 1,
-            'username' => 'admin',
-            'admin' => 1,
-        ]);
-        $this->saveUserSettings(['agentation_frontend_enabled' => 1, 'agentation_backend_enabled' => 1]);
+        $connection = $this->getConnectionPool()->getConnectionForTable('be_users');
+        $connection->insert('be_users', ['uid' => self::ADMIN_UID, 'username' => 'admin', 'admin' => 1]);
+        $connection->insert('be_users', ['uid' => self::EDITOR_UID, 'username' => 'editor', 'admin' => 0]);
+        $this->saveUserSettings(self::ADMIN_UID, ['agentation_frontend_enabled' => 1, 'agentation_backend_enabled' => 1]);
+        $this->saveUserSettings(self::EDITOR_UID, ['agentation_frontend_enabled' => 1, 'agentation_backend_enabled' => 1]);
     }
 
     #[Test]
@@ -56,7 +59,7 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         self::assertIsArray($registration);
         self::assertSame(AgentationModule::class, $registration['module']);
 
-        $this->login();
+        $this->login(self::ADMIN_UID);
         $GLOBALS['BE_USER']->uc['AdminPanel']['agentation_enabled'] = '1';
 
         $modules = $this->get(ModuleLoader::class)->validateSortAndInitializeModules(
@@ -76,13 +79,17 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         self::assertStringContainsString('name="TSFE_ADMIN_PANEL[agentation_position]"', $settings);
         self::assertStringContainsString('<option value="top-left"', $settings);
         self::assertStringContainsString('name="TSFE_ADMIN_PANEL[agentation_scope]"', $settings);
+
+        $content = $module->getContent(new ModuleData());
+        self::assertStringContainsString('href="/typo3/module/system/agentation', $content, 'links to the backend module through the router');
+        self::assertStringContainsString('typo3-adminPanel-badge-success', $content);
     }
 
     #[Test]
     public function adminPanelSectionIsHiddenWhenTheUserSettingIsOff(): void
     {
-        $this->saveUserSettings(['agentation_frontend_enabled' => 0]);
-        $this->login();
+        $this->saveUserSettings(self::ADMIN_UID, ['agentation_frontend_enabled' => 0]);
+        $this->login(self::ADMIN_UID);
 
         $modules = $this->get(ModuleLoader::class)->validateSortAndInitializeModules([
             'agentation' => $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules']['agentation'],
@@ -105,14 +112,12 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         self::assertSame('live', $module->getWorkspaceAccess());
 
         $router = $this->get(Router::class);
-        // Module routes are Symfony routes, AJAX routes TYPO3 routes; both expose path and methods.
         $moduleRoute = $router->getRoute('agentation');
         self::assertNotNull($moduleRoute);
         self::assertSame('/module/system/agentation', $moduleRoute->getPath());
 
         $expectedAjaxRoutes = [
             'ajax_agentation_api_list' => ['/ajax/agentation/api/list', ['GET']],
-            'ajax_agentation_api_sessions' => ['/ajax/agentation/api/sessions', ['GET']],
             'ajax_agentation_api_delete' => ['/ajax/agentation/api/delete', ['POST']],
             'ajax_agentation_api_delete_all' => ['/ajax/agentation/api/delete-all', ['POST']],
             'ajax_agentation_api_proxy' => ['/ajax/agentation/api/proxy', ['GET', 'POST', 'PATCH', 'DELETE']],
@@ -124,12 +129,13 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
             self::assertSame($path, $route->getPath(), $name);
             self::assertSame($methods, $route->getMethods(), $name);
         }
+        self::assertFalse($router->hasRoute('ajax_agentation_api_sessions'), 'the unused sessions route is gone');
     }
 
     #[Test]
     public function backendModuleRendersTheMcpSetupForAnAdmin(): void
     {
-        $this->login();
+        $this->login(self::ADMIN_UID);
         $request = (new ServerRequest('https://typo3-testing.local/typo3/module/system/agentation', 'GET', null, [], [
             'HTTP_HOST' => 'typo3-testing.local',
             'HTTPS' => 'on',
@@ -152,6 +158,33 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         self::assertStringContainsString('id="agentation-mcp-json"', $body);
         self::assertStringContainsString('agentation-mcp', $body);
         self::assertStringContainsString('cursor://anysphere.cursor-deeplink/mcp/install?name=agentation', $body);
+        self::assertStringContainsString('data-agentation-action="copy"', $body);
+        self::assertStringContainsString('@webconsulting/agentation/module.js', $body);
+        self::assertStringContainsString('module.annotations.localOnly', $body, 'module.* labels are exposed to module.js as TYPO3.lang');
+        self::assertStringContainsString('<title>Agentation', $body);
+    }
+
+    #[Test]
+    public function annotationManagementRoutesRejectNonAdministrators(): void
+    {
+        $this->login(self::EDITOR_UID);
+        $controller = $this->get(ApiProxyController::class);
+
+        $response = $controller->listAction(new ServerRequest());
+
+        self::assertSame(403, $response->getStatusCode());
+        self::assertSame('{"error":"adminOnly"}', (string)$response->getBody());
+    }
+
+    #[Test]
+    public function deletingWithoutAnIdIsRejectedBeforeAnyUpstreamCall(): void
+    {
+        $this->login(self::ADMIN_UID);
+
+        $response = $this->get(ApiProxyController::class)->deleteAction(new ServerRequest());
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertSame('{"error":"missingAnnotationId"}', (string)$response->getBody());
     }
 
     #[Test]
@@ -164,7 +197,11 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         $userSettings = $GLOBALS['TCA']['be_users']['columns']['user_settings'];
         self::assertSame('check', $userSettings['columns']['agentation_backend_enabled']['config']['type']);
         self::assertSame('check', $userSettings['columns']['agentation_frontend_enabled']['config']['type']);
-        self::assertStringContainsString('agentation_backend_enabled,agentation_frontend_enabled', $userSettings['showitem']);
+        self::assertSame(0, $userSettings['columns']['agentation_frontend_enabled']['config']['default']);
+        self::assertStringContainsString(
+            '--div--;LLL:EXT:agentation/Resources/Private/Language/locallang.xlf:setup.tab,agentation_backend_enabled,agentation_frontend_enabled',
+            $userSettings['showitem']
+        );
         self::assertSame(1, substr_count($userSettings['showitem'], 'agentation_backend_enabled'));
     }
 
@@ -173,7 +210,7 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
     {
         // The Admin Panel base class reads the backend user's TSconfig while
         // being constructed, exactly like in a real admin panel request.
-        $this->login();
+        $this->login(self::ADMIN_UID);
         foreach ([ModuleController::class, ApiProxyController::class, AgentationModule::class] as $service) {
             self::assertTrue($this->getContainer()->has($service), $service);
             self::assertInstanceOf($service, $this->getContainer()->get($service));
@@ -187,18 +224,18 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
      *
      * @param array<string, int> $settings
      */
-    private function saveUserSettings(array $settings): void
+    private function saveUserSettings(int $uid, array $settings): void
     {
         $this->getConnectionPool()->getConnectionForTable('be_users')->update(
             'be_users',
             ['uc' => serialize($settings), 'user_settings' => json_encode($settings, JSON_THROW_ON_ERROR)],
-            ['uid' => 1]
+            ['uid' => $uid]
         );
     }
 
-    private function login(): void
+    private function login(int $uid): void
     {
-        $backendUser = $this->setUpBackendUser(1);
+        $backendUser = $this->setUpBackendUser($uid);
         $GLOBALS['LANG'] = $this->get(LanguageServiceFactory::class)->createFromUserPreferences($backendUser);
     }
 }

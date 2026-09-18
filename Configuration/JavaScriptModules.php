@@ -3,8 +3,9 @@
 declare(strict_types=1);
 
 return [
-    'dependencies' => ['backend'],
+    'dependencies' => ['backend', 'core'],
     'imports' => [
-        '@webconsulting/agentation/' => 'EXT:agentation/Resources/Public/JavaScript/',
+        // Built by Vite from Build/Sources/module.js (stable file name).
+        '@webconsulting/agentation/' => 'EXT:agentation/Resources/Public/Vite/',
     ],
 ];

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Webconsulting\Agentation\AdminPanel;
 
-use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Adminpanel\ModuleApi\AbstractModule;
 use TYPO3\CMS\Adminpanel\ModuleApi\ContentProviderInterface;
@@ -12,24 +11,23 @@ use TYPO3\CMS\Adminpanel\ModuleApi\ModuleData;
 use TYPO3\CMS\Adminpanel\ModuleApi\ModuleSettingsProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ResourceProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ShortInfoProviderInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
 use Webconsulting\Agentation\Enum\AnnotationScope;
 use Webconsulting\Agentation\Enum\ToolbarPosition;
-use Webconsulting\Agentation\Service\ConfigurationService;
-use Webconsulting\Agentation\Service\FrontendToolbarSettingsService;
-use Webconsulting\Agentation\Service\UserToolbarSettingsService;
+use Webconsulting\Agentation\Settings\ExtensionSettings;
+use Webconsulting\Agentation\Settings\ToolbarSettings;
 
 /**
- * Admin Panel section for the Agentation toolbar.
+ * Admin Panel section for the frontend toolbar.
  *
  * The section is listed for every backend user whose User Settings switch
- * for the frontend toolbar is on (or who inherits the default opt-in).
- * Inside the section the user toggles the toolbar itself and picks the
- * position and annotation scope; the Admin Panel persists those values in
- * the user's uc and FrontendToolbarSettingsService reads them back for
- * both this module and the asset listener.
+ * for the frontend toolbar is on. Inside the section the user toggles the
+ * toolbar itself and picks position and annotation scope; the Admin Panel
+ * persists those values in the user's uc and ToolbarSettings reads them
+ * back for both this module and the asset listener.
  *
  * Registered in ext_localconf.php via
  * $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'].
@@ -42,15 +40,15 @@ final class AgentationModule extends AbstractModule implements
     ShortInfoProviderInterface
 {
     public function __construct(
-        private readonly ConfigurationService $configuration,
-        private readonly UserToolbarSettingsService $userToolbarSettings,
-        private readonly FrontendToolbarSettingsService $toolbarSettings,
+        private readonly ExtensionSettings $settings,
+        private readonly ToolbarSettings $toolbar,
         private readonly ViewFactoryInterface $viewFactory,
+        private readonly BackendUriBuilder $uriBuilder,
     ) {}
 
     public function getIdentifier(): string
     {
-        return FrontendToolbarSettingsService::MODULE_IDENTIFIER;
+        return ToolbarSettings::ADMIN_PANEL_MODULE;
     }
 
     public function getLabel(): string
@@ -66,7 +64,7 @@ final class AgentationModule extends AbstractModule implements
     public function getShortInfo(): string
     {
         return $this->getLanguageService()->sL(
-            $this->toolbarSettings->isToolbarActive()
+            $this->isToolbarActive()
                 ? 'agentation.messages:adminpanel.shortinfo.on'
                 : 'agentation.messages:adminpanel.shortinfo.off'
         );
@@ -79,35 +77,24 @@ final class AgentationModule extends AbstractModule implements
      */
     public function isEnabled(): bool
     {
-        return $this->userToolbarSettings->isFrontendToolbarEnabled();
+        return $this->toolbar->isFrontendToolbarEnabled($this->getBackendUser());
     }
 
     public function getSettings(): string
     {
-        $view = $this->createView();
-        $view->assignMultiple([
-            'enabled' => $this->toolbarSettings->isToolbarActive(),
-            'position' => $this->toolbarSettings->getPosition()->value,
-            'scope' => $this->toolbarSettings->getScope()->value,
+        return $this->render('AdminPanel/ModuleSettings', [
             'positions' => ToolbarPosition::values(),
             'scopes' => AnnotationScope::values(),
-            'apiKeySet' => $this->configuration->getApiKey() !== '',
         ]);
-        return $view->render('AdminPanel/ModuleSettings');
     }
 
     public function getContent(ModuleData $data): string
     {
-        $view = $this->createView();
-        $view->assignMultiple([
-            'enabled' => $this->toolbarSettings->isToolbarActive(),
-            'position' => $this->toolbarSettings->getPosition()->value,
-            'scope' => $this->toolbarSettings->getScope()->value,
-            'apiKey' => $this->configuration->getApiKey() !== '',
-            'workspaceId' => $this->configuration->getWorkspaceId(),
-            'contextAllowed' => $this->configuration->isContextAllowed(),
+        return $this->render('AdminPanel/ModuleContent', [
+            'workspaceId' => $this->settings->workspaceId,
+            'contextAllowed' => $this->settings->contextAllowed,
+            'backendModuleUrl' => (string)$this->uriBuilder->buildUriFromRoute('agentation'),
         ]);
-        return $view->render('AdminPanel/ModuleContent');
     }
 
     /** @return list<string> */
@@ -122,14 +109,30 @@ final class AgentationModule extends AbstractModule implements
         return [];
     }
 
-    public function onSubmit(ModuleData $moduleData, ServerRequestInterface $request): void {}
+    private function isToolbarActive(): bool
+    {
+        return $this->toolbar->isFrontendToolbarActive($this->getBackendUser());
+    }
+
+    /**
+     * @param array<string, mixed> $variables
+     */
+    private function render(string $template, array $variables): string
+    {
+        $view = $this->createView();
+        $view->assignMultiple($variables + [
+            'enabled' => $this->isToolbarActive(),
+            'position' => $this->toolbar->getFrontendPosition()->value,
+            'scope' => $this->toolbar->getFrontendScope()->value,
+            'apiKeySet' => $this->settings->apiKey !== '',
+        ]);
+        return $view->render($template);
+    }
 
     private function createView(): ViewInterface
     {
         return $this->viewFactory->create(new ViewFactoryData(
             templateRootPaths: ['EXT:agentation/Resources/Private/Templates'],
-            partialRootPaths: ['EXT:agentation/Resources/Private/Partials'],
-            layoutRootPaths: ['EXT:agentation/Resources/Private/Layouts'],
         ));
     }
 }

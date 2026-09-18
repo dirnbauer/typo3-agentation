@@ -15,7 +15,7 @@ use Webconsulting\Agentation\Service\ViteAssetResolver;
 
 final class ViteAssetResolverTest extends UnitTestCase
 {
-    private const string MANIFEST = '{"Build/Sources/agentation.js":{"file":"assets/agentation-abc123.js","css":["assets/agentation-abc123.css"],"isEntry":true}}';
+    private const string MANIFEST = '{"Build/Sources/agentation.js":{"file":"assets/agentation-abc123.js","css":["assets/agentation-abc123.css"],"isEntry":true},"Build/Sources/module.js":{"file":"module.js","isEntry":true}}';
 
     private string $packagePath;
 
@@ -65,12 +65,12 @@ final class ViteAssetResolverTest extends UnitTestCase
     }
 
     #[Test]
-    public function manifestWithoutTheEntrypointYieldsNoUrls(): void
+    public function manifestWithoutTheToolbarEntryIsNotABuild(): void
     {
-        $this->writeManifest('{"Build/Sources/other.js":{"file":"assets/other.js"}}');
+        $this->writeManifest('{"Build/Sources/module.js":{"file":"module.js"}}');
         $resolver = $this->resolver();
 
-        self::assertTrue($resolver->hasBuild());
+        self::assertFalse($resolver->hasBuild());
         self::assertNull($resolver->getEntryUrl());
         self::assertSame([], $resolver->getEntryCssUrls());
     }
@@ -100,10 +100,10 @@ final class ViteAssetResolverTest extends UnitTestCase
 
     private function resolver(): ViteAssetResolver
     {
-        $package = $this->createMock(PackageInterface::class);
+        $package = self::createStub(PackageInterface::class);
         $package->method('getPackagePath')->willReturn($this->packagePath);
-        $packageManager = $this->createMock(PackageManager::class);
-        $packageManager->method('getPackage')->with('agentation')->willReturn($package);
+        $packageManager = self::createStub(PackageManager::class);
+        $packageManager->method('getPackage')->willReturn($package);
         return new ViteAssetResolver($packageManager);
     }
 

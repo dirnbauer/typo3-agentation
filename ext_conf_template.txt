@@ -1,29 +1,29 @@
-# cat=basic/enable; type=string; label=Agentation API key (required for MCP + webhooks — leave empty for free local-only mode)
+# cat=basic/enable; type=string; label=Agentation API key (enables the cloud sync endpoint and webhooks; leave empty for local-only mode)
 apiKey =
 
-# cat=basic/enable; type=string; label=Workspace / project ID (optional, shown in MCP config)
+# cat=basic/enable; type=string; label=Workspace / project ID (optional, placed into the generated MCP configuration)
 workspaceId =
 
-# cat=basic/enable; type=string; label=Sync endpoint (leave empty for auto: cloud when API key set, else http://localhost:4747 — note: localhost needs HTTP-origin BE because browsers block mixed content)
+# cat=basic/enable; type=string; label=Sync endpoint (leave empty for auto: cloud when an API key is set, else http://localhost:4747 via the backend proxy)
 syncEndpoint =
 
-# cat=basic/enable; type=boolean; label=Enable in Frontend (gated per BE-user via Admin Panel opt-in)
+# cat=basic/enable; type=boolean; label=Enable in frontend (per backend user via User Settings and the Admin Panel section)
 frontendEnabled = 1
 
-# cat=basic/enable; type=boolean; label=Enable in Backend (gated per BE-user via User Settings)
+# cat=basic/enable; type=boolean; label=Enable in backend (per backend user via User Settings)
 backendEnabled = 1
 
 # cat=basic/enable; type=options[Development,Development and Testing,All contexts]; label=Application context gate
 contextGate = Development
 
-# cat=basic/enable; type=boolean; label=Default opt-in for new BE users (can still toggle off per user)
+# cat=basic/enable; type=boolean; label=Default opt-in for users who never saved their Agentation user settings
 defaultOptIn = 0
 
-# cat=advanced/toolbar; type=string; label=Toolbar position (bottom-right, bottom-left, top-right, top-left)
+# cat=advanced/toolbar; type=options[bottom-right,bottom-left,top-right,top-left]; label=Toolbar position
 toolbarPosition = bottom-right
 
-# cat=advanced/toolbar; type=string; label=Webhook URL (optional — annotations POSTed here)
+# cat=advanced/toolbar; type=string; label=Webhook URL (optional; annotations are POSTed here on submit)
 webhookUrl =
 
-# cat=advanced/toolbar; type=string; label=Additional toolbar options as JSON (merged into init call)
+# cat=advanced/toolbar; type=string; label=Additional toolbar options as a JSON object (merged into the toolbar props)
 additionalOptions =

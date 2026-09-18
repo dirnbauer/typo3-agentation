@@ -8,11 +8,11 @@ use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
 /**
- * Resolves the built toolbar entrypoint from the Vite manifest.
+ * Resolves the built toolbar entrypoint from the Vite manifest in
+ * Resources/Public/Vite/. No third-party TYPO3-Vite integration is needed.
  *
- * Self-contained: no third-party TYPO3-Vite integration is required. When
- * the manifest is missing (extension installed without a build) callers
- * get null / an empty list and can surface that to admins.
+ * Without a build (manifest missing, unreadable or lacking the toolbar
+ * entry) every URL is null / empty and callers surface that to admins.
  */
 final class ViteAssetResolver
 {
@@ -21,9 +21,8 @@ final class ViteAssetResolver
     private const string ENTRY = 'Build/Sources/agentation.js';
 
     /** @var array<mixed>|null */
-    private ?array $manifest = null;
-    private bool $manifestLoaded = false;
-    private ?string $publicBaseUrl = null;
+    private ?array $entry = null;
+    private bool $resolved = false;
 
     public function __construct(
         private readonly PackageManager $packageManager,
@@ -31,26 +30,20 @@ final class ViteAssetResolver
 
     public function hasBuild(): bool
     {
-        return $this->loadManifest() !== null;
+        return $this->getEntryUrl() !== null;
     }
 
     public function getEntryUrl(): ?string
     {
-        $entry = $this->entry();
-        $file = $entry['file'] ?? null;
+        $file = $this->entry()['file'] ?? null;
         return is_string($file) && $file !== '' ? $this->publicUrl($file) : null;
     }
 
     /** @return list<string> */
     public function getEntryCssUrls(): array
     {
-        $entry = $this->entry();
-        $cssFiles = $entry['css'] ?? null;
-        if (!is_array($cssFiles)) {
-            return [];
-        }
         $urls = [];
-        foreach ($cssFiles as $cssFile) {
+        foreach ((array)($this->entry()['css'] ?? []) as $cssFile) {
             if (is_string($cssFile) && $cssFile !== '') {
                 $urls[] = $this->publicUrl($cssFile);
             }
@@ -61,35 +54,33 @@ final class ViteAssetResolver
     /** @return array<mixed>|null */
     private function entry(): ?array
     {
-        $entry = $this->loadManifest()[self::ENTRY] ?? null;
-        return is_array($entry) ? $entry : null;
+        if (!$this->resolved) {
+            $this->resolved = true;
+            $this->entry = $this->readManifest()[self::ENTRY] ?? null;
+        }
+        return $this->entry;
     }
 
-    /** @return array<mixed>|null */
-    private function loadManifest(): ?array
+    /** @return array<string, array<mixed>> */
+    private function readManifest(): array
     {
-        if ($this->manifestLoaded) {
-            return $this->manifest;
-        }
-        $this->manifestLoaded = true;
-
         $path = $this->publicDirectory() . 'manifest.json';
-        if (!is_file($path)) {
-            return null;
-        }
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return null;
+        $json = is_file($path) ? file_get_contents($path) : false;
+        if ($json === false) {
+            return [];
         }
         try {
-            $decoded = json_decode($content, true, 32, JSON_THROW_ON_ERROR);
+            $manifest = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
-            return null;
+            return [];
         }
-        if (is_array($decoded)) {
-            $this->manifest = $decoded;
+        $entries = [];
+        foreach (is_array($manifest) ? $manifest : [] as $name => $entry) {
+            if (is_string($name) && is_array($entry)) {
+                $entries[$name] = $entry;
+            }
         }
-        return $this->manifest;
+        return $entries;
     }
 
     private function publicDirectory(): string
@@ -99,7 +90,6 @@ final class ViteAssetResolver
 
     private function publicUrl(string $relative): string
     {
-        $this->publicBaseUrl ??= PathUtility::getAbsoluteWebPath($this->publicDirectory());
-        return $this->publicBaseUrl . ltrim($relative, '/');
+        return PathUtility::getAbsoluteWebPath($this->publicDirectory()) . ltrim($relative, '/');
     }
 }

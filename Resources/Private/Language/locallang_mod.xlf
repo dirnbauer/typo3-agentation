@@ -33,7 +33,7 @@
     </unit>
     <unit id="module.intro.text">
       <segment>
-        <source>{count, plural, one {Complete # step below} other {Complete # steps below}} to stream visual UI annotations from this site into your AI coding agent. Copy the MCP config into your IDE, flip the toolbar toggles, annotate, ship.</source>
+        <source>Four steps stream visual UI annotations from this site into your AI coding agent: copy the MCP configuration into your agent, switch the toolbar on, annotate, ship.</source>
       </segment>
     </unit>
     <unit id="module.mcp.heading">
@@ -83,17 +83,12 @@
     </unit>
     <unit id="module.mcp.noApiKey">
       <segment>
-        <source>No API key configured. MCP only works in authenticated mode — set Agentation.apiKey in Extension Configuration.</source>
+        <source>No API key configured. MCP works only in authenticated mode; set the API key in Extension Configuration.</source>
       </segment>
     </unit>
     <unit id="module.annotations.heading">
       <segment>
         <source>Stored annotations</source>
-      </segment>
-    </unit>
-    <unit id="module.annotations.intro">
-      <segment>
-        <source>Every annotation you make is stored in your browser's localStorage, scoped per BE module + record. You can delete every stored annotation across every scope in one click.</source>
       </segment>
     </unit>
     <unit id="module.annotations.loading">
@@ -111,11 +106,6 @@
         <source>Nothing stored yet. Annotations created via the toolbar appear here.</source>
       </segment>
     </unit>
-    <unit id="module.annotations.onlyLocal">
-      <segment>
-        <source>No server-side annotations. Local annotations are stored only in this browser.</source>
-      </segment>
-    </unit>
     <unit id="module.annotations.localOnly">
       <segment>
         <source>local only</source>
@@ -123,12 +113,7 @@
     </unit>
     <unit id="module.annotations.errorPrefix">
       <segment>
-        <source>Sync endpoint unreachable</source>
-      </segment>
-    </unit>
-    <unit id="module.annotations.errorShort">
-      <segment>
-        <source>Sync endpoint unreachable</source>
+        <source>Could not load annotations</source>
       </segment>
     </unit>
     <unit id="module.annotations.onServer">
@@ -178,7 +163,7 @@
     </unit>
     <unit id="module.howto.summary">
       <segment>
-        <source>{count, plural, one {# step} other {# steps}} from install to first annotation.</source>
+        <source>Four steps from install to the first annotation.</source>
       </segment>
     </unit>
     <unit id="module.howto.toggleShow">
@@ -394,6 +379,11 @@
     <unit id="module.errors.syncUnreachable">
       <segment>
         <source>Sync endpoint unreachable</source>
+      </segment>
+    </unit>
+    <unit id="module.errors.adminOnly">
+      <segment>
+        <source>Administrator access required</source>
       </segment>
     </unit>
     <unit id="module.links.site">

@@ -6,12 +6,10 @@ namespace Webconsulting\Agentation\Tests\Unit\EventListener;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use TYPO3\CMS\Adminpanel\Service\ConfigurationService as AdminPanelConfigurationService;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
-use TYPO3\CMS\Core\Authentication\UserSettings;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Core\ApplicationContext;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -23,14 +21,11 @@ use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
 use TYPO3\CMS\Frontend\Page\PageInformation;
-use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
 use Webconsulting\Agentation\EventListener\InjectToolbarAssets;
-use Webconsulting\Agentation\Service\ConfigurationService;
-use Webconsulting\Agentation\Service\FrontendToolbarSettingsService;
-use Webconsulting\Agentation\Service\UserToolbarSettingsService;
 use Webconsulting\Agentation\Service\ViteAssetResolver;
+use Webconsulting\Agentation\Tests\Unit\AgentationTestCase;
 
-final class InjectToolbarAssetsTest extends UnitTestCase
+final class InjectToolbarAssetsTest extends AgentationTestCase
 {
     private const string PROXY_URL = '/typo3/ajax/agentation/api/proxy?token=abc';
 
@@ -44,7 +39,7 @@ final class InjectToolbarAssetsTest extends UnitTestCase
         $this->packagePath = Environment::getPublicPath() . '/typo3temp/var/tests/agentation-' . StringUtility::getUniqueId() . '/';
         GeneralUtility::mkdir_deep($this->packagePath . 'Resources/Public/Vite');
         $this->testFilesToDelete[] = $this->packagePath;
-        $this->switchApplicationContext('Development');
+        self::switchApplicationContext('Development');
     }
 
     protected function tearDown(): void
@@ -57,7 +52,7 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     public function backendModuleFrameGetsTheToolbar(): void
     {
         $this->backendRequest('/typo3/module/web/layout?id=1');
-        $this->backendUser(['agentation_backend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
 
         $collector = $this->dispatch($this->listener(['apiKey' => 'secret', 'workspaceId' => 'ws-1']));
 
@@ -103,7 +98,7 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     public function backendShellAndOwnModuleAreSkipped(string $path): void
     {
         $this->backendRequest($path);
-        $this->backendUser(['agentation_backend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
 
         self::assertNothingInjected($this->dispatch($this->listener()));
     }
@@ -113,13 +108,22 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     {
         $this->backendRequest('/typo3/module/web/layout');
 
-        $this->backendUser(['agentation_backend_enabled' => 0]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 0]);
         self::assertNothingInjected($this->dispatch($this->listener()));
 
-        $this->backendUser(['agentation_backend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
         self::assertNothingInjected($this->dispatch($this->listener(['backendEnabled' => '0'])));
 
         unset($GLOBALS['BE_USER']);
+        self::assertNothingInjected($this->dispatch($this->listener()));
+    }
+
+    #[Test]
+    public function aBackendUserObjectWithoutLoginIsNotAUser(): void
+    {
+        $this->backendRequest('/typo3/module/web/layout');
+        $GLOBALS['BE_USER'] = $this->backendUser(['agentation_backend_enabled' => 1], uid: 0);
+
         self::assertNothingInjected($this->dispatch($this->listener()));
     }
 
@@ -128,9 +132,9 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     {
         $pageInformation = new PageInformation();
         $pageInformation->setId(42);
-        $this->frontendRequest('https://example.test/about')->withAttribute('frontend.page.information', $pageInformation);
-        $GLOBALS['TYPO3_REQUEST'] = $GLOBALS['TYPO3_REQUEST']->withAttribute('frontend.page.information', $pageInformation);
-        $this->backendUser(['agentation_frontend_enabled' => 1]);
+        $GLOBALS['TYPO3_REQUEST'] = $this->frontendRequest('https://example.test/about')
+            ->withAttribute('frontend.page.information', $pageInformation);
+        $this->loginBackendUser(['agentation_frontend_enabled' => 1]);
 
         $collector = $this->dispatch($this->listener(
             ['webhookUrl' => 'https://hooks.example/agentation', 'additionalOptions' => '{"theme":"dark"}'],
@@ -154,7 +158,7 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     public function frontendWithoutPageInformationHasNoPageId(): void
     {
         $this->frontendRequest('https://example.test/');
-        $this->backendUser(['agentation_frontend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_frontend_enabled' => 1]);
 
         $payload = self::payload($this->dispatch($this->listener([], ['enabled' => '1'])));
 
@@ -176,7 +180,7 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     public function frontendInsideABackendPreviewFrameIsSkipped(string $url, string $referer): void
     {
         $this->frontendRequest($url, ['Referer' => $referer]);
-        $this->backendUser(['agentation_frontend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_frontend_enabled' => 1]);
 
         self::assertNothingInjected($this->dispatch($this->listener([], ['enabled' => '1'])));
     }
@@ -188,20 +192,20 @@ final class InjectToolbarAssetsTest extends UnitTestCase
 
         self::assertNothingInjected($this->dispatch($this->listener([], ['enabled' => '1'])));
 
-        $this->backendUser(['agentation_frontend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_frontend_enabled' => 1]);
         self::assertNothingInjected($this->dispatch($this->listener([], ['enabled' => '0'])));
         self::assertNothingInjected($this->dispatch($this->listener(['frontendEnabled' => '0'], ['enabled' => '1'])));
 
-        $this->backendUser(['agentation_frontend_enabled' => 0]);
+        $this->loginBackendUser(['agentation_frontend_enabled' => 0]);
         self::assertNothingInjected($this->dispatch($this->listener([], ['enabled' => '1'])));
     }
 
     #[Test]
     public function contextGateBlocksInjectionOutsideDevelopment(): void
     {
-        $this->switchApplicationContext('Production');
+        self::switchApplicationContext('Production');
         $this->backendRequest('/typo3/module/web/layout');
-        $this->backendUser(['agentation_backend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
 
         self::assertNothingInjected($this->dispatch($this->listener(['contextGate' => 'Development'])));
         self::assertNothingInjected($this->dispatch($this->listener(['contextGate' => 'Development and Testing'])));
@@ -212,7 +216,7 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     public function missingBuildMeansNothingIsInjected(): void
     {
         $this->backendRequest('/typo3/module/web/layout');
-        $this->backendUser(['agentation_backend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
 
         self::assertNothingInjected($this->dispatch($this->listener(withBuild: false)));
     }
@@ -221,9 +225,24 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     public function withoutARequestNothingIsInjected(): void
     {
         unset($GLOBALS['TYPO3_REQUEST']);
-        $this->backendUser(['agentation_backend_enabled' => 1]);
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
 
         self::assertNothingInjected($this->dispatch($this->listener()));
+    }
+
+    #[Test]
+    public function dispatchingTwicePerRenderIsIdempotent(): void
+    {
+        $this->backendRequest('/typo3/module/web/layout');
+        $this->loginBackendUser(['agentation_backend_enabled' => 1]);
+        $listener = $this->listener();
+
+        $collector = new AssetCollector();
+        $listener(new BeforeJavaScriptsRenderingEvent($collector, false, true));
+        $listener(new BeforeJavaScriptsRenderingEvent($collector, false, false));
+
+        self::assertCount(1, $collector->getJavaScripts(false));
+        self::assertCount(1, $collector->getInlineJavaScripts(true));
     }
 
     /**
@@ -233,15 +252,8 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     private function listener(array $extensionConfiguration = [], array $adminPanelOptions = [], bool $withBuild = true): InjectToolbarAssets
     {
         $extensionConfiguration += ['contextGate' => 'All contexts'];
-        $extensionConfigurationApi = $this->createMock(ExtensionConfiguration::class);
-        $extensionConfigurationApi->method('get')->with('agentation')->willReturn($extensionConfiguration);
-        $configuration = new ConfigurationService($extensionConfigurationApi);
-        $userToolbarSettings = new UserToolbarSettingsService($configuration);
-
-        $adminPanelConfiguration = $this->createMock(AdminPanelConfigurationService::class);
-        $adminPanelConfiguration->method('getConfigurationOption')->willReturnCallback(
-            static fn(string $identifier, string $option): string => $identifier === 'agentation' ? ($adminPanelOptions[$option] ?? '') : ''
-        );
+        $toolbar = $this->toolbarSettings($extensionConfiguration, $adminPanelOptions);
+        $settings = $this->extensionSettings($extensionConfiguration);
 
         $manifest = $this->packagePath . 'Resources/Public/Vite/manifest.json';
         if ($withBuild) {
@@ -249,21 +261,20 @@ final class InjectToolbarAssetsTest extends UnitTestCase
         } elseif (is_file($manifest)) {
             unlink($manifest);
         }
-        $package = $this->createMock(PackageInterface::class);
+        $package = self::createStub(PackageInterface::class);
         $package->method('getPackagePath')->willReturn($this->packagePath);
-        $packageManager = $this->createMock(PackageManager::class);
-        $packageManager->method('getPackage')->with('agentation')->willReturn($package);
+        $packageManager = self::createStub(PackageManager::class);
+        $packageManager->method('getPackage')->willReturn($package);
 
-        $uriBuilder = $this->createMock(BackendUriBuilder::class);
-        $uriBuilder->method('buildUriFromRoute')->with('agentation_api_proxy')->willReturn(new Uri(self::PROXY_URL));
+        $uriBuilder = self::createStub(BackendUriBuilder::class);
+        $uriBuilder->method('buildUriFromRoute')->willReturn(new Uri(self::PROXY_URL));
 
-        return new InjectToolbarAssets(
-            $configuration,
-            $userToolbarSettings,
-            new FrontendToolbarSettingsService($configuration, $userToolbarSettings, $adminPanelConfiguration),
-            new ViteAssetResolver($packageManager),
-            $uriBuilder,
-        );
+        // Like the core middlewares: the aspect mirrors the global user.
+        $context = new Context();
+        $user = $GLOBALS['BE_USER'] ?? null;
+        $context->setAspect('backend.user', new UserAspect($user instanceof BackendUserAuthentication ? $user : null));
+
+        return new InjectToolbarAssets($settings, $toolbar, new ViteAssetResolver($packageManager), $uriBuilder, $context);
     }
 
     private function backendRequest(string $pathAndQuery): ServerRequest
@@ -291,14 +302,11 @@ final class InjectToolbarAssetsTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, mixed> $settings
+     * @param array<string, mixed> $userSettings
      */
-    private function backendUser(array $settings): void
+    private function loginBackendUser(array $userSettings): void
     {
-        $backendUser = $this->createMock(BackendUserAuthentication::class);
-        $backendUser->user = ['uid' => 1, 'username' => 'tester'];
-        $backendUser->method('getUserSettings')->willReturn(new UserSettings($settings));
-        $GLOBALS['BE_USER'] = $backendUser;
+        $GLOBALS['BE_USER'] = $this->backendUser($userSettings);
     }
 
     private function dispatch(InjectToolbarAssets $listener): AssetCollector
@@ -325,20 +333,5 @@ final class InjectToolbarAssetsTest extends UnitTestCase
         self::assertFalse($collector->hasJavaScript('agentation-toolbar'));
         self::assertFalse($collector->hasInlineJavaScript('agentation-config'));
         self::assertSame([], $collector->getStyleSheets());
-    }
-
-    private function switchApplicationContext(string $context): void
-    {
-        Environment::initialize(
-            new ApplicationContext($context),
-            Environment::isCli(),
-            Environment::isComposerMode(),
-            Environment::getProjectPath(),
-            Environment::getPublicPath(),
-            Environment::getVarPath(),
-            Environment::getConfigPath(),
-            Environment::getCurrentScript(),
-            Environment::isWindows() ? 'WINDOWS' : 'UNIX'
-        );
     }
 }

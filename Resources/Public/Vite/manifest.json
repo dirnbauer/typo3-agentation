@@ -1,8 +1,24 @@
 {
   "Build/Sources/agentation.js": {
-    "file": "assets/agentation-C3hStXdj.js",
+    "file": "assets/agentation-bu4RwB3M.js",
     "name": "agentation",
     "src": "Build/Sources/agentation.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_storage-BCi7u8w-.js"
+    ]
+  },
+  "Build/Sources/module.js": {
+    "file": "module.js",
+    "name": "module",
+    "src": "Build/Sources/module.js",
+    "isEntry": true,
+    "imports": [
+      "_storage-BCi7u8w-.js"
+    ]
+  },
+  "_storage-BCi7u8w-.js": {
+    "file": "assets/storage-BCi7u8w-.js",
+    "name": "storage"
   }
 }
