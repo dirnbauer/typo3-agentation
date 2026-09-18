@@ -1,5 +1,10 @@
 # Agentation for TYPO3
 
+[![CI](https://github.com/dirnbauer/typo3-agentation/actions/workflows/ci.yml/badge.svg)](https://github.com/dirnbauer/typo3-agentation/actions/workflows/ci.yml)
+[![TYPO3 14](https://img.shields.io/badge/TYPO3-14.3-orange)](https://get.typo3.org/version/14)
+[![PHP 8.4](https://img.shields.io/badge/PHP-8.4-777bb4)](https://www.php.net/)
+[![License GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
+
 Visual UI annotations for AI coding agents, inside TYPO3. Logged-in backend
 users mark up frontend pages or backend module screens with the upstream
 [Agentation](https://www.agentation.com) toolbar and hand the structured
@@ -17,27 +22,27 @@ Cursor, Windsurf, Zed, Continue or any other MCP-capable agent.
   `agentation-mcp` server on `http://localhost:4747` (DDEV/Docker aware).
 - Application-context gate (`Development` by default) so the toolbar never
   ships to production by accident.
-- The React toolbar is bundled with Vite; the host page needs no React.
+- The React toolbar is bundled with Vite and committed; the host page needs
+  no React and the installation needs no Node.js.
 
 ## Requirements
 
-- TYPO3 14.3+ with `typo3/cms-adminpanel`
-- PHP 8.4+
-- Node.js 22.12+ only when rebuilding the bundled assets
+| Component | Version |
+| --- | --- |
+| TYPO3 | 14.3+ with `typo3/cms-adminpanel` |
+| PHP | 8.4+ |
+| Node.js | 22.12+, only to rebuild the bundled assets |
 
 ## Install
-
-Three names, one extension: the extension key and directory are
-`agentation`, the Composer package is `webconsulting/agentation`, and the
-source lives at [github.com/dirnbauer/typo3-agentation](https://github.com/dirnbauer/typo3-agentation).
-The package is distributed via Composer only.
 
 ```sh
 composer require webconsulting/agentation
 ```
 
-The built toolbar bundle is committed in `Resources/Public/Vite/`, so no
-Node.js toolchain is needed at install time.
+Extension key and directory are `agentation`, the Composer package is
+`webconsulting/agentation`, the source lives at
+[github.com/dirnbauer/typo3-agentation](https://github.com/dirnbauer/typo3-agentation).
+Distribution is Composer-only.
 
 ## Configure
 
@@ -64,31 +69,31 @@ Node.js toolchain is needed at install time.
    and pick position and annotation scope.
 3. Backend: the toolbar mounts in every module content frame except
    `System > Agentation` itself.
-4. `System > Agentation`: copy the MCP configuration into your agent, e.g.
-   `claude mcp add agentation -- npx -y agentation-mcp server`, and run
-   `npx -y agentation-mcp server` locally (or use the cloud endpoint with an
-   API key).
+4. `System > Agentation` (administrators): copy the MCP configuration into
+   your agent, e.g. `claude mcp add agentation -- npx -y agentation-mcp server`,
+   and run `npx -y agentation-mcp server` locally (or use the cloud endpoint
+   with an API key). The module also lists and deletes stored annotations.
 
 ## Develop
 
 ```sh
-composer install
-composer test              # lint, cgl, phpstan (level 8), unit, functional (SQLite)
-composer cgl:fix           # apply the TYPO3 coding guidelines
+composer install              # into .Build/
+composer test                 # lint, cgl, phpstan (level 8), unit, functional (SQLite)
+composer cgl:fix              # apply the TYPO3 coding guidelines
 Build/Scripts/runTests.sh -s functional
-npm ci && npm run build    # rebuild Resources/Public/Vite and commit the result
+npm ci && npm run build       # rebuild Resources/Public/Vite/ and commit the result
 ```
 
-Functional tests run on SQLite by default; set `typo3DatabaseDriver=mysqli`
-plus `typo3DatabaseHost/Port/Username/Password/Name` for MariaDB, as the CI
-workflow does. CI runs lint, cgl, PHPStan, unit (PHP 8.4, 8.5 allowed to
-fail), functional (MariaDB 10.11) and verifies the committed asset build.
+Sources for the browser live in `Build/Sources/` (`agentation.js` toolbar
+bundle, `module.js` backend module, shared `storage.js`/`clipboard.js`); Vite
+writes both entries to `Resources/Public/Vite/`. CI runs lint, cgl, PHPStan,
+unit and functional tests (PHP 8.4, 8.5 allowed to fail; MariaDB 10.11) and
+verifies that the committed build matches the sources.
 
 ## Docs
 
-The manual lives in [Documentation/](Documentation/Index.rst) (installation,
-configuration, usage, security, developer notes). Render it locally with the
-TYPO3 documentation renderer:
+The manual lives in [Documentation/](Documentation/Index.rst). Render it with
+the TYPO3 documentation renderer:
 
 ```sh
 docker run --rm -v "$(pwd)":/project ghcr.io/typo3-documentation/render-guides:latest --config=Documentation

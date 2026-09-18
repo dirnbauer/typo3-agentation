@@ -77,7 +77,7 @@ Extension settings
 
 ..  confval:: toolbarPosition
     :name: agentation-toolbar-position
-    :type: string
+    :type: options
     :default: bottom-right
 
     Default toolbar position. Supported values are `bottom-right`,

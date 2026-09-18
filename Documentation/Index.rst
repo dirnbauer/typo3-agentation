@@ -21,3 +21,4 @@ coding agents.
     Usage/Index
     Security/Index
     Developer/Index
+    Changelog/Index

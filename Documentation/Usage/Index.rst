@@ -56,6 +56,8 @@ required for authenticated sync.
 Manage stored annotations
 =========================
 
-The backend module lists annotations from the configured sync endpoint and
-browser-local Agentation storage. Administrators can reload, delete individual
-annotations, or clear all stored annotations from the module.
+:guilabel:`System > Agentation` (administrators only) lists annotations from
+the configured sync endpoint and from this browser's Agentation storage.
+Reload the list, delete single annotations or clear everything; open toolbar
+widgets in other tabs and frames are told about deletions so they do not
+re-push the removed annotations.

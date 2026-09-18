@@ -2,6 +2,68 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.3.0] - 2026-09-18
+
+### Added
+
+- `Mcp\McpServerConfiguration`: the `agentation-mcp` server entry in the three
+  formats the module offers (MCP JSON, Cursor deep link, `claude mcp add`),
+  extracted from the controller and unit-tested.
+- Unit tests for `ApiProxyController` (container-aware endpoint candidates,
+  admin gate, widget proxy mirroring, delete-all aggregation) and for the
+  committed Vite output; functional tests for the admin gate and the Admin
+  Panel content.
+- `module.*` labels are exposed to the backend module JavaScript as
+  `TYPO3.lang`; the proxy returns error codes (`module.errors.*`) that the
+  module translates.
+
+### Changed
+
+- `Settings\ExtensionSettings` (typed readonly record with public properties)
+  replaces `Service\ConfigurationService` and its getters; the sync endpoint
+  and the context gate are resolved once at construction.
+- `Settings\ToolbarSettings` merges `UserToolbarSettingsService` and
+  `FrontendToolbarSettingsService`; every method takes the backend user
+  explicitly, the listener resolves it through the Context aspect.
+- `ApiProxyController` forwards through one code path (transport failures
+  move on to the next endpoint candidate, HTTP errors are mirrored) and no
+  longer needs a language service.
+- `ModuleController` and `AgentationModule` use the middleware-provided
+  language service and the backend user of the Admin Panel base class.
+- `InjectToolbarAssets` is stateless (`readonly`); the AssetCollector already
+  deduplicates by identifier.
+- The backend module JavaScript moved to `Build/Sources/module.js` and is
+  built by Vite next to the toolbar bundle (stable name `module.js`); the
+  localStorage helpers both bundles need live once in
+  `Build/Sources/storage.js`. Dependencies updated, bundle rebuilt.
+- `toolbarPosition` is an options field in the extension configuration.
+- Development sandbox moved to `.Build/` (vendor, bin, public); PHPUnit
+  `^12.4 || ^13.0`, tests use stubs instead of expectation-less mocks.
+- `Configuration/TCA/Overrides/be_users.php` sets the two user-settings
+  columns and the tab divider directly instead of regex-rewriting `showitem`.
+
+### Fixed
+
+- Toolbar widgets in backend frames now actually drop annotations deleted from
+  `System > Agentation`: the broadcast handler read the scoped localStorage
+  through its own key-rewriting patch and never found the entries.
+- The "local only" badge in the stored-annotation list showed the literal
+  label key.
+- The Admin Panel link to the backend module is built by the backend router
+  instead of a hard-coded `/typo3/` path.
+
+### Removed
+
+- The unused `agentation_api_sessions` AJAX route, `Resources/Public/JavaScript/`,
+  the empty `onSubmit()` hook (the module never implemented
+  `OnSubmitActorInterface`), the `stepCount` plural labels and three unused
+  translation units.
+
+### Security
+
+- The annotation management routes (`list`, `delete`, `delete-all`) are
+  restricted to administrators, matching the admin-only module that uses them.
+
 ## [1.2.0] - 2026-09-12
 
 ### Added

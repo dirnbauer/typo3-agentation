@@ -13,13 +13,13 @@ Agentation is intended for development and review contexts.
 Runtime gates
 =============
 
-Toolbar assets are injected only when these checks pass:
+Toolbar assets are injected only when all of these hold:
 
-* Application context is allowed by `contextGate`.
-* The current request is handled for an authenticated backend user.
+* The application context is allowed by :confval:`contextGate <agentation-context-gate>`.
+* A backend user is logged in (Context aspect ``backend.user``).
 * The global frontend or backend toggle is enabled.
-* The current user's matching toolbar setting is enabled.
-* Frontend requests are explicitly enabled through the Admin Panel section.
+* The user's matching switch in :guilabel:`User Settings > Agentation` is on.
+* Frontend: the toolbar is switched on in the Admin Panel section.
 
 The default `Development` context gate prevents accidental production exposure
 when the extension is installed with default configuration.
@@ -29,9 +29,14 @@ when the extension is installed with default configuration.
 Backend proxy
 =============
 
-The backend AJAX proxy forwards browser-originated Agentation sync calls to
-the configured endpoint. It injects the configured API key server-side and
-denies widget proxy calls when the current user disabled the backend toolbar.
+The AJAX routes forward browser-originated calls to the configured sync
+endpoint and inject the API key server-side, so it never reaches the browser.
+
+* ``proxy`` (used by the toolbar widget) is denied when the current user
+  disabled the backend toolbar, and accepts API paths only.
+* ``list``, ``delete`` and ``delete-all`` (used by :guilabel:`System >
+  Agentation`) are restricted to administrators.
+* Errors are returned as codes, never as upstream error bodies.
 
 ..  important::
 

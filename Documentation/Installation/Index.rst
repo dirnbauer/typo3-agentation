@@ -25,13 +25,13 @@ Node.js.
 Rebuild assets
 ==============
 
-Rebuild the frontend bundle only when changing
-:file:`Build/Sources/agentation.js` or updating the upstream npm package:
+Rebuild the bundles only when changing the sources in :file:`Build/Sources/`
+or updating the upstream npm package:
 
 ..  code-block:: bash
     :caption: Rebuild the bundled Agentation asset
 
-    npm install
+    npm ci
     npm run build
 
 Commit the generated files below :file:`Resources/Public/Vite/` before
