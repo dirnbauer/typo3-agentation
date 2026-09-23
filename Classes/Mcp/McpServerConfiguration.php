@@ -13,6 +13,8 @@ use Webconsulting\Agentation\Settings\ExtensionSettings;
  *
  * The MCP server is the separate npm package `agentation-mcp` (not a
  * subcommand of `agentation`); its binary runs as `agentation-mcp server`.
+ * With an API key it stores annotations in the Agentation cloud, without
+ * one it runs locally on http://localhost:4747.
  */
 final readonly class McpServerConfiguration
 {
@@ -31,12 +33,8 @@ final readonly class McpServerConfiguration
     public function serverEntry(): array
     {
         $entry = ['command' => self::COMMAND, 'args' => self::ARGUMENTS];
-        $env = array_filter([
-            'AGENTATION_API_KEY' => $this->settings->apiKey,
-            'AGENTATION_WORKSPACE' => $this->settings->workspaceId,
-        ], static fn(string $value): bool => $value !== '');
-        if ($env !== []) {
-            $entry['env'] = $env;
+        if ($this->settings->apiKey !== '') {
+            $entry['env'] = ['AGENTATION_API_KEY' => $this->settings->apiKey];
         }
         return $entry;
     }

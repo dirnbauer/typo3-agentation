@@ -1,7 +1,7 @@
-# cat=basic/enable; type=string; label=Agentation API key (enables the cloud sync endpoint and webhooks; leave empty for local-only mode)
+# cat=basic/enable; type=string; label=Agentation API key (stores annotations in the Agentation cloud; leave empty to sync through a local agentation-mcp server). Stays on the server: the backend proxy and the generated MCP configuration use it, the browser never sees it.
 apiKey =
 
-# cat=basic/enable; type=string; label=Workspace / project ID (optional, placed into the generated MCP configuration)
+# cat=basic/enable; type=string; label=Project identifier (optional; sent with webhook submissions so the receiver can tell installations apart)
 workspaceId =
 
 # cat=basic/enable; type=string; label=Sync endpoint (leave empty for auto: cloud when an API key is set, else http://localhost:4747 via the backend proxy)
