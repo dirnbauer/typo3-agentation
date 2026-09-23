@@ -2,6 +2,45 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.5.0] - 2026-09-23
+
+### Added
+
+- A frontend sync proxy. The frontend toolbar could not sync with
+  agentation-mcp's default `http://localhost:4747` from an HTTPS page: the
+  browser blocks the request as mixed content. `Middleware\FrontendSyncProxy`
+  answers `/_agentation/api/proxy` below the site path, after the frontend
+  authenticated the backend user and before page resolution, and forwards the
+  toolbar's calls on the server, like the backend's `ajax_agentation_api_proxy`
+  route. The toolbar's frontend `proxyUrl` points at it.
+- It answers only a logged-in backend user for whom the frontend toolbar is on
+  (context gate, global switch, User Settings, Admin Panel) and only with the
+  token of that user's backend session: an HMAC of the session id
+  (`Service\ProxyToken`) carried in the proxy URL. Answers are `no-store`.
+- Documentation: inside DDEV the endpoint is typically
+  `http://host.docker.internal:4747`, because the proxy runs in the web
+  container; a configured `localhost` is tried under both container aliases
+  automatically.
+
+### Changed
+
+- Both proxies forward through one class, `Service\SyncProxy`, which makes
+  them no open proxies: the target is always the configured endpoint (and the
+  container aliases of a `localhost` one), the caller chooses only an API path
+  naming one of the API's resources, without dot or empty segments, schemes,
+  hosts or control characters; redirects are not followed; only `GET`, `POST`,
+  `PATCH` and `DELETE` and only the `Content-Type` header travel upstream;
+  request bodies are limited to 1 MiB, answers to 4 MiB, every call to 4
+  seconds. The API key is still added on the server and never reaches the
+  browser.
+- `ApiProxyController::endpointsToTry()` moved to `SyncProxy::endpointsToTry()`.
+
+### Fixed
+
+- The manual renders without errors: the MCP example is shown inline (the
+  renderer refuses includes from outside `Documentation/`), and the extension
+  name is spelled out where its substitution was not resolved.
+
 ## [1.4.1] - 2026-09-23
 
 ### Fixed
