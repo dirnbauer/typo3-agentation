@@ -49,14 +49,29 @@ Cursor with one click.
 
 The example below is the same shape the backend module generates:
 
-..  literalinclude:: ../../.mcp.json.example
-    :language: json
+..  code-block:: json
     :caption: .mcp.json.example
+
+    {
+      "mcpServers": {
+        "agentation": {
+          "command": "npx",
+          "args": ["-y", "agentation-mcp", "server"],
+          "env": {
+            "AGENTATION_API_KEY": "your-api-key"
+          }
+        }
+      }
+    }
 
 Without an API key the ``env`` block is left out: the agent starts
 ``agentation-mcp`` locally and the toolbar syncs with it on
-``http://localhost:4747``. The backend reaches that server through its
-same-origin proxy, also from inside DDEV or Docker.
+``http://localhost:4747``. The toolbar reaches that server through a
+same-origin proxy on the web server — the backend AJAX route in module
+frames, ``/_agentation/api/proxy`` on frontend pages — so HTTPS pages can
+use the HTTP server. Inside DDEV the proxy runs in the web container and
+reaches your machine as ``http://host.docker.internal:4747``
+(see :confval:`syncEndpoint <agentation-sync-endpoint>`).
 
 ..  _usage-webhook:
 

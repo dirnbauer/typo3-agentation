@@ -51,18 +51,47 @@ policy of the installation.
 
 ..  _security-proxy:
 
-Backend proxy
-=============
+Sync proxies
+============
 
-The AJAX routes forward browser-originated calls to the configured sync
-endpoint and inject the API key server-side. The key is not part of the
-configuration the toolbar receives, so it never reaches the browser; webhook
-submissions carry no credentials either.
+Browsers block calls from an HTTPS page to ``http://localhost:4747`` as
+mixed content, so the toolbar never calls the sync endpoint itself. Two
+same-origin proxies forward its calls on the server, through one class
+(:php:`Service\\SyncProxy`), and inject the API key there. The key is not part
+of the configuration the toolbar receives, so it never reaches the browser;
+webhook submissions carry no credentials either.
 
-* ``proxy`` (used by the toolbar widget) is denied when the current user
-  disabled the backend toolbar, and accepts API paths only.
-* ``list``, ``delete`` and ``delete-all`` (used by :guilabel:`System >
-  Agentation`) are restricted to administrators.
+Backend
+    The AJAX routes, protected by the backend's route token. ``proxy`` (used
+    by the toolbar widget) is denied when the current user disabled the
+    backend toolbar. ``list``, ``delete`` and ``delete-all`` (used by
+    :guilabel:`System > Agentation`) are restricted to administrators.
+
+Frontend
+    :php:`Middleware\\FrontendSyncProxy` answers ``/_agentation/api/proxy``
+    below the site path of the installation. It runs after the frontend has
+    authenticated the backend user and before page resolution, and answers
+    only when the frontend toolbar would render for that user: allowed
+    application context, global frontend switch, the user's switch in
+    :guilabel:`User Settings` and the Admin Panel toggle. Every call must
+    carry the token of the user's backend session (an HMAC of the session id,
+    handed to the toolbar in its proxy URL), so another site cannot make the
+    browser use it. Answers are never cached (``Cache-Control: no-store``).
+
+Both proxies are no open proxies:
+
+* The target is always the configured sync endpoint (and, for a
+  ``localhost`` endpoint inside a container, its ``host.docker.internal`` and
+  ``host.containers.internal`` aliases). The caller only chooses the API path
+  below it, which must name one of the API's resources (``/health``,
+  ``/sessions…``, ``/annotations…``, ``/pending``, ``/events``) and must not
+  contain dot segments, empty segments, a scheme, a host or control
+  characters. Redirects are not followed.
+* Only ``GET``, ``POST``, ``PATCH`` and ``DELETE`` are forwarded, and of the
+  request headers only ``Content-Type``; cookies and authorization headers
+  stay behind.
+* Request bodies are limited to 1 MiB, upstream answers to 4 MiB, and every
+  call times out after 4 seconds.
 * Errors are returned as codes, never as upstream error bodies.
 
 ..  important::

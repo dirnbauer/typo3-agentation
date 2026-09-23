@@ -21,8 +21,9 @@ Extension settings
     Agentation API key. With a key, annotations are stored in the Agentation
     cloud; without one they sync through a local ``agentation-mcp`` server
     on ``http://localhost:4747``. The key stays on the server: the backend
-    proxy adds it to its requests and the generated MCP configuration
-    passes it to ``agentation-mcp``; the browser never receives it.
+    and frontend proxies add it to their requests and the generated MCP
+    configuration passes it to ``agentation-mcp``; the browser never receives
+    it.
 
 ..  confval:: workspaceId
     :name: agentation-workspace-id
@@ -40,6 +41,22 @@ Extension settings
 
     Explicit Agentation sync endpoint. When empty, the extension uses the
     cloud endpoint if an API key exists, otherwise `http://localhost:4747`.
+
+    The toolbar never calls this URL itself: in backend module frames it goes
+    through the ``ajax_agentation_api_proxy`` route, on frontend pages through
+    ``/_agentation/api/proxy`` below the site path. Both proxies run on the
+    web server, so the endpoint must be reachable from there, not from the
+    browser — which is also why an ``http://`` endpoint works from ``https://``
+    pages.
+
+    Inside DDEV (or any Docker/Podman container) ``localhost`` is the
+    container, not your machine where ``agentation-mcp server`` listens. The
+    endpoint is then typically ``http://host.docker.internal:4747``. For a
+    configured ``localhost`` or ``127.0.0.1`` the proxies try
+    ``host.docker.internal`` and ``host.containers.internal`` automatically;
+    set the alias explicitly to skip the failing first attempt. Docker Desktop
+    and OrbStack forward ``host.docker.internal`` to the host's loopback; on
+    Linux the server must listen on an address the container can reach.
 
 ..  confval:: frontendEnabled
     :name: agentation-frontend-enabled

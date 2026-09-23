@@ -20,9 +20,11 @@ Cursor, Windsurf, Zed, Continue or any other MCP-capable agent.
 - `System > Agentation` module, built from TYPO3 backend components: MCP
   configuration as JSON, Cursor deep link or `claude mcp add` command, status
   overview, and the stored annotations as a table with delete and delete-all.
-- Same-origin AJAX proxy so an HTTPS backend can reach a local
-  `agentation-mcp` server on `http://localhost:4747` (DDEV/Docker aware); the
-  API key stays on the server.
+- Same-origin proxies — a backend AJAX route and a frontend middleware on
+  `/_agentation/api/proxy` — so HTTPS pages can reach a local `agentation-mcp`
+  server on `http://localhost:4747` (inside DDEV: `http://host.docker.internal:4747`,
+  tried automatically); only the configured endpoint, only its API paths,
+  size- and time-limited, and the API key stays on the server.
 - The Content-Security-Policy is widened only for responses that carry the
   toolbar.
 - Application-context gate (`Development` by default) so the toolbar never
@@ -57,7 +59,7 @@ Distribution is Composer-only.
 | --- | --- | --- |
 | `apiKey` | empty | Agentation API key: cloud storage instead of a local `agentation-mcp` server; never sent to the browser |
 | `workspaceId` | empty | Project identifier sent with webhook submissions |
-| `syncEndpoint` | auto | Explicit sync URL; auto = cloud with API key, else `http://localhost:4747` |
+| `syncEndpoint` | auto | Explicit sync URL; auto = cloud with API key, else `http://localhost:4747`. Reached by the server-side proxies, so inside DDEV typically `http://host.docker.internal:4747` |
 | `frontendEnabled` / `backendEnabled` | `1` | Global switches per application |
 | `contextGate` | `Development` | `Development`, `Development and Testing` or `All contexts` |
 | `defaultOptIn` | `0` | Preselects the per-user switches for users who never saved them |

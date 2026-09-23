@@ -9,6 +9,20 @@ Changelog
 The complete history with all details is kept in `CHANGELOG.md
 <https://github.com/dirnbauer/typo3-agentation/blob/main/CHANGELOG.md>`__.
 
+1.5.0
+=====
+
+* The frontend toolbar syncs through a same-origin proxy too:
+  ``/_agentation/api/proxy`` (a frontend middleware) forwards to the
+  configured sync endpoint, so an HTTPS frontend page can use a local
+  ``http://localhost:4747`` server. It answers only a logged-in backend user
+  whose frontend toolbar is on, with the token of that user's session.
+* Both proxies share one forwarding class: only the configured endpoint, only
+  API paths, no redirects, 1 MiB request and 4 MiB response limits, 4 second
+  timeouts, only ``Content-Type`` forwarded.
+* Documented: inside DDEV the endpoint is typically
+  ``http://host.docker.internal:4747``.
+
 1.4.1
 =====
 

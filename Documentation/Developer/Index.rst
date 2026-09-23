@@ -43,11 +43,15 @@ TYPO3 entrypoints
 * :file:`Configuration/Backend/AjaxRoutes.php` registers the proxy routes:
   ``list``, ``delete`` and ``delete-all`` for the module (administrators
   only) and ``proxy`` for the toolbar widget.
+* :file:`Configuration/RequestMiddlewares.php` registers the frontend proxy
+  (``webconsulting/agentation/frontend-sync-proxy``) after
+  ``typo3/cms-frontend/backend-user-authentication`` and before the base
+  redirect, static route and page resolvers.
 * :file:`Configuration/TCA/Overrides/be_users.php` registers the per-user
   toolbar switches on their own :guilabel:`Agentation` tab.
 * :file:`Configuration/Services.yaml` autowires :file:`Classes/`; the backend
-  controllers and the Admin Panel module are made public with
-  :php:`#[Autoconfigure(public: true)]` on the classes.
+  controllers, the frontend middleware and the Admin Panel module are made
+  public with :php:`#[Autoconfigure(public: true)]` on the classes.
 
 ..  _developer-services:
 
@@ -79,9 +83,13 @@ Classes
 * :php:`EventListener\\AllowToolbarInContentSecurityPolicy` - listens to
   :php:`PolicyMutatedEvent` and widens the policy of exactly the responses
   that carry the toolbar.
-* :php:`Controller\\Backend\\ApiProxyController` - one forwarding path with
-  container-aware endpoint candidates (``host.docker.internal``,
-  ``host.containers.internal`` for a configured ``localhost``).
+* :php:`Service\\SyncProxy` - the forwarding both proxies share: API path
+  validation, container-aware endpoint candidates (``host.docker.internal``,
+  ``host.containers.internal`` for a configured ``localhost``), the API key,
+  size limits and timeouts.
+* :php:`Controller\\Backend\\ApiProxyController` - the backend AJAX routes.
+* :php:`Middleware\\FrontendSyncProxy` and :php:`Service\\ProxyToken` - the
+  frontend proxy and the session-bound token in the toolbar's proxy URL.
 * :php:`Controller\\Backend\\ModuleController`, :php:`AdminPanel\\AgentationModule`
   - thin view assembly.
 
