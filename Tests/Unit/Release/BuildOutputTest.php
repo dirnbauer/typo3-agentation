@@ -8,19 +8,20 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Guards the committed Vite output: Composer installations get the built
- * assets without a Node toolchain, so the repository must always contain
- * a build matching what PHP and the import map reference.
+ * Guards the committed browser assets: Composer installations get them
+ * without a Node toolchain, so the repository must always contain a
+ * toolbar build matching what PHP references, and backend module scripts
+ * the import map can load as they are.
  */
 final class BuildOutputTest extends TestCase
 {
     private const string VITE_DIRECTORY = '/Resources/Public/Vite/';
+    private const string JAVASCRIPT_DIRECTORY = '/Resources/Public/JavaScript/';
 
     #[Test]
     public function viteManifestContainsTheToolbarEntrypoint(): void
     {
-        $manifest = self::manifest();
-        $entry = $manifest['Build/Sources/agentation.js'] ?? null;
+        $entry = self::manifest()['Build/Sources/agentation.js'] ?? null;
 
         self::assertIsArray($entry);
         self::assertIsString($entry['file'] ?? null);
@@ -29,39 +30,46 @@ final class BuildOutputTest extends TestCase
     }
 
     #[Test]
-    public function backendModuleIsBuiltUnderTheStableNameTheImportMapReferences(): void
+    public function theToolbarIsTheOnlyBuiltEntrypoint(): void
     {
-        $entry = self::manifest()['Build/Sources/module.js'] ?? null;
+        $entries = array_keys(array_filter(self::manifest(), static fn(array $chunk): bool => ($chunk['isEntry'] ?? false) === true));
 
-        self::assertIsArray($entry);
-        self::assertSame('module.js', $entry['file'] ?? null);
-        self::assertFileExists(self::root() . self::VITE_DIRECTORY . 'module.js');
-
-        $imports = require self::root() . '/Configuration/JavaScriptModules.php';
-        self::assertSame('EXT:agentation/Resources/Public/Vite/', $imports['imports']['@webconsulting/agentation/'] ?? null);
+        self::assertSame(['Build/Sources/agentation.js'], $entries);
     }
 
     #[Test]
-    public function backendModuleKeepsTypo3ModulesExternal(): void
-    {
-        $source = (string)file_get_contents(self::root() . self::VITE_DIRECTORY . 'module.js');
-
-        self::assertStringContainsString('@typo3/backend/notification.js', $source);
-        self::assertStringContainsString('@typo3/core/ajax/ajax-request.js', $source);
-        self::assertStringNotContainsString('react', strtolower($source), 'The module bundle must not pull React in');
-    }
-
-    #[Test]
-    public function chunksReferencedByTheEntrypointsExist(): void
+    public function chunksReferencedByTheToolbarExist(): void
     {
         $manifest = self::manifest();
-        foreach (['Build/Sources/agentation.js', 'Build/Sources/module.js'] as $entry) {
-            foreach ((array)($manifest[$entry]['imports'] ?? []) as $chunk) {
-                self::assertIsString($chunk);
-                self::assertIsString($manifest[$chunk]['file'] ?? null, $chunk);
-                self::assertFileExists(self::root() . self::VITE_DIRECTORY . $manifest[$chunk]['file'], $chunk);
-            }
+        foreach ((array)($manifest['Build/Sources/agentation.js']['imports'] ?? []) as $chunk) {
+            self::assertIsString($chunk);
+            self::assertIsString($manifest[$chunk]['file'] ?? null, $chunk);
+            self::assertFileExists(self::root() . self::VITE_DIRECTORY . $manifest[$chunk]['file'], $chunk);
         }
+    }
+
+    #[Test]
+    public function backendModuleScriptsAreServedByTheImportMap(): void
+    {
+        $imports = require self::root() . '/Configuration/JavaScriptModules.php';
+        self::assertSame('EXT:agentation/Resources/Public/JavaScript/', $imports['imports']['@webconsulting/agentation/'] ?? null);
+
+        foreach (['module.js', 'storage.js'] as $script) {
+            self::assertFileExists(self::root() . self::JAVASCRIPT_DIRECTORY . $script);
+        }
+    }
+
+    #[Test]
+    public function theBackendModuleImportsOnlyThroughTheImportMap(): void
+    {
+        $source = (string)file_get_contents(self::root() . self::JAVASCRIPT_DIRECTORY . 'module.js');
+        preg_match_all('/^import .* from \'([^\']+)\';$/m', $source, $matches);
+
+        self::assertNotEmpty($matches[1]);
+        foreach ($matches[1] as $specifier) {
+            self::assertMatchesRegularExpression('#^(@typo3/|~labels/|@webconsulting/agentation/)#', $specifier);
+        }
+        self::assertStringNotContainsString('react', strtolower($source), 'The backend module must not pull React in');
     }
 
     /**

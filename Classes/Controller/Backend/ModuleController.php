@@ -9,25 +9,23 @@ use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Page\PageRenderer;
 use Webconsulting\Agentation\Mcp\McpServerConfiguration;
 use Webconsulting\Agentation\Service\ViteAssetResolver;
 use Webconsulting\Agentation\Settings\ExtensionSettings;
 
 /**
- * Backend module System > Agentation: MCP configuration snippets for the
- * coding agent, a status overview and the stored-annotation list (filled by
- * Resources/Public/Vite/module.js via the AJAX proxy routes).
+ * Backend module System > Agentation: the MCP configuration for the coding
+ * agent, a status overview and the stored annotations (loaded by
+ * Resources/Public/JavaScript/module.js through the AJAX proxy routes).
  */
 #[Autoconfigure(public: true)]
 final readonly class ModuleController
 {
+    private const string MODULE = 'agentation';
     private const string MCP_DOCS_URL = 'https://www.agentation.com/mcp';
-    private const string LABEL_FILE = 'EXT:agentation/Resources/Private/Language/locallang_mod.xlf';
 
     public function __construct(
         private ModuleTemplateFactory $moduleTemplateFactory,
-        private PageRenderer $pageRenderer,
         private ExtensionSettings $settings,
         private McpServerConfiguration $mcp,
         private ViteAssetResolver $vite,
@@ -35,17 +33,14 @@ final readonly class ModuleController
 
     public function indexAction(ServerRequestInterface $request): ResponseInterface
     {
-        // module.* labels are exposed to module.js as TYPO3.lang.
-        $this->pageRenderer->addInlineLanguageLabelFile(self::LABEL_FILE, 'module.');
+        $title = self::languageService()->sL('agentation.mod:title');
 
-        $languageService = self::languageService();
         $view = $this->moduleTemplateFactory->create($request);
-        $view->setTitle(
-            $languageService->sL('agentation.mod:mod.tabs.label'),
-            $languageService->sL('agentation.mod:module.heading')
-        );
+        $view->setTitle($title);
+        $view->getDocHeaderComponent()->setShortcutContext(self::MODULE, $title);
         $view->assignMultiple([
-            'apiKeyConfigured' => $this->settings->apiKey !== '',
+            'cloudMode' => $this->settings->apiKey !== '',
+            'syncEndpoint' => $this->settings->syncEndpoint,
             'workspaceId' => $this->settings->workspaceId,
             'frontendEnabled' => $this->settings->frontendEnabled,
             'backendEnabled' => $this->settings->backendEnabled,

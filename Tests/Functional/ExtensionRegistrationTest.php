@@ -14,6 +14,8 @@ use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Imaging\IconRegistry;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
+use TYPO3\CMS\Core\Page\AssetCollector;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 use Webconsulting\Agentation\AdminPanel\AgentationModule;
 use Webconsulting\Agentation\Controller\Backend\ApiProxyController;
@@ -42,6 +44,7 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         ],
     ];
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -76,13 +79,16 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
 
         $settings = $module->getSettings();
         self::assertStringContainsString('name="TSFE_ADMIN_PANEL[agentation_enabled]"', $settings);
+        self::assertStringContainsString('class="typo3-adminPanel-form-checkbox-input"', $settings, 'rendered by the Admin Panel\'s own checkbox partial');
         self::assertStringContainsString('name="TSFE_ADMIN_PANEL[agentation_position]"', $settings);
         self::assertStringContainsString('<option value="top-left"', $settings);
         self::assertStringContainsString('name="TSFE_ADMIN_PANEL[agentation_scope]"', $settings);
 
         $content = $module->getContent(new ModuleData());
         self::assertStringContainsString('href="/typo3/module/system/agentation', $content, 'links to the backend module through the router');
-        self::assertStringContainsString('typo3-adminPanel-badge-success', $content);
+        self::assertStringContainsString('class="typo3-adminPanel-table typo3-adminPanel-table-debug"', $content, 'the Admin Panel\'s own table markup');
+        self::assertStringContainsString('<td>On</td>', $content);
+        self::assertStringContainsString('<td>Local agentation-mcp server</td>', $content);
     }
 
     #[Test]
@@ -155,13 +161,18 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
         $body = (string)$response->getBody();
 
         self::assertSame(200, $response->getStatusCode());
+        self::assertStringContainsString('<title>Agentation', $body);
+        self::assertStringContainsString('<h1>Agentation</h1>', $body);
         self::assertStringContainsString('id="agentation-mcp-json"', $body);
         self::assertStringContainsString('agentation-mcp', $body);
         self::assertStringContainsString('cursor://anysphere.cursor-deeplink/mcp/install?name=agentation', $body);
-        self::assertStringContainsString('data-agentation-action="copy"', $body);
+        self::assertStringContainsString('<typo3-copy-to-clipboard', $body, 'copying uses the core element');
+        self::assertStringContainsString('<typo3-backend-status-indicator', $body);
+        self::assertStringContainsString('data-agentation-annotations', $body);
         self::assertStringContainsString('@webconsulting/agentation/module.js', $body);
-        self::assertStringContainsString('module.annotations.localOnly', $body, 'module.* labels are exposed to module.js as TYPO3.lang');
-        self::assertStringContainsString('<title>Agentation', $body);
+        self::assertStringContainsString('EXT:agentation/Resources/Public/Css/Module.css', self::assetCollectorStylesheets());
+        self::assertStringContainsString('Local mode', $body, 'without an API key the module explains the local sync');
+        self::assertStringNotContainsString('TYPO3.lang', $body);
     }
 
     #[Test]
@@ -231,6 +242,14 @@ final class ExtensionRegistrationTest extends FunctionalTestCase
             ['uc' => serialize($settings), 'user_settings' => json_encode($settings, JSON_THROW_ON_ERROR)],
             ['uid' => $uid]
         );
+    }
+
+    private static function assetCollectorStylesheets(): string
+    {
+        return implode(' ', array_column(
+            GeneralUtility::makeInstance(AssetCollector::class)->getStyleSheets(),
+            'source',
+        ));
     }
 
     private function login(int $uid): void

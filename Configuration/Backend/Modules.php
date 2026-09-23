@@ -8,7 +8,7 @@ return [
     'agentation' => [
         'parent' => 'system',
         'position' => ['after' => 'content_security_policy'],
-        'labels' => 'LLL:EXT:agentation/Resources/Private/Language/locallang_mod.xlf',
+        'labels' => 'agentation.mod',
         'iconIdentifier' => 'agentation-module',
         'access' => 'admin',
         'workspaces' => 'live',

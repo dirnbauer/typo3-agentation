@@ -1,207 +1,234 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-      data-namespace-typo3-fluid="true">
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
 
-<f:be.pageRenderer includeJavaScriptModules="{0: '@webconsulting/agentation/module.js'}"
-                   includeCssFiles="{0: 'EXT:agentation/Resources/Public/Css/Module.css'}" />
+<f:layout name="Module" />
 
-<div class="module-body">
+<f:section name="Before">
+    <f:asset.module identifier="@typo3/backend/copy-to-clipboard.js" />
+    <f:asset.module identifier="@typo3/backend/element/status-indicator-element.js" />
+    <f:asset.module identifier="@webconsulting/agentation/module.js" />
+    <f:asset.css identifier="agentation-module" href="EXT:agentation/Resources/Public/Css/Module.css" />
+</f:section>
 
-    <div class="callout callout-info mb-4">
-        <div class="callout-body">
-            <strong><f:translate domain="agentation.mod" key="module.intro.title" /></strong>
-            <p class="mb-0"><f:translate domain="agentation.mod" key="module.intro.text" /></p>
-        </div>
-    </div>
+<f:section name="Content">
 
-    <div class="row">
-        <div class="col-lg-8">
+    <h1><f:translate key="module.heading" domain="agentation.mod" /></h1>
+    <p><f:translate key="module.intro" domain="agentation.mod" /></p>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="card-title mb-0"><f:translate domain="agentation.mod" key="module.mcp.heading" /></h2>
+    <div class="card-container">
+
+        <section class="card card-size-medium" aria-labelledby="agentation-connect-heading">
+            <div class="card-header">
+                <div class="card-icon">
+                    <core:icon identifier="agentation-module" size="small" />
                 </div>
-                <div class="card-body">
-                    <p class="text-body-secondary"><f:translate domain="agentation.mod" key="module.mcp.intro" /></p>
+                <div class="card-header-body">
+                    <h2 class="card-title" id="agentation-connect-heading"><f:translate key="connect.heading" domain="agentation.mod" /></h2>
+                    <span class="card-subtitle"><f:translate key="connect.intro" domain="agentation.mod" /></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <f:if condition="{cloudMode}">
+                    <f:then>
+                        <f:be.infobox title="{f:translate(key: 'connect.cloudMode.title', domain: 'agentation.mod')}" state="0">
+                            <f:translate key="connect.cloudMode.text" domain="agentation.mod" />
+                        </f:be.infobox>
+                    </f:then>
+                    <f:else>
+                        <f:be.infobox title="{f:translate(key: 'connect.localMode.title', domain: 'agentation.mod')}" state="-1">
+                            <f:translate key="connect.localMode.text" domain="agentation.mod" />
+                        </f:be.infobox>
+                    </f:else>
+                </f:if>
 
-                    <f:if condition="!{apiKeyConfigured}">
-                        <div class="callout callout-warning">
-                            <div class="callout-body"><f:translate domain="agentation.mod" key="module.mcp.noApiKey" /></div>
-                        </div>
+                <div class="form-group">
+                    <label class="form-label" for="agentation-mcp-json"><f:translate key="connect.json.label" domain="agentation.mod" /></label>
+                    <textarea
+                        id="agentation-mcp-json"
+                        class="form-control font-monospace"
+                        rows="9"
+                        readonly
+                        spellcheck="false"
+                        aria-describedby="agentation-mcp-json-hint"
+                    >{mcpJson}</textarea>
+                    <p class="form-text" id="agentation-mcp-json-hint"><f:translate key="connect.json.hint" domain="agentation.mod" /></p>
+                </div>
+                <div class="agentation-actions">
+                    <typo3-copy-to-clipboard class="btn btn-primary" text="{mcpJson}">
+                        <core:icon identifier="actions-clipboard" size="small" />
+                        <f:translate key="connect.json.copy" domain="agentation.mod" />
+                    </typo3-copy-to-clipboard>
+                    <a class="btn btn-default" href="{cursorDeepLink}">
+                        <core:icon identifier="actions-plus" size="small" />
+                        <f:translate key="connect.addToCursor" domain="agentation.mod" />
+                    </a>
+                    <a class="btn btn-default" href="{mcpDocsUrl}" target="_blank" rel="noopener noreferrer">
+                        <core:icon identifier="actions-window-open" size="small" />
+                        <f:translate key="connect.docs" domain="agentation.mod" />
+                    </a>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="agentation-claude-cli"><f:translate key="connect.claude.label" domain="agentation.mod" /></label>
+                    <div class="input-group">
+                        <input
+                            id="agentation-claude-cli"
+                            type="text"
+                            class="form-control font-monospace"
+                            readonly
+                            value="{claudeCodeCli}"
+                            aria-describedby="agentation-claude-cli-hint"
+                        >
+                        <typo3-copy-to-clipboard
+                            class="btn btn-default"
+                            text="{claudeCodeCli}"
+                            title="{f:translate(key: 'connect.claude.copy', domain: 'agentation.mod')}"
+                        >
+                            <core:icon identifier="actions-clipboard" size="small" />
+                            <span class="visually-hidden"><f:translate key="connect.claude.copy" domain="agentation.mod" /></span>
+                        </typo3-copy-to-clipboard>
+                    </div>
+                    <p class="form-text" id="agentation-claude-cli-hint"><f:translate key="connect.claude.hint" domain="agentation.mod" /></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="agentation-status-heading">
+            <div class="card-header">
+                <div class="card-header-body">
+                    <h2 class="card-title" id="agentation-status-heading"><f:translate key="status.heading" domain="agentation.mod" /></h2>
+                </div>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.sync" domain="agentation.mod" /></span>
+                    <span>
+                        <typo3-backend-status-indicator state="info"></typo3-backend-status-indicator>
+                        <f:translate key="{f:if(condition: cloudMode, then: 'status.sync.cloud', else: 'status.sync.local')}" domain="agentation.mod" />
+                    </span>
+                </li>
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.endpoint" domain="agentation.mod" /></span>
+                    <code>{syncEndpoint}</code>
+                </li>
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.bundle" domain="agentation.mod" /></span>
+                    <f:if condition="{bundleBuilt}">
+                        <f:then><span><typo3-backend-status-indicator state="success"></typo3-backend-status-indicator> <f:translate key="status.bundle.built" domain="agentation.mod" /></span></f:then>
+                        <f:else><span><typo3-backend-status-indicator state="danger"></typo3-backend-status-indicator> <f:translate key="status.bundle.missing" domain="agentation.mod" /></span></f:else>
                     </f:if>
+                </li>
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.context" domain="agentation.mod" /></span>
+                    <f:if condition="{contextAllowed}">
+                        <f:then><span><typo3-backend-status-indicator state="success"></typo3-backend-status-indicator> <f:translate key="status.context.allowed" domain="agentation.mod" /></span></f:then>
+                        <f:else><span><typo3-backend-status-indicator state="warning"></typo3-backend-status-indicator> <f:translate key="status.context.blocked" domain="agentation.mod" /></span></f:else>
+                    </f:if>
+                </li>
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.frontend" domain="agentation.mod" /></span>
+                    <f:render section="Switch" arguments="{enabled: frontendEnabled}" />
+                </li>
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.backend" domain="agentation.mod" /></span>
+                    <f:render section="Switch" arguments="{enabled: backendEnabled}" />
+                </li>
+                <li class="list-group-item agentation-status">
+                    <span><f:translate key="status.project" domain="agentation.mod" /></span>
+                    <f:if condition="{workspaceId}">
+                        <f:then><code>{workspaceId}</code></f:then>
+                        <f:else><span class="text-variant"><f:translate key="status.project.none" domain="agentation.mod" /></span></f:else>
+                    </f:if>
+                </li>
+            </ul>
+        </section>
 
-                    <div class="mb-3">
-                        <label class="form-label" for="agentation-mcp-json">
-                            <f:translate domain="agentation.mod" key="module.mcp.label" />
-                        </label>
-                        <textarea id="agentation-mcp-json"
-                                  class="form-control font-monospace"
-                                  rows="12"
-                                  readonly
-                                  spellcheck="false"
-                                  aria-describedby="agentation-mcp-hint">{mcpJson}</textarea>
-                        <small id="agentation-mcp-hint" class="form-text text-body-secondary">
-                            <f:translate domain="agentation.mod" key="module.mcp.hint" />
-                        </small>
-                    </div>
-
-                    <div class="agentation-actions">
-                        <a class="btn btn-primary" href="{cursorDeepLink}" target="_top">
-                            <typo3-backend-icon identifier="actions-plus" size="small"></typo3-backend-icon>
-                            <f:translate domain="agentation.mod" key="module.mcp.addToCursor" />
-                        </a>
-                        <button type="button"
-                                class="btn btn-default"
-                                data-agentation-action="copy"
-                                data-agentation-target="#agentation-mcp-json">
-                            <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
-                            <f:translate domain="agentation.mod" key="module.mcp.copy" />
-                        </button>
-                        <a class="btn btn-default" href="{mcpDocsUrl}" target="_blank" rel="noopener noreferrer">
-                            <typo3-backend-icon identifier="actions-link" size="small"></typo3-backend-icon>
-                            <f:translate domain="agentation.mod" key="module.mcp.docs" />
-                        </a>
-                    </div>
-
-                    <div class="mt-4">
-                        <label class="form-label" for="agentation-claude-cli">
-                            <f:translate domain="agentation.mod" key="module.mcp.claudeCliLabel" />
-                        </label>
-                        <div class="input-group">
-                            <input id="agentation-claude-cli"
-                                   type="text"
-                                   class="form-control font-monospace"
-                                   readonly
-                                   value="{claudeCodeCli}"
-                                   aria-describedby="agentation-claude-cli-hint">
-                            <button type="button"
-                                    class="btn btn-default"
-                                    data-agentation-action="copy"
-                                    data-agentation-target="#agentation-claude-cli"
-                                    title="{f:translate(domain: 'agentation.mod', key: 'module.mcp.copy')}">
-                                <typo3-backend-icon identifier="actions-clipboard" size="small"></typo3-backend-icon>
-                            </button>
-                        </div>
-                        <small id="agentation-claude-cli-hint" class="form-text text-body-secondary">
-                            <f:translate domain="agentation.mod" key="module.mcp.claudeCliHint" />
-                        </small>
-                    </div>
+        <section class="card" aria-labelledby="agentation-howto-heading">
+            <div class="card-header">
+                <div class="card-header-body">
+                    <h2 class="card-title" id="agentation-howto-heading"><f:translate key="howto.heading" domain="agentation.mod" /></h2>
                 </div>
             </div>
+            <div class="card-body">
+                <ol class="agentation-steps">
+                    <li><f:translate key="howto.step1" domain="agentation.mod" /></li>
+                    <li><f:translate key="howto.step2" domain="agentation.mod" /></li>
+                    <li><f:translate key="howto.step3" domain="agentation.mod" /></li>
+                    <li><f:translate key="howto.step4" domain="agentation.mod" /></li>
+                </ol>
+            </div>
+        </section>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="card-title mb-0"><f:translate domain="agentation.mod" key="module.howto.heading" /></h2>
+        <section class="card card-size-large" aria-labelledby="agentation-annotations-heading" data-agentation-annotations>
+            <div class="card-header">
+                <div class="card-header-body">
+                    <h2 class="card-title" id="agentation-annotations-heading"><f:translate key="annotations.heading" domain="agentation.mod" /></h2>
+                    <span class="card-subtitle" role="status" aria-live="polite" data-agentation-summary>
+                        <f:translate key="annotations.loading" domain="agentation.mod" />
+                    </span>
                 </div>
-                <div class="card-body">
-                    <p class="text-body-secondary mb-3"><f:translate domain="agentation.mod" key="module.howto.summary" /></p>
-                    <details class="agentation-details">
-                        <summary><f:translate domain="agentation.mod" key="module.howto.toggleShow" /></summary>
-                        <div class="mt-3">
-                            <ol class="mb-3">
-                                <li><f:translate domain="agentation.mod" key="module.howto.step1" /></li>
-                                <li><f:translate domain="agentation.mod" key="module.howto.step2" /></li>
-                                <li><f:translate domain="agentation.mod" key="module.howto.step3" /></li>
-                                <li><f:translate domain="agentation.mod" key="module.howto.step4" /></li>
-                            </ol>
-                            <p class="mb-0">
-                                <a href="{mcpDocsUrl}" target="_blank" rel="noopener noreferrer">
-                                    <f:translate domain="agentation.mod" key="module.howto.readDocs" />&nbsp;&rarr;
-                                </a>
-                            </p>
-                        </div>
-                    </details>
+                <div class="agentation-actions">
+                    <button
+                        type="button"
+                        class="btn btn-default"
+                        data-agentation-action="reload"
+                        title="{f:translate(key: 'annotations.reload', domain: 'agentation.mod')}"
+                    >
+                        <core:icon identifier="actions-refresh" size="small" />
+                        <span class="visually-hidden"><f:translate key="annotations.reload" domain="agentation.mod" /></span>
+                    </button>
+                    <button type="button" class="btn btn-default" data-agentation-action="delete-all" disabled>
+                        <core:icon identifier="actions-delete" size="small" />
+                        <f:translate key="annotations.deleteAll" domain="agentation.mod" />
+                    </button>
                 </div>
             </div>
-
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card mb-3" data-agentation-annotations>
-                <div class="card-header d-flex align-items-center justify-content-between gap-2">
-                    <h2 class="card-title mb-0"><f:translate domain="agentation.mod" key="module.annotations.heading" /></h2>
-                    <div class="agentation-annotations-toolbar">
-                        <button type="button"
-                                class="btn btn-sm btn-default"
-                                data-agentation-action="reload"
-                                title="{f:translate(domain: 'agentation.mod', key: 'module.annotations.reload')}">
-                            <typo3-backend-icon identifier="actions-refresh" size="small"></typo3-backend-icon>
-                        </button>
-                        <button type="button"
-                                class="btn btn-sm btn-danger"
-                                data-agentation-action="delete-all"
-                                disabled
-                                title="{f:translate(domain: 'agentation.mod', key: 'module.annotations.deleteAll')}">
-                            <typo3-backend-icon identifier="actions-delete" size="small"></typo3-backend-icon>
-                        </button>
+            <div class="card-body">
+                <div class="callout callout-danger" data-agentation-error hidden>
+                    <div class="callout-icon">
+                        <span class="icon-emphasized"><core:icon identifier="actions-close" size="small" /></span>
+                    </div>
+                    <div class="callout-content">
+                        <div class="callout-body" data-agentation-error-message></div>
                     </div>
                 </div>
-                <div class="card-body py-2 px-3">
-                    <small class="text-body-secondary text-nowrap" data-agentation-counter>
-                        <f:translate domain="agentation.mod" key="module.annotations.loading" />
-                    </small>
+                <div class="agentation-empty" data-agentation-empty hidden>
+                    <core:icon identifier="agentation-module" size="large" />
+                    <p><f:translate key="annotations.empty" domain="agentation.mod" /></p>
+                    <button type="button" class="btn btn-default" data-agentation-action="reload">
+                        <core:icon identifier="actions-refresh" size="small" />
+                        <f:translate key="annotations.reload" domain="agentation.mod" />
+                    </button>
                 </div>
-                <ul class="list-group list-group-flush agentation-annotation-list" data-agentation-list>
-                    <li class="list-group-item text-body-secondary">
-                        <f:translate domain="agentation.mod" key="module.annotations.loading" />
-                    </li>
-                </ul>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h2 class="card-title mb-0"><f:translate domain="agentation.mod" key="module.status.heading" /></h2>
+                <div class="table-fit" data-agentation-table hidden>
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col"><f:translate key="annotations.column.comment" domain="agentation.mod" /></th>
+                                <th scope="col"><f:translate key="annotations.column.element" domain="agentation.mod" /></th>
+                                <th scope="col"><f:translate key="annotations.column.page" domain="agentation.mod" /></th>
+                                <th scope="col"><f:translate key="annotations.column.status" domain="agentation.mod" /></th>
+                                <th scope="col" class="col-control"><span class="visually-hidden"><f:translate key="annotations.column.actions" domain="agentation.mod" /></span></th>
+                            </tr>
+                        </thead>
+                        <tbody data-agentation-rows></tbody>
+                    </table>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate domain="agentation.mod" key="module.status.apiKey" /></span>
-                        <f:if condition="{apiKeyConfigured}">
-                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.set" /></span></f:then>
-                            <f:else><span class="badge bg-warning"><f:translate domain="agentation.mod" key="module.status.missing" /></span></f:else>
-                        </f:if>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate domain="agentation.mod" key="module.status.bundle" /></span>
-                        <f:if condition="{bundleBuilt}">
-                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.built" /></span></f:then>
-                            <f:else><span class="badge bg-danger"><f:translate domain="agentation.mod" key="module.status.notBuilt" /></span></f:else>
-                        </f:if>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate domain="agentation.mod" key="module.status.context" /></span>
-                        <f:if condition="{contextAllowed}">
-                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.allowed" /></span></f:then>
-                            <f:else><span class="badge bg-secondary"><f:translate domain="agentation.mod" key="module.status.blocked" /></span></f:else>
-                        </f:if>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate domain="agentation.mod" key="module.status.frontend" /></span>
-                        <f:if condition="{frontendEnabled}">
-                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.on" /></span></f:then>
-                            <f:else><span class="badge bg-secondary"><f:translate domain="agentation.mod" key="module.status.off" /></span></f:else>
-                        </f:if>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><f:translate domain="agentation.mod" key="module.status.backend" /></span>
-                        <f:if condition="{backendEnabled}">
-                            <f:then><span class="badge bg-success"><f:translate domain="agentation.mod" key="module.status.on" /></span></f:then>
-                            <f:else><span class="badge bg-secondary"><f:translate domain="agentation.mod" key="module.status.off" /></span></f:else>
-                        </f:if>
-                    </li>
-                    <li class="list-group-item">
-                        <small class="text-body-secondary d-block mb-1">
-                            <f:translate domain="agentation.mod" key="module.status.workspace" />
-                        </small>
-                        <code>{workspaceId -> f:or(alternative: '—')}</code>
-                    </li>
-                </ul>
             </div>
+        </section>
 
-            <a class="btn btn-default w-100" href="https://www.agentation.com/" target="_blank" rel="noopener noreferrer">
-                <f:translate domain="agentation.mod" key="module.links.site" />
-            </a>
-        </div>
     </div>
 
-</div>
+</f:section>
+
+<f:section name="Switch">
+    <f:if condition="{enabled}">
+        <f:then><span><typo3-backend-status-indicator state="success"></typo3-backend-status-indicator> <f:translate key="status.enabled" domain="agentation.mod" /></span></f:then>
+        <f:else><span><typo3-backend-status-indicator state="disabled"></typo3-backend-status-indicator> <f:translate key="status.disabled" domain="agentation.mod" /></span></f:else>
+    </f:if>
+</f:section>
 
 </html>
