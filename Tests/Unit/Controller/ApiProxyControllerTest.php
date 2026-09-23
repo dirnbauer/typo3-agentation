@@ -23,12 +23,14 @@ final class ApiProxyControllerTest extends AgentationTestCase
     /** @var \Closure(string, string): ResponseInterface */
     private \Closure $upstream;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
         $this->upstream = static fn(string $url, string $method): ResponseInterface => new JsonResponse(['echo' => $method . ' ' . $url]);
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         unset($GLOBALS['BE_USER']);

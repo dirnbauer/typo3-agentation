@@ -19,6 +19,7 @@ final class ViteAssetResolverTest extends UnitTestCase
 
     private string $packagePath;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -1,9 +1,13 @@
 parameters:
     level: 8
+    phpVersion: 80400
     paths:
         - Classes
         - Configuration
         - Tests
         - ext_localconf.php
     tmpDir: .Build/.phpstan.cache
-    checkMissingOverrideMethodAttribute: false
+    checkMissingOverrideMethodAttribute: true
+    typo3:
+        requestGetAttributeMapping:
+            route: TYPO3\CMS\Backend\Routing\Route|null
