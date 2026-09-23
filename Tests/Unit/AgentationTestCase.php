@@ -15,8 +15,11 @@ use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Core\ApplicationContext;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
+use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Session\UserSession;
 use TYPO3\TestingFramework\Core\Unit\UnitTestCase;
+use Webconsulting\Agentation\Service\ProxyToken;
 use Webconsulting\Agentation\Service\ToolbarGate;
 use Webconsulting\Agentation\Settings\ExtensionSettings;
 use Webconsulting\Agentation\Settings\ToolbarSettings;
@@ -83,14 +86,25 @@ abstract class AgentationTestCase extends UnitTestCase
 
     /**
      * @param array<string, mixed> $userSettings saved User Settings (be_users.user_settings)
+     * @param string $sessionId the id of the user's backend session
      */
-    protected function backendUser(array $userSettings = [], int $uid = 1, bool $admin = false): BackendUserAuthentication
+    protected function backendUser(array $userSettings = [], int $uid = 1, bool $admin = false, string $sessionId = 'session-1'): BackendUserAuthentication
     {
         $user = self::createStub(BackendUserAuthentication::class);
         $user->user = ['uid' => $uid, 'username' => 'tester', 'admin' => $admin ? 1 : 0];
         $user->method('getUserSettings')->willReturn(new UserSettings($userSettings));
         $user->method('isAdmin')->willReturn($admin);
+        $user->method('getSession')->willReturn(UserSession::createNonFixated($sessionId));
         return $user;
+    }
+
+    /**
+     * The proxy token service with a fixed encryption key.
+     */
+    protected function proxyToken(): ProxyToken
+    {
+        $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] = 'agentation-unit-test-encryption-key-0123456789abcdef';
+        return new ProxyToken(new HashService());
     }
 
     /**

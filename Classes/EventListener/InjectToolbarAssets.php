@@ -14,6 +14,8 @@ use TYPO3\CMS\Core\Page\AssetCollector;
 use TYPO3\CMS\Core\Page\Event\BeforeJavaScriptsRenderingEvent;
 use TYPO3\CMS\Frontend\Page\PageInformation;
 use Webconsulting\Agentation\Enum\InjectionScope;
+use Webconsulting\Agentation\Middleware\FrontendSyncProxy;
+use Webconsulting\Agentation\Service\ProxyToken;
 use Webconsulting\Agentation\Service\ToolbarGate;
 use Webconsulting\Agentation\Service\ViteAssetResolver;
 use Webconsulting\Agentation\Settings\ExtensionSettings;
@@ -25,7 +27,10 @@ use Webconsulting\Agentation\Settings\ToolbarSettings;
  *
  * The config is shipped as an inert JSON data island so the strict v14
  * backend CSP ignores it; the module bundle reads it on boot. It carries
- * no secret: the API key stays on the server, where the AJAX proxy adds it.
+ * no secret: the API key stays on the server, where the proxies add it. The
+ * toolbar reaches the sync server only through a same-origin proxy — the
+ * backend AJAX route in module frames, {@see FrontendSyncProxy} on frontend
+ * pages — so an HTTP sync endpoint works from HTTPS pages too.
  */
 final readonly class InjectToolbarAssets
 {
@@ -39,6 +44,7 @@ final readonly class InjectToolbarAssets
         private ToolbarGate $gate,
         private ViteAssetResolver $vite,
         private BackendUriBuilder $uriBuilder,
+        private ProxyToken $proxyToken,
     ) {}
 
     #[AsEventListener('agentation/inject-toolbar')]
@@ -97,7 +103,7 @@ final readonly class InjectToolbarAssets
             InjectionScope::Frontend => [
                 $this->toolbar->getFrontendPosition(),
                 $this->toolbar->getFrontendScope()->includesAdminPanelChrome(),
-                null,
+                FrontendSyncProxy::path($request) . '?token=' . rawurlencode($this->proxyToken->for($user)),
             ],
             InjectionScope::Backend => [
                 $this->settings->toolbarPosition,

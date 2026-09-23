@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Package\PackageInterface;
@@ -139,12 +140,31 @@ final class InjectToolbarAssetsTest extends AgentationTestCase
         self::assertSame('typo3-frontend', $payload['context']);
         self::assertSame(42, $payload['pageId']);
         self::assertSame('top-left', $payload['position']);
-        self::assertNull($payload['proxyUrl']);
+        self::assertSame(
+            '/_agentation/api/proxy?token=' . $this->proxyToken()->for($this->backendUser()),
+            $payload['proxyUrl'],
+            'An HTTPS page reaches the HTTP sync server through the frontend proxy.',
+        );
         self::assertArrayNotHasKey('apiKey', $payload);
         self::assertSame('http://localhost:4747', $payload['endpoint']);
         self::assertSame('https://hooks.example/agentation', $payload['webhookUrl']);
         self::assertSame(['theme' => 'dark'], $payload['additionalOptions']);
         self::assertTrue($payload['metadata']['includeAdminPanelChrome']);
+    }
+
+    #[Test]
+    public function theFrontendProxyUrlFollowsTheSitePath(): void
+    {
+        $request = $this->frontendRequest('https://example.test/cms/about');
+        $normalizedParams = self::createStub(NormalizedParams::class);
+        $normalizedParams->method('getSitePath')->willReturn('/cms/');
+        $this->current($request->withAttribute('normalizedParams', $normalizedParams));
+        $this->loginBackendUser(['agentation_frontend_enabled' => 1]);
+
+        $payload = self::payload($this->dispatch($this->listener([], ['enabled' => '1'])));
+
+        self::assertIsString($payload['proxyUrl']);
+        self::assertStringStartsWith('/cms/_agentation/api/proxy?token=', $payload['proxyUrl']);
     }
 
     #[Test]
@@ -258,7 +278,7 @@ final class InjectToolbarAssetsTest extends AgentationTestCase
         $package = self::createStub(PackageInterface::class);
         $package->method('getPackagePath')->willReturn($this->packagePath);
         $packageManager = self::createStub(PackageManager::class);
-        $packageManager->method('getPackage')->willReturn($package);
+        $packageManager->method('getPackage')->willReturnMap([['agentation', $package]]);
 
         // AJAX routes are registered with the "ajax_" prefix. A stub that
         // answers any name hid a lookup of the unprefixed name, which throws
@@ -270,7 +290,7 @@ final class InjectToolbarAssetsTest extends AgentationTestCase
                 : throw new RouteNotFoundException('Unknown route ' . $name, 1790000001)
         );
 
-        return new InjectToolbarAssets($settings, $toolbar, $gate, new ViteAssetResolver($packageManager), $uriBuilder);
+        return new InjectToolbarAssets($settings, $toolbar, $gate, new ViteAssetResolver($packageManager), $uriBuilder, $this->proxyToken());
     }
 
     /**
