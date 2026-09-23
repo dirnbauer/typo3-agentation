@@ -6,6 +6,7 @@ namespace Webconsulting\Agentation\Tests\Unit\EventListener;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Http\ServerRequest;
@@ -259,8 +260,15 @@ final class InjectToolbarAssetsTest extends AgentationTestCase
         $packageManager = self::createStub(PackageManager::class);
         $packageManager->method('getPackage')->willReturn($package);
 
+        // AJAX routes are registered with the "ajax_" prefix. A stub that
+        // answers any name hid a lookup of the unprefixed name, which throws
+        // RouteNotFoundException in a real backend request.
         $uriBuilder = self::createStub(BackendUriBuilder::class);
-        $uriBuilder->method('buildUriFromRoute')->willReturn(new Uri(self::PROXY_URL));
+        $uriBuilder->method('buildUriFromRoute')->willReturnCallback(
+            static fn(string $name): Uri => $name === 'ajax_agentation_api_proxy'
+                ? new Uri(self::PROXY_URL)
+                : throw new RouteNotFoundException('Unknown route ' . $name, 1790000001)
+        );
 
         return new InjectToolbarAssets($settings, $toolbar, $gate, new ViteAssetResolver($packageManager), $uriBuilder);
     }

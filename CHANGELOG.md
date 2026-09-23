@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.4.1] - 2026-09-23
+
+### Fixed
+
+- The backend toolbar asked the router for `agentation_api_proxy`, but TYPO3
+  registers AJAX routes under an `ajax_` prefix, so every backend request that
+  carried the toolbar ended in a `RouteNotFoundException`. It now builds the
+  URI of `ajax_agentation_api_proxy`, and the unit test's URI builder only
+  answers that name, so a wrong route name fails the test instead of passing.
+
 ## [1.4.0] - 2026-09-23
 
 ### Added

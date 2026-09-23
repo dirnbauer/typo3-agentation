@@ -9,6 +9,13 @@ Changelog
 The complete history with all details is kept in `CHANGELOG.md
 <https://github.com/dirnbauer/typo3-agentation/blob/main/CHANGELOG.md>`__.
 
+1.4.1
+=====
+
+* The backend toolbar builds the URI of the ``ajax_agentation_api_proxy``
+  route; the unprefixed name threw ``RouteNotFoundException`` on every
+  backend request that carried the toolbar.
+
 1.4.0
 =====
 

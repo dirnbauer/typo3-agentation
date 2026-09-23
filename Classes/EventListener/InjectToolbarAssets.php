@@ -102,7 +102,7 @@ final readonly class InjectToolbarAssets
             InjectionScope::Backend => [
                 $this->settings->toolbarPosition,
                 true,
-                (string)$this->uriBuilder->buildUriFromRoute('agentation_api_proxy'),
+                (string)$this->uriBuilder->buildUriFromRoute('ajax_agentation_api_proxy'),
             ],
         };
         // TYPO3 v14 has no TypoScriptFrontendController; the resolved page
