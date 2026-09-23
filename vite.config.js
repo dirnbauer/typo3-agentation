@@ -2,20 +2,14 @@ import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
 
 /**
- * Two ES-module entries, one output directory (Resources/Public/Vite/):
+ * One ES-module entry: React + the upstream Agentation toolbar + the TYPO3
+ * glue, rolled into one hashed file in Resources/Public/Vite/assets/. The
+ * host page needs no React. PHP finds the file through manifest.json
+ * (Classes/Service/ViteAssetResolver.php).
  *
- *   - agentation: React + the upstream Agentation toolbar + the TYPO3 glue,
- *     rolled into one hashed file. The host page needs no React. PHP finds
- *     it through manifest.json (Classes/Service/ViteAssetResolver.php).
- *   - module: the System > Agentation backend module, emitted under the
- *     stable name module.js because the TYPO3 import map
- *     (Configuration/JavaScriptModules.php) references it directly.
- *     TYPO3's own modules (@typo3/...) stay external and resolve through
- *     the backend import map at runtime.
- *
- * Modules both entries share (Build/Sources/storage.js) become a small
- * hashed chunk next to the toolbar bundle; the browser resolves the relative
- * import, so PHP only needs each entry's own file from manifest.json.
+ * The System > Agentation backend module is not built: its scripts in
+ * Resources/Public/JavaScript/ are native ES modules from the TYPO3 import
+ * map. The toolbar compiles in their shared storage.js.
  */
 function stripDependencyClientDirective() {
   return {
@@ -38,19 +32,17 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
-    chunkSizeWarningLimit: 650,
+    chunkSizeWarningLimit: 900,
     manifest: 'manifest.json',
     outDir: resolve(process.cwd(), 'Resources/Public/Vite'),
     emptyOutDir: true,
-    target: 'es2020',
+    target: 'es2022',
     rolldownOptions: {
       input: {
         agentation: resolve(process.cwd(), 'Build/Sources/agentation.js'),
-        module: resolve(process.cwd(), 'Build/Sources/module.js'),
       },
-      external: [/^@typo3\//],
       output: {
-        entryFileNames: (chunk) => (chunk.name === 'module' ? 'module.js' : 'assets/[name]-[hash].js'),
+        entryFileNames: 'assets/[name]-[hash].js',
       },
     },
   },

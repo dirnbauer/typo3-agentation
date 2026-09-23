@@ -1,12 +1,14 @@
 /**
  * The localStorage the upstream Agentation toolbar owns, seen from outside.
  *
- * Shared by the toolbar bundle (which reacts to deletions broadcast from the
- * backend module) and the backend module itself (which lists and deletes
- * annotations). Both read and write through the *original* Storage methods:
- * the toolbar bundle scopes Agentation's keys by monkey-patching the
- * localStorage instance, and keys enumerated from the store are already
- * scoped, so they must not be rewritten a second time.
+ * Shared by the backend module, which imports this file through the import
+ * map as @webconsulting/agentation/storage.js to list and delete
+ * annotations, and by the toolbar bundle, into which Vite compiles it to
+ * react to deletions broadcast from that module. Both read and write
+ * through the *original* Storage methods: the toolbar bundle scopes
+ * Agentation's keys by monkey-patching the localStorage instance, and keys
+ * enumerated from the store are already scoped, so they must not be
+ * rewritten a second time.
  */
 export const STORAGE_PREFIXES = [
   'feedback-annotations-',

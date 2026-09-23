@@ -8,18 +8,18 @@
  *
  * Config is read from <script type="application/json" id="typo3-agentation-config">,
  * a JSON data island the strict v14 backend CSP does not touch (browsers never
- * execute it). The server writes that node via AssetCollector.
+ * execute it). The server writes that node via AssetCollector; it carries no
+ * secret.
  */
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Agentation } from 'agentation';
-import { copyToClipboard } from './clipboard.js';
 import {
   BROADCAST_CHANNEL,
   STORAGE_PREFIXES,
   clearLocalAnnotations,
   removeLocalAnnotation,
-} from './storage.js';
+} from '../../Resources/Public/JavaScript/storage.js';
 
 const ROOT_ID = 'typo3-agentation-root';
 
@@ -186,7 +186,7 @@ function warnAboutMixedContent(cfg) {
   if (cfg.endpoint && window.location.protocol === 'https:' && cfg.endpoint.startsWith('http://') && !cfg.proxyUrl) {
     console.warn(
       '[agentation] Sync endpoint is HTTP but the page is HTTPS; the browser will block all sync requests (mixed content). '
-      + 'Access the backend over HTTP or set an API key in Extension Configuration.',
+      + 'Open the page over HTTP or set an API key in the extension configuration.',
     );
   }
 }
@@ -220,23 +220,35 @@ function injectTypo3StyleOverrides() {
   document.head.appendChild(style);
 }
 
-function postToWebhook(cfg, annotation) {
-  return fetch(cfg.webhookUrl, {
+/**
+ * "Send" posts to the configured webhook: Agentation's own submit payload
+ * (event, timestamp, url, output, annotations) plus where it came from in
+ * TYPO3. Handled here rather than through the component's webhookUrl prop,
+ * which would post a second time without the TYPO3 context.
+ */
+async function postToWebhook(cfg, output, annotations) {
+  const response = await fetch(cfg.webhookUrl, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(cfg.apiKey ? { Authorization: `Bearer ${cfg.apiKey}` } : {}),
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      annotation,
-      context: cfg.context,
-      pageId: cfg.pageId,
-      beUser: cfg.beUser,
-      workspaceId: cfg.workspaceId,
-      metadata: cfg.metadata,
+      event: 'submit',
+      timestamp: Date.now(),
+      url: window.location.href,
+      output,
+      annotations,
+      typo3: {
+        context: cfg.context,
+        pageId: cfg.pageId,
+        beUser: cfg.beUser,
+        workspaceId: cfg.workspaceId,
+        metadata: cfg.metadata,
+      },
     }),
     keepalive: true,
-  }).catch((err) => console.warn('[agentation] webhook POST failed', err));
+  });
+  if (!response.ok) {
+    throw new Error(`Webhook answered ${response.status}`);
+  }
 }
 
 function mount(cfg) {
@@ -250,9 +262,7 @@ function mount(cfg) {
 
   const props = {
     endpoint: cfg.endpoint || undefined,
-    webhookUrl: cfg.webhookUrl || undefined,
-    copyToClipboard,
-    onSubmit: cfg.webhookUrl ? (annotation) => postToWebhook(cfg, annotation) : undefined,
+    onSubmit: cfg.webhookUrl ? (output, annotations) => postToWebhook(cfg, output, annotations) : undefined,
     ...(cfg.additionalOptions || {}),
   };
 
