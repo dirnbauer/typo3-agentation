@@ -17,13 +17,18 @@ Features
 ========
 
 * Frontend toolbar gated by backend session, user settings, and Admin Panel
-  opt-in.
+  opt-in. Pages that carry it are rendered for the backend user alone and
+  never stored in the page cache.
 * Backend toolbar injection for TYPO3 module content frames.
-* Admin-only :guilabel:`System > Agentation` module for MCP setup and status.
+* Admin-only :guilabel:`System > Agentation` module: MCP setup, status and
+  the stored annotations, built from the TYPO3 backend components.
 * Per-user toolbar settings for frontend and backend usage.
 * Application context gate with a safe default for development systems.
-* Same-origin backend proxy for local and cloud Agentation sync endpoints.
-* Built Vite assets committed for Composer/VCS installations.
+* Same-origin backend proxy for local and cloud Agentation sync endpoints;
+  the API key stays on the server.
+* The Content-Security-Policy is widened only for responses that carry the
+  toolbar.
+* The built toolbar bundle is committed for Composer installations.
 
 ..  _introduction-requirements:
 

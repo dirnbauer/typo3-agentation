@@ -16,7 +16,7 @@ The package is distributed via Composer only:
 
     composer require webconsulting/agentation
 
-The package contains the built Vite assets in
+The package contains the built toolbar bundle in
 :file:`Resources/Public/Vite/`. A normal Composer installation does not need
 Node.js.
 
@@ -25,8 +25,10 @@ Node.js.
 Rebuild assets
 ==============
 
-Rebuild the bundles only when changing the sources in :file:`Build/Sources/`
-or updating the upstream npm package:
+Rebuild the toolbar bundle only when changing :file:`Build/Sources/agentation.js`,
+the shared :file:`Resources/Public/JavaScript/storage.js`, or when updating
+the upstream npm package. The backend module scripts in
+:file:`Resources/Public/JavaScript/` are served as they are.
 
 ..  code-block:: bash
     :caption: Rebuild the bundled Agentation asset
@@ -42,6 +44,6 @@ tagging a release.
 TYPO3 setup
 ===========
 
-After installation, open :guilabel:`Admin Tools > Settings > Extension
+After installation, open :guilabel:`System > Settings > Extension
 Configuration > agentation` and review the context gate before enabling the
 toolbar for users.

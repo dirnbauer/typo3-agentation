@@ -9,6 +9,20 @@ Changelog
 The complete history with all details is kept in `CHANGELOG.md
 <https://github.com/dirnbauer/typo3-agentation/blob/main/CHANGELOG.md>`__.
 
+1.4.0
+=====
+
+* :guilabel:`System > Agentation` rebuilt from TYPO3 backend components: module
+  layout with DocHeader, card grid, status indicators, annotation table,
+  core copy-to-clipboard, modal and notifications; native ES modules with
+  labels from the ``agentation.mod`` domain instead of a Vite build.
+* The API key no longer reaches the browser; webhook submissions are posted
+  once, with the Agentation payload plus the TYPO3 context.
+* Frontend pages with the toolbar bypass the page cache; the
+  Content-Security-Policy is widened per response instead of installation
+  wide.
+* ``agentation`` 3.1.2 and React 19.3, PHP 8.4 and 8.5 in CI.
+
 1.3.0
 =====
 

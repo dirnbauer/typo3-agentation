@@ -6,15 +6,7 @@
 Configuration
 =============
 
-Open :guilabel:`Admin Tools > Settings > Extension Configuration >
-agentation`.
-
-..  figure:: /Images/extension-configuration-basic.png
-    :alt: TYPO3 extension configuration screen for Agentation basic settings
-    :zoom: lightbox
-    :class: with-border with-shadow
-
-    Basic Agentation extension configuration in the TYPO3 backend.
+Open :guilabel:`System > Settings > Extension Configuration > agentation`.
 
 ..  _configuration-extension-settings:
 
@@ -26,15 +18,20 @@ Extension settings
     :type: string
     :default: empty
 
-    Agentation API key. Leave empty for local copy-paste mode. Required for
-    authenticated MCP and webhook usage.
+    Agentation API key. With a key, annotations are stored in the Agentation
+    cloud; without one they sync through a local ``agentation-mcp`` server
+    on ``http://localhost:4747``. The key stays on the server: the backend
+    proxy adds it to its requests and the generated MCP configuration
+    passes it to ``agentation-mcp``; the browser never receives it.
 
 ..  confval:: workspaceId
     :name: agentation-workspace-id
     :type: string
     :default: empty
 
-    Workspace or project ID shown in generated MCP configuration.
+    Optional project identifier. It travels with webhook submissions
+    (``typo3.workspaceId``), so a receiver can tell installations apart.
+    ``agentation-mcp`` has no such setting.
 
 ..  confval:: syncEndpoint
     :name: agentation-sync-endpoint
@@ -88,7 +85,8 @@ Extension settings
     :type: string
     :default: empty
 
-    Optional webhook URL. Toolbar submissions are posted here when configured.
+    Optional webhook URL. When set, the toolbar shows its :guilabel:`Send`
+    action and posts each submission here — see :ref:`usage-webhook`.
 
 ..  confval:: additionalOptions
     :name: agentation-additional-options

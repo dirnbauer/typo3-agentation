@@ -2,6 +2,78 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.4.0] - 2026-09-23
+
+### Added
+
+- `Service\ToolbarGate`: one decision whether a response gets the toolbar, and
+  in which scope, shared by the asset listener and the two new listeners below.
+- `EventListener\RenderToolbarPagesUncached`: a frontend page that carries the
+  toolbar is neither read from nor written to the page cache. Before, a page
+  first rendered for a backend user with the toolbar could be cached with it —
+  toolbar, configuration and user name included — and a page already in the
+  cache came without the toolbar.
+- `EventListener\AllowToolbarInContentSecurityPolicy`: `connect-src` for the
+  sync endpoint and webhook origins and, in the frontend, `style-src
+  'unsafe-inline'`, for exactly the responses that carry the toolbar.
+- Unit tests for both listeners; the functional test asserts the new module
+  markup and the Admin Panel's own markup.
+
+### Changed
+
+- `System > Agentation` is rebuilt from TYPO3 v14 backend components: the
+  `Module` layout with DocHeader (reload, bookmark), an `<h1>`, a card grid
+  (connection, status with `<typo3-backend-status-indicator>`, how it works),
+  the stored annotations as a table with status badges, an empty state and an
+  error callout, `<typo3-copy-to-clipboard>` for the snippets, the core modal
+  to confirm "delete all" and core notifications. Light and dark mode follow
+  the backend; the extension CSS only lays the components out.
+- The module JavaScript is a native ES module in `Resources/Public/JavaScript/`
+  served by the import map — no Vite build — and imports its labels from the
+  `agentation.mod` domain (`~labels/agentation.mod`) with ICU plurals instead
+  of concatenated `TYPO3.lang` strings. The module labels are rewritten for
+  that, in English and German, and the module registers its title and
+  descriptions through the `agentation.mod` domain.
+- The Admin Panel section uses the Admin Panel's own checkbox partial, form
+  and table markup and the backend user's language; its stylesheet is gone.
+- Frontend annotations and backend module detection read the backend route's
+  module instead of matching `/typo3/module/` paths.
+- The generated MCP configuration only sets `AGENTATION_API_KEY`;
+  `agentation-mcp` reads no workspace variable. The `workspaceId` setting is
+  now described as the project identifier it is, sent with webhook
+  submissions.
+- `agentation` 3.0.2 → 3.1.2, `react`/`react-dom` 18.3.1 → 19.3.0; the toolbar
+  bundle is rebuilt (target ES2022).
+- PHP 8.5 gates CI next to 8.4; `actions/checkout` v7, `actions/setup-node` v7.
+- PHPStan reports missing `#[\Override]` attributes; the Admin Panel module
+  and the test cases carry them.
+
+### Fixed
+
+- The API key was part of the configuration shipped to the browser (and sent
+  as a bearer token to the webhook), although the proxy exists so that it
+  never leaves the server. It is gone from both.
+- Webhook submissions were posted twice — once by the upstream component
+  through `webhookUrl`, once by the TYPO3 `onSubmit` — and the TYPO3 one sent
+  the Markdown output in a field called `annotation`. The toolbar now posts
+  once: Agentation's `event`, `timestamp`, `url`, `output` and `annotations`
+  plus a `typo3` block with context, page, user and project identifier.
+- The toolbar received a clipboard function as its `copyToClipboard` prop,
+  which upstream reads as a boolean; the prop is gone (upstream has its own
+  fallback for insecure contexts).
+- The toolbar config is encoded with `JSON_HEX_TAG`, so a `</script>` in any
+  value cannot end the data island early.
+- The Admin Panel section always showed "local-only": it tested a template
+  variable that was never assigned.
+
+### Removed
+
+- `Configuration/ContentSecurityPolicies.php`, which widened the policy of
+  every backend and frontend response, toolbar or not.
+- The Vite build of the backend module, `Build/Sources/clipboard.js`,
+  `Resources/Public/Css/AdminPanel.css` and the outdated extension
+  configuration screenshot in the manual.
+
 ## [1.3.0] - 2026-09-18
 
 ### Added

@@ -14,12 +14,17 @@ Cursor, Windsurf, Zed, Continue or any other MCP-capable agent.
 ## What it is
 
 - Frontend toolbar, gated by a backend session, the per-user switch in
-  *User Settings* and an Admin Panel section (toggle, position, scope).
-- Backend toolbar inside module content frames (`/typo3/module/*`).
-- `System > Agentation` module: MCP configuration as JSON, Cursor deep link
-  or `claude mcp add` command, status overview, stored-annotation cleanup.
+  *User Settings* and an Admin Panel section (toggle, position, scope). Pages
+  that carry it bypass the page cache in both directions.
+- Backend toolbar inside module content frames.
+- `System > Agentation` module, built from TYPO3 backend components: MCP
+  configuration as JSON, Cursor deep link or `claude mcp add` command, status
+  overview, and the stored annotations as a table with delete and delete-all.
 - Same-origin AJAX proxy so an HTTPS backend can reach a local
-  `agentation-mcp` server on `http://localhost:4747` (DDEV/Docker aware).
+  `agentation-mcp` server on `http://localhost:4747` (DDEV/Docker aware); the
+  API key stays on the server.
+- The Content-Security-Policy is widened only for responses that carry the
+  toolbar.
 - Application-context gate (`Development` by default) so the toolbar never
   ships to production by accident.
 - The React toolbar is bundled with Vite and committed; the host page needs
@@ -46,18 +51,18 @@ Distribution is Composer-only.
 
 ## Configure
 
-*Admin Tools > Settings > Extension Configuration > agentation*
+*System > Settings > Extension Configuration > agentation*
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `apiKey` | empty | Agentation API key; enables the cloud sync endpoint and webhooks |
-| `workspaceId` | empty | Workspace/project id placed into the generated MCP config |
+| `apiKey` | empty | Agentation API key: cloud storage instead of a local `agentation-mcp` server; never sent to the browser |
+| `workspaceId` | empty | Project identifier sent with webhook submissions |
 | `syncEndpoint` | auto | Explicit sync URL; auto = cloud with API key, else `http://localhost:4747` |
 | `frontendEnabled` / `backendEnabled` | `1` | Global switches per application |
 | `contextGate` | `Development` | `Development`, `Development and Testing` or `All contexts` |
 | `defaultOptIn` | `0` | Preselects the per-user switches for users who never saved them |
 | `toolbarPosition` | `bottom-right` | `bottom-right`, `bottom-left`, `top-right`, `top-left` |
-| `webhookUrl` | empty | Annotations are POSTed here on submit |
+| `webhookUrl` | empty | The toolbar's *Send* posts the submission here, with the TYPO3 context |
 | `additionalOptions` | empty | JSON object merged into the toolbar props |
 
 ## Use
@@ -84,11 +89,12 @@ Build/Scripts/runTests.sh -s functional
 npm ci && npm run build       # rebuild Resources/Public/Vite/ and commit the result
 ```
 
-Sources for the browser live in `Build/Sources/` (`agentation.js` toolbar
-bundle, `module.js` backend module, shared `storage.js`/`clipboard.js`); Vite
-writes both entries to `Resources/Public/Vite/`. CI runs lint, cgl, PHPStan,
-unit and functional tests (PHP 8.4, 8.5 allowed to fail; MariaDB 10.11) and
-verifies that the committed build matches the sources.
+The toolbar source is `Build/Sources/agentation.js`; Vite bundles it with
+React into `Resources/Public/Vite/`. The backend module is plain ES modules in
+`Resources/Public/JavaScript/` (`module.js`, and `storage.js`, which the
+toolbar compiles in as well), served by the TYPO3 import map without a build.
+CI runs lint, cgl, PHPStan, unit and functional tests on PHP 8.4 and 8.5
+(MariaDB 10.11) and verifies that the committed build matches the sources.
 
 ## Docs
 

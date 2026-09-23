@@ -25,6 +25,10 @@ setting is on. Inside the section, switch the toolbar on or off and choose
 the toolbar position and annotation scope; the Admin Panel stores the values
 per backend user.
 
+While the toolbar is on, pages are rendered freshly for that user and are
+never written to the page cache, so no visitor ever receives a page that
+was rendered with the toolbar.
+
 ..  _usage-backend:
 
 Backend annotations
@@ -39,25 +43,61 @@ toolbar is not injected into Agentation's own administration module.
 MCP setup
 =========
 
-Open :guilabel:`System > Agentation` and copy the generated MCP JSON or Claude
-Code CLI command into your coding agent.
+Open :guilabel:`System > Agentation` and copy the generated MCP JSON or the
+``claude mcp add`` command into your coding agent, or add the server to
+Cursor with one click.
 
-The example below is the same shape used by the backend module:
+The example below is the same shape the backend module generates:
 
 ..  literalinclude:: ../../.mcp.json.example
     :language: json
     :caption: .mcp.json.example
 
-API key and workspace values are optional for local copy-paste workflows and
-required for authenticated sync.
+Without an API key the ``env`` block is left out: the agent starts
+``agentation-mcp`` locally and the toolbar syncs with it on
+``http://localhost:4747``. The backend reaches that server through its
+same-origin proxy, also from inside DDEV or Docker.
+
+..  _usage-webhook:
+
+Webhook submissions
+===================
+
+With :confval:`webhookUrl <agentation-webhook-url>` set, the toolbar's
+:guilabel:`Send` action posts one JSON document per submission: the fields
+Agentation itself sends, plus where the annotations were made in TYPO3.
+
+..  code-block:: json
+    :caption: Webhook payload
+
+    {
+        "event": "submit",
+        "timestamp": 1790152848000,
+        "url": "https://example.org/about/",
+        "output": "## Page feedback …",
+        "annotations": [{"id": "…", "comment": "…", "element": "h1"}],
+        "typo3": {
+            "context": "typo3-frontend",
+            "pageId": 42,
+            "beUser": "editor",
+            "workspaceId": "my-project",
+            "metadata": {"applicationContext": "Development", "includeAdminPanelChrome": false}
+        }
+    }
+
+The request carries no credentials; protect the receiver with a secret in
+its URL or a network restriction.
 
 ..  _usage-annotations:
 
 Manage stored annotations
 =========================
 
-:guilabel:`System > Agentation` (administrators only) lists annotations from
-the configured sync endpoint and from this browser's Agentation storage.
-Reload the list, delete single annotations or clear everything; open toolbar
-widgets in other tabs and frames are told about deletions so they do not
-re-push the removed annotations.
+:guilabel:`System > Agentation` (administrators only) lists the annotations
+of the configured sync endpoint and of this browser's Agentation storage in
+one table, with their status (pending, acknowledged, resolved, dismissed, or
+*this browser only*). Reload the list, delete single annotations or clear
+everything after a confirmation; open toolbar widgets in other tabs and
+frames are told about deletions so they do not re-push the removed
+annotations. When the sync server cannot be reached, the card says so and
+still lists the annotations stored in this browser.
