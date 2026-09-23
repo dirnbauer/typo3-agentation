@@ -15,8 +15,8 @@
     </unit>
     <unit id="setup.frontend.enabled">
       <segment>
-        <source>Enable Agentation toolbar in TYPO3 frontend (requires Admin Panel opt-in per request)</source>
-        <target>Agentation-Toolbar im TYPO3-Frontend aktivieren (pro Aufruf im Admin-Panel zusätzlich einschalten)</target>
+        <source>Enable Agentation toolbar in TYPO3 frontend (switched on per page in the Admin Panel)</source>
+        <target>Agentation-Toolbar im TYPO3-Frontend aktivieren (pro Seite im Admin Panel einschalten)</target>
       </segment>
     </unit>
     <unit id="adminpanel.label">
@@ -43,16 +43,64 @@
         <target>Agentation-Toolbar auf dieser Seite anzeigen</target>
       </segment>
     </unit>
+    <unit id="adminpanel.column.setting">
+      <segment>
+        <source>Setting</source>
+        <target>Einstellung</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.column.value">
+      <segment>
+        <source>Value</source>
+        <target>Wert</target>
+      </segment>
+    </unit>
     <unit id="adminpanel.status">
       <segment>
-        <source>Status</source>
-        <target>Status</target>
+        <source>Toolbar</source>
+        <target>Toolbar</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.on">
+      <segment>
+        <source>On</source>
+        <target>An</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.status.off">
+      <segment>
+        <source>Off</source>
+        <target>Aus</target>
       </segment>
     </unit>
     <unit id="adminpanel.position">
       <segment>
         <source>Toolbar position</source>
         <target>Position der Toolbar</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.position.bottom-right">
+      <segment>
+        <source>Bottom right</source>
+        <target>Unten rechts</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.position.bottom-left">
+      <segment>
+        <source>Bottom left</source>
+        <target>Unten links</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.position.top-right">
+      <segment>
+        <source>Top right</source>
+        <target>Oben rechts</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.position.top-left">
+      <segment>
+        <source>Top left</source>
+        <target>Oben links</target>
       </segment>
     </unit>
     <unit id="adminpanel.scope">
@@ -69,74 +117,44 @@
     </unit>
     <unit id="adminpanel.scope.frontend+adminpanel">
       <segment>
-        <source>Frontend page + admin panel chrome</source>
-        <target>Frontend-Seite + Admin-Panel-Chrome</target>
+        <source>Frontend page and Admin Panel</source>
+        <target>Frontend-Seite und Admin Panel</target>
       </segment>
     </unit>
-    <unit id="adminpanel.apiKey">
+    <unit id="adminpanel.sync">
       <segment>
-        <source>API key</source>
-        <target>API-Key</target>
+        <source>Sync</source>
+        <target>Synchronisation</target>
       </segment>
     </unit>
-    <unit id="adminpanel.workspace">
+    <unit id="adminpanel.sync.cloud">
       <segment>
-        <source>Workspace</source>
-        <target>Workspace</target>
+        <source>Agentation cloud</source>
+        <target>Agentation-Cloud</target>
       </segment>
     </unit>
-    <unit id="adminpanel.context">
+    <unit id="adminpanel.sync.local">
       <segment>
-        <source>Application context</source>
-        <target>Anwendungskontext</target>
+        <source>Local agentation-mcp server</source>
+        <target>Lokaler agentation-mcp-Server</target>
       </segment>
     </unit>
-    <unit id="adminpanel.noApiKey">
+    <unit id="adminpanel.project">
       <segment>
-        <source>No API key set — running in local copy-paste mode. Set one in Extension Configuration to enable MCP and webhooks.</source>
-        <target>Kein API-Key gesetzt — lokaler Copy/Paste-Modus aktiv. In der Extension-Konfiguration einen API-Key eintragen, um MCP und Webhooks zu aktivieren.</target>
+        <source>Project identifier</source>
+        <target>Projektkennung</target>
+      </segment>
+    </unit>
+    <unit id="adminpanel.blockedByContext">
+      <segment>
+        <source>The toolbar is not loaded in this application context. The context gate in the extension configuration decides where it may run.</source>
+        <target>Die Toolbar wird in diesem Anwendungskontext nicht geladen. Die Kontextsperre in der Extension-Konfiguration legt fest, wo sie laufen darf.</target>
       </segment>
     </unit>
     <unit id="adminpanel.openBackendModule">
       <segment>
-        <source>Open Agentation backend module (MCP config &amp; status)</source>
-        <target>Agentation-Backend-Modul öffnen (MCP-Konfiguration &amp; Status)</target>
-      </segment>
-    </unit>
-    <unit id="adminpanel.status.on">
-      <segment>
-        <source>On</source>
-        <target>An</target>
-      </segment>
-    </unit>
-    <unit id="adminpanel.status.off">
-      <segment>
-        <source>Off</source>
-        <target>Aus</target>
-      </segment>
-    </unit>
-    <unit id="adminpanel.status.set">
-      <segment>
-        <source>Set</source>
-        <target>Gesetzt</target>
-      </segment>
-    </unit>
-    <unit id="adminpanel.status.localOnly">
-      <segment>
-        <source>Local-only</source>
-        <target>Nur lokal</target>
-      </segment>
-    </unit>
-    <unit id="adminpanel.status.allowed">
-      <segment>
-        <source>Allowed</source>
-        <target>Erlaubt</target>
-      </segment>
-    </unit>
-    <unit id="adminpanel.status.blockedByContext">
-      <segment>
-        <source>Blocked by contextGate</source>
-        <target>Durch contextGate gesperrt</target>
+        <source>Open System &gt; Agentation (MCP configuration and status)</source>
+        <target>System &gt; Agentation öffnen (MCP-Konfiguration und Status)</target>
       </segment>
     </unit>
   </file>

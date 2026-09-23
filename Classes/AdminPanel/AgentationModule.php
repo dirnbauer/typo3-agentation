@@ -9,7 +9,6 @@ use TYPO3\CMS\Adminpanel\ModuleApi\AbstractModule;
 use TYPO3\CMS\Adminpanel\ModuleApi\ContentProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ModuleData;
 use TYPO3\CMS\Adminpanel\ModuleApi\ModuleSettingsProviderInterface;
-use TYPO3\CMS\Adminpanel\ModuleApi\ResourceProviderInterface;
 use TYPO3\CMS\Adminpanel\ModuleApi\ShortInfoProviderInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\View\ViewFactoryData;
@@ -36,7 +35,6 @@ use Webconsulting\Agentation\Settings\ToolbarSettings;
 final class AgentationModule extends AbstractModule implements
     ContentProviderInterface,
     ModuleSettingsProviderInterface,
-    ResourceProviderInterface,
     ShortInfoProviderInterface
 {
     public function __construct(
@@ -46,21 +44,25 @@ final class AgentationModule extends AbstractModule implements
         private readonly BackendUriBuilder $uriBuilder,
     ) {}
 
+    #[\Override]
     public function getIdentifier(): string
     {
         return ToolbarSettings::ADMIN_PANEL_MODULE;
     }
 
+    #[\Override]
     public function getLabel(): string
     {
         return $this->getLanguageService()->sL('agentation.messages:adminpanel.label');
     }
 
+    #[\Override]
     public function getIconIdentifier(): string
     {
         return 'agentation-logo';
     }
 
+    #[\Override]
     public function getShortInfo(): string
     {
         return $this->getLanguageService()->sL(
@@ -75,11 +77,13 @@ final class AgentationModule extends AbstractModule implements
      * checkbox lives inside the section, so it must not gate visibility -
      * otherwise a switched-off toolbar could never be switched on again.
      */
+    #[\Override]
     public function isEnabled(): bool
     {
         return $this->toolbar->isFrontendToolbarEnabled($this->getBackendUser());
     }
 
+    #[\Override]
     public function getSettings(): string
     {
         return $this->render('AdminPanel/ModuleSettings', [
@@ -88,6 +92,7 @@ final class AgentationModule extends AbstractModule implements
         ]);
     }
 
+    #[\Override]
     public function getContent(ModuleData $data): string
     {
         return $this->render('AdminPanel/ModuleContent', [
@@ -95,18 +100,6 @@ final class AgentationModule extends AbstractModule implements
             'contextAllowed' => $this->settings->contextAllowed,
             'backendModuleUrl' => (string)$this->uriBuilder->buildUriFromRoute('agentation'),
         ]);
-    }
-
-    /** @return list<string> */
-    public function getCssFiles(): array
-    {
-        return ['EXT:agentation/Resources/Public/Css/AdminPanel.css'];
-    }
-
-    /** @return list<string> */
-    public function getJavaScriptFiles(): array
-    {
-        return [];
     }
 
     private function isToolbarActive(): bool
@@ -124,7 +117,9 @@ final class AgentationModule extends AbstractModule implements
             'enabled' => $this->isToolbarActive(),
             'position' => $this->toolbar->getFrontendPosition()->value,
             'scope' => $this->toolbar->getFrontendScope()->value,
-            'apiKeySet' => $this->settings->apiKey !== '',
+            'cloudMode' => $this->settings->apiKey !== '',
+            // The Admin Panel speaks the backend user's language, not the page's.
+            'languageKey' => $this->getBackendUser()->user['lang'] ?? null,
         ]);
         return $view->render($template);
     }
@@ -133,6 +128,7 @@ final class AgentationModule extends AbstractModule implements
     {
         return $this->viewFactory->create(new ViewFactoryData(
             templateRootPaths: ['EXT:agentation/Resources/Private/Templates'],
+            partialRootPaths: ['EXT:adminpanel/Resources/Private/Partials'],
         ));
     }
 }
