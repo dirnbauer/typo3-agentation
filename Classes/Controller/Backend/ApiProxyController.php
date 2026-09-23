@@ -9,18 +9,18 @@ use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Http\RequestFactory;
-use TYPO3\CMS\Core\Http\Response;
-use Webconsulting\Agentation\Settings\ExtensionSettings;
+use Webconsulting\Agentation\Service\SyncProxy;
 use Webconsulting\Agentation\Settings\ToolbarSettings;
 
 /**
- * Same-origin proxy for the agentation-mcp HTTP API.
+ * Same-origin proxy for the agentation-mcp HTTP API, backend side.
  *
  * Browsers block fetch() from an HTTPS backend to http://localhost:4747 as
  * mixed content. The toolbar widget and System > Agentation call these
- * routes instead; PHP forwards to the configured sync endpoint and injects
- * the API key, which therefore never leaves the server.
+ * routes instead; {@see SyncProxy} forwards to the configured sync endpoint
+ * and injects the API key, which therefore never leaves the server. The
+ * frontend toolbar uses the same forwarding through
+ * {@see \Webconsulting\Agentation\Middleware\FrontendSyncProxy}.
  *
  * Errors are returned as machine-readable codes (`{"error": "<code>"}`);
  * the module's JavaScript translates them (module.errors.* labels).
@@ -28,14 +28,12 @@ use Webconsulting\Agentation\Settings\ToolbarSettings;
 #[Autoconfigure(public: true)]
 final readonly class ApiProxyController
 {
-    private const float TIMEOUT_SECONDS = 4.0;
     private const string PENDING_PATH = '/pending';
     private const string ANNOTATION_PATH = '/annotations/';
 
     public function __construct(
-        private ExtensionSettings $settings,
         private ToolbarSettings $toolbar,
-        private RequestFactory $requestFactory,
+        private SyncProxy $proxy,
     ) {}
 
     /**
@@ -44,12 +42,16 @@ final readonly class ApiProxyController
     public function listAction(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->backendUser()->isAdmin()) {
-            return self::error('adminOnly', 403);
+            return SyncProxy::error('adminOnly', 403);
         }
-        $upstream = $this->forward('GET', self::PENDING_PATH);
-        return $upstream === null
-            ? $this->unreachable()
-            : new JsonResponse(self::decodeJson((string)$upstream->getBody()), $upstream->getStatusCode());
+        $upstream = $this->proxy->forward('GET', self::PENDING_PATH);
+        if ($upstream === null) {
+            return $this->proxy->unreachable();
+        }
+        $body = SyncProxy::bodyOf($upstream);
+        return $body === null
+            ? SyncProxy::error('responseTooLarge', 502)
+            : new JsonResponse(self::decodeJson($body), $upstream->getStatusCode());
     }
 
     /**
@@ -58,15 +60,15 @@ final readonly class ApiProxyController
     public function deleteAction(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->backendUser()->isAdmin()) {
-            return self::error('adminOnly', 403);
+            return SyncProxy::error('adminOnly', 403);
         }
         $id = self::requestedAnnotationId($request);
         if ($id === '') {
-            return self::error('missingAnnotationId', 400);
+            return SyncProxy::error('missingAnnotationId', 400);
         }
-        $upstream = $this->forward('DELETE', self::ANNOTATION_PATH . rawurlencode($id));
+        $upstream = $this->proxy->forward('DELETE', self::ANNOTATION_PATH . rawurlencode($id));
         if ($upstream === null) {
-            return $this->unreachable();
+            return $this->proxy->unreachable();
         }
         $status = $upstream->getStatusCode();
         return new JsonResponse(['ok' => $status < 400, 'status' => $status], $status);
@@ -78,17 +80,17 @@ final readonly class ApiProxyController
     public function deleteAllAction(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->backendUser()->isAdmin()) {
-            return self::error('adminOnly', 403);
+            return SyncProxy::error('adminOnly', 403);
         }
-        $pending = $this->forward('GET', self::PENDING_PATH);
+        $pending = $this->proxy->forward('GET', self::PENDING_PATH);
         if ($pending === null) {
-            return $this->unreachable();
+            return $this->proxy->unreachable();
         }
 
         $deleted = [];
         $failed = [];
-        foreach (self::annotationIds(self::decodeJson((string)$pending->getBody())) as $id) {
-            $upstream = $this->forward('DELETE', self::ANNOTATION_PATH . rawurlencode($id));
+        foreach (self::annotationIds(self::decodeJson(SyncProxy::bodyOf($pending) ?? '')) as $id) {
+            $upstream = $this->proxy->forward('DELETE', self::ANNOTATION_PATH . rawurlencode($id));
             if ($upstream !== null && $upstream->getStatusCode() < 400) {
                 $deleted[] = $id;
             } else {
@@ -105,123 +107,16 @@ final readonly class ApiProxyController
     }
 
     /**
-     * Generic forward for the toolbar widget (GET/POST/PATCH/DELETE).
-     *
-     * The widget's patched fetch() sends the original API path in the `path`
-     * query parameter, so one route covers sessions, annotations, pending,
-     * events and health. Method, content type and body are forwarded; the
-     * upstream status, body and content type are mirrored back.
+     * Generic forward for the toolbar widget (GET/POST/PATCH/DELETE): its
+     * patched fetch() sends the original API path in the `path` query
+     * parameter; {@see SyncProxy::forwardWidgetCall()} validates and forwards it.
      */
     public function proxyAction(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->toolbar->isBackendToolbarEnabled($this->backendUser())) {
-            return self::error('toolbarDisabled', 403);
+            return SyncProxy::error('toolbarDisabled', 403);
         }
-        $path = $request->getQueryParams()['path'] ?? '';
-        if (!is_string($path) || !str_starts_with($path, '/')) {
-            return self::error('invalidPath', 400);
-        }
-
-        $contentType = $request->getHeaderLine('Content-Type');
-        $upstream = $this->forward(
-            strtoupper($request->getMethod()),
-            $path,
-            $contentType !== '' ? ['Content-Type' => $contentType] : [],
-            (string)$request->getBody(),
-        );
-        if ($upstream === null) {
-            return $this->unreachable();
-        }
-
-        $response = new Response($upstream->getBody(), $upstream->getStatusCode());
-        $upstreamType = $upstream->getHeaderLine('Content-Type');
-        return $upstreamType !== '' ? $response->withHeader('Content-Type', $upstreamType) : $response;
-    }
-
-    /**
-     * Sends one request to the first reachable candidate endpoint. Upstream
-     * HTTP errors (4xx/5xx) are responses, not failures; only transport
-     * failures move on to the next candidate.
-     *
-     * @param array<string, string> $headers
-     */
-    private function forward(string $method, string $path, array $headers = [], string $body = ''): ?ResponseInterface
-    {
-        $headers += ['Accept' => 'application/json'];
-        if ($this->settings->apiKey !== '') {
-            $headers['x-api-key'] = $this->settings->apiKey;
-        }
-        foreach ($this->candidateEndpoints() as $base) {
-            try {
-                return $this->requestFactory->request($base . $path, $method, [
-                    'headers' => $headers,
-                    'body' => $body !== '' ? $body : null,
-                    'timeout' => self::TIMEOUT_SECONDS,
-                    'connect_timeout' => self::TIMEOUT_SECONDS,
-                    'http_errors' => false,
-                ]);
-            } catch (\Throwable) {
-                continue;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function candidateEndpoints(): array
-    {
-        return self::endpointsToTry($this->settings->syncEndpoint, self::isInsideContainer());
-    }
-
-    /**
-     * URLs to try for a call, with container-aware fallbacks.
-     *
-     * Inside DDEV/Docker a configured http://localhost:4747 points at the
-     * container's own loopback, not at the host where `agentation-mcp
-     * server` listens. Docker exposes the host as host.docker.internal and
-     * Podman as host.containers.internal, so both are tried as well.
-     *
-     * @return list<string>
-     */
-    public static function endpointsToTry(string $configuredEndpoint, bool $insideContainer): array
-    {
-        $configured = rtrim($configuredEndpoint, '/');
-        if ($configured === '') {
-            return [];
-        }
-        $host = parse_url($configured, PHP_URL_HOST);
-        if (!$insideContainer || !in_array($host, ['localhost', '127.0.0.1'], true)) {
-            return [$configured];
-        }
-        $candidates = [$configured];
-        foreach (['host.docker.internal', 'host.containers.internal'] as $alias) {
-            $candidates[] = preg_replace('#://' . preg_quote($host, '#') . '(?=[:/]|$)#', '://' . $alias, $configured, 1)
-                ?? $configured;
-        }
-        return array_values(array_unique($candidates));
-    }
-
-    private static function isInsideContainer(): bool
-    {
-        return file_exists('/.dockerenv')
-            || getenv('DDEV_HOSTNAME') !== false
-            || getenv('DDEV_PROJECT') !== false;
-    }
-
-    private function unreachable(): JsonResponse
-    {
-        return new JsonResponse([
-            'error' => 'syncUnreachable',
-            'endpoint' => $this->settings->syncEndpoint,
-            'tried' => $this->candidateEndpoints(),
-        ], 502);
-    }
-
-    private static function error(string $code, int $status): JsonResponse
-    {
-        return new JsonResponse(['error' => $code], $status);
+        return $this->proxy->forwardWidgetCall($request);
     }
 
     /**

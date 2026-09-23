@@ -13,6 +13,7 @@ use TYPO3\CMS\Core\Http\Response;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Http\Stream;
 use Webconsulting\Agentation\Controller\Backend\ApiProxyController;
+use Webconsulting\Agentation\Service\SyncProxy;
 use Webconsulting\Agentation\Tests\Unit\AgentationTestCase;
 
 final class ApiProxyControllerTest extends AgentationTestCase
@@ -35,37 +36,6 @@ final class ApiProxyControllerTest extends AgentationTestCase
     {
         unset($GLOBALS['BE_USER']);
         parent::tearDown();
-    }
-
-    /**
-     * @return iterable<string, array{string, bool, list<string>}>
-     */
-    public static function endpoints(): iterable
-    {
-        yield 'empty' => ['', false, []];
-        yield 'trailing slash is trimmed' => ['https://sync.example/api/', false, ['https://sync.example/api']];
-        yield 'localhost outside a container' => ['http://localhost:4747', false, ['http://localhost:4747']];
-        yield 'remote host inside a container' => ['https://sync.example/api', true, ['https://sync.example/api']];
-        yield 'localhost inside a container' => ['http://localhost:4747', true, [
-            'http://localhost:4747',
-            'http://host.docker.internal:4747',
-            'http://host.containers.internal:4747',
-        ]];
-        yield 'loopback ip with path inside a container' => ['http://127.0.0.1:4747/api', true, [
-            'http://127.0.0.1:4747/api',
-            'http://host.docker.internal:4747/api',
-            'http://host.containers.internal:4747/api',
-        ]];
-    }
-
-    /**
-     * @param list<string> $expected
-     */
-    #[Test]
-    #[DataProvider('endpoints')]
-    public function containerAwareEndpointCandidates(string $configured, bool $insideContainer, array $expected): void
-    {
-        self::assertSame($expected, ApiProxyController::endpointsToTry($configured, $insideContainer));
     }
 
     #[Test]
@@ -262,7 +232,7 @@ final class ApiProxyControllerTest extends AgentationTestCase
             $this->upstreamCalls[] = ['url' => $url, 'method' => $method, 'options' => $options];
             return ($this->upstream)($url, $method);
         });
-        return new ApiProxyController($this->extensionSettings($configuration), $this->toolbarSettings($configuration), $requestFactory);
+        return new ApiProxyController($this->toolbarSettings($configuration), new SyncProxy($this->extensionSettings($configuration), $requestFactory));
     }
 
     private function loginAdmin(): void
